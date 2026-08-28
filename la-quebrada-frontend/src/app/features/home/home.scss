@@ -1,0 +1,23 @@
+.home-container {
+  max-width: 720px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+
+    .usuario-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+  }
+
+  .hint {
+    color: var(--p-text-muted-color);
+    font-size: 0.9rem;
+  }
+}

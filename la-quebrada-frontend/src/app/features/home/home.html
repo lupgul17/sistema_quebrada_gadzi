@@ -1,0 +1,17 @@
+<div class="home-container">
+  <header>
+    <h1>La Quebrada</h1>
+    <div class="usuario-info">
+      <span>Hola, {{ usuario()?.nombre }}</span>
+      <p-button label="Cerrar sesión" severity="secondary" size="small" (onClick)="logout()" />
+    </div>
+  </header>
+
+  <h2>Salones</h2>
+  <p class="hint">Esta lista viene de un endpoint protegido — si la ves, el login, el token y el guard están funcionando juntos.</p>
+  <ul>
+    @for (salon of salones(); track salon.id_salon) {
+      <li>{{ salon.nombre }} — {{ salon.locacion }} (capacidad {{ salon.capacidad }})</li>
+    }
+  </ul>
+</div>

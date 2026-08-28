@@ -1,0 +1,192 @@
+<style>
+#erd svg.erDiagram .divider path { stroke-opacity: 0.5; }
+#erd svg.erDiagram .row-rect-odd path,
+#erd svg.erDiagram .row-rect-odd rect,
+#erd svg.erDiagram .row-rect-even path,
+#erd svg.erDiagram .row-rect-even rect { stroke: none !important; }
+</style>
+<div id="erd"></div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const themeMode = document.documentElement.dataset.mode;
+const dark = themeMode ? themeMode === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"anthropic-sans", sans-serif',
+  themeVariables: {
+    darkMode: dark,
+    fontSize: '12px',
+    fontFamily: '"anthropic-sans", sans-serif',
+    lineColor: dark ? '#9c9a92' : '#73726c',
+    textColor: dark ? '#c2c0b6' : '#3d3d3a',
+  },
+});
+const src = `erDiagram
+  cliente ||--o{ evento : solicita
+  usuario ||--o{ cotizacion : vende
+  usuario ||--o{ pago : recibe
+  locacion ||--o{ salon : contiene
+  tipo_evento ||--o{ evento : clasifica
+  evento ||--o{ evento_salon : ocupa
+  salon ||--o{ evento_salon : asignado_a
+  evento ||--o{ cotizacion : tiene_versiones
+  evento ||--o{ pago : recibe_pagos
+  evento ||--o{ degustacion : agenda
+  evento ||--o{ recordatorio_enviado : recibe_recordatorios
+  cotizacion ||--o{ cotizacion_servicio : detalla
+  servicio ||--o{ cotizacion_servicio : referenciado_en
+  categoria_servicio ||--o{ servicio : agrupa
+  cotizacion ||--o{ cotizacion_menu : detalla
+  menu ||--o{ cotizacion_menu : referenciado_en
+  cotizacion_menu ||--o{ cotizacion_menu_componente : incluye
+  componente_menu ||--o{ cotizacion_menu_componente : elegido_en
+  categoria_componente_menu ||--o{ componente_menu : agrupa
+  menu ||--o{ menu_categoria_permitida : permite
+  categoria_componente_menu ||--o{ menu_categoria_permitida : permitida_en
+  degustacion ||--o{ degustacion_componente : incluye
+  componente_menu ||--o{ degustacion_componente : probado_en
+
+  cliente {
+    int id PK
+    string nombre
+    string correo
+  }
+  usuario {
+    int id PK
+    string nombre
+    string rol
+  }
+  locacion {
+    int id PK
+    string nombre
+  }
+  salon {
+    int id PK
+    int locacion_id FK
+    string nombre
+    int capacidad_maxima
+  }
+  tipo_evento {
+    int id PK
+    string nombre
+  }
+  evento {
+    int id PK
+    int cliente_id FK
+    int tipo_evento_id FK
+    date fecha
+    string estado
+  }
+  evento_salon {
+    int evento_id FK
+    int salon_id FK
+  }
+  cotizacion {
+    int id PK
+    int evento_id FK
+    int version
+    int vendedor_id FK
+    string estado
+  }
+  categoria_servicio {
+    int id PK
+    string nombre
+  }
+  servicio {
+    int id PK
+    int categoria_id FK
+    string nombre
+    decimal precio_base
+  }
+  cotizacion_servicio {
+    int id PK
+    int cotizacion_id FK
+    int servicio_id FK
+    int cantidad
+  }
+  categoria_componente_menu {
+    int id PK
+    string nombre
+  }
+  componente_menu {
+    int id PK
+    int categoria_id FK
+    string nombre
+    decimal recargo
+  }
+  menu {
+    int id PK
+    string nombre
+    string tipo
+    decimal precio_base
+  }
+  menu_categoria_permitida {
+    int id PK
+    int menu_id FK
+    int categoria_id FK
+    int cantidad_a_elegir
+  }
+  cotizacion_menu {
+    int id PK
+    int cotizacion_id FK
+    int menu_id FK
+    int cantidad_personas
+  }
+  cotizacion_menu_componente {
+    int id PK
+    int cotizacion_menu_id FK
+    int componente_menu_id FK
+  }
+  pago {
+    int id PK
+    int evento_id FK
+    decimal monto
+    string concepto
+    string estado_verificacion
+  }
+  recordatorio_enviado {
+    int id PK
+    int evento_id FK
+    string tipo_recordatorio
+  }
+  degustacion {
+    int id PK
+    int evento_id FK
+    date fecha
+    string estado
+  }
+  degustacion_componente {
+    int id PK
+    int degustacion_id FK
+    int componente_menu_id FK
+    string resultado
+  }`;
+const { svg } = await mermaid.render('erd-svg', src);
+document.getElementById('erd').innerHTML = svg;
+
+document.querySelectorAll('#erd svg.erDiagram .node').forEach(node => {
+  const firstPath = node.querySelector('path[d]');
+  if (!firstPath) return;
+  const d = firstPath.getAttribute('d');
+  const nums = d.match(/-?[\d.]+/g)?.map(Number);
+  if (!nums || nums.length < 8) return;
+  const xs = [nums[0], nums[2], nums[4], nums[6]];
+  const ys = [nums[1], nums[3], nums[5], nums[7]];
+  const x = Math.min(...xs), y = Math.min(...ys);
+  const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('x', x); rect.setAttribute('y', y);
+  rect.setAttribute('width', w); rect.setAttribute('height', h);
+  rect.setAttribute('rx', '8');
+  for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+    if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+  }
+  firstPath.replaceWith(rect);
+});
+
+document.querySelectorAll('#erd svg.erDiagram .row-rect-odd path, #erd svg.erDiagram .row-rect-even path').forEach(p => {
+  p.setAttribute('stroke', 'none');
+});
+</script>
