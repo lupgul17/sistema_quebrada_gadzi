@@ -1,0 +1,17 @@
+# Dependencias
+node_modules/
+
+# Builds
+dist/
+.angular/
+
+# Variables de entorno — nunca subir esto, tiene contraseñas y secretos
+.env
+.env.local
+
+# Logs
+*.log
+
+# Editor / SO
+.vscode/
+.DS_Store
