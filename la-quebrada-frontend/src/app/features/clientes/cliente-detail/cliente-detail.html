@@ -1,0 +1,31 @@
+@if (cliente(); as c) {
+  <div class="cliente-detail">
+    <div class="detail-header">
+      <p-button label="← Volver" severity="secondary" size="small" (onClick)="volver()" />
+      <p-button label="Editar" (onClick)="irAEditar()" />
+    </div>
+
+    <div class="detail-grid">
+      <div class="nombre-bar">
+        <h2>{{ nombreCompleto() }}</h2>
+      </div>
+
+      <p-card header="Datos de contacto" class="datos-card">
+        <div class="datos-grid">
+          <div><span class="label">Teléfono</span><span>{{ c.telefono || '—' }}</span></div>
+          <div><span class="label">Correo</span><span>{{ c.correo || '—' }}</span></div>
+          <div><span class="label">CUI/DPI</span><span>{{ c.cui || '—' }}</span></div>
+          <div><span class="label">NIT</span><span>{{ c.nit || '—' }}</span></div>
+        </div>
+      </p-card>
+
+      <p-card header="Pagos realizados" class="pagos-card">
+        <p class="placeholder">Próximamente — se conecta cuando esté listo el Módulo Pagos.</p>
+      </p-card>
+    </div>
+
+    <p-card header="Eventos de este cliente">
+      <p class="placeholder">Próximamente — se conecta cuando esté listo el Módulo Evento. Cotizaciones, degustaciones y extras se ven dentro de cada evento en particular, no acá.</p>
+    </p-card>
+  </div>
+}

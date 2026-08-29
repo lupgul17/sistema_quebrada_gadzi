@@ -1,0 +1,96 @@
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: #093509;
+  color: white;
+  display: flex;
+  flex-direction: column;
+
+  .sidebar-brand {
+    padding: 1.25rem 1rem;
+    font-weight: 700;
+    font-size: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 0;
+
+  a,
+  .nav-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    display: block;
+  }
+
+  .nav-item.active,
+  a.active {
+    background: rgba(255, 255, 255, 0.1);
+    font-weight: 600;
+  }
+
+  .nav-item.disabled {
+    color: rgba(255, 255, 255, 0.35);
+    cursor: default;
+  }
+}
+}
+
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--p-surface-200);
+  background-color: #093509;
+
+  h1 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: white;
+  }
+
+  .usuario-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: white;
+  }
+}
+
+.dashboard-grid {
+  flex: 1;
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  align-content: start;
+}
+
+.metric-placeholder {
+  color: var(--p-text-muted-color);
+  margin: 0;
+}
+.content-area {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}

@@ -1,0 +1,55 @@
+<div class="clientes-list">
+  <div class="toolbar">
+    <input
+      pInputText
+      type="text"
+      placeholder="Buscar por nombre, teléfono o CUI..."
+      [(ngModel)]="busqueda"
+      (ngModelChange)="onBusquedaChange($event)"
+      class="buscador"
+    />
+    <p-button label="+ Nuevo cliente" (onClick)="irANuevo()" />
+  </div>
+<div class="table-container">
+  <p-table #dt [value]="clientes()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
+   <ng-template pTemplate="header">
+  <tr>
+    <th>Nombre</th>
+    <th>Teléfono</th>
+    <th>Correo</th>
+    <th></th>
+  </tr>
+  <tr>
+    <th>
+      <input pInputText type="text" (input)="dt.filter($any($event.target).value, 'nombre_completo', 'contains')" placeholder="Filtrar nombre" class="filtro-columna" />
+    </th>
+    <th>
+      <input pInputText type="text" (input)="dt.filter($any($event.target).value, 'telefono', 'contains')" placeholder="Filtrar teléfono" class="filtro-columna" />
+    </th>
+    <th>
+      <input pInputText type="text" (input)="dt.filter($any($event.target).value, 'correo', 'contains')" placeholder="Filtrar correo" class="filtro-columna" />
+    </th>
+    <th></th>
+  </tr>
+</ng-template>
+   <ng-template pTemplate="body" let-cliente>
+  <tr>
+    <td>{{ nombreCompleto(cliente) }}</td>
+    <td>{{ cliente.telefono || '—' }}</td>
+    <td>{{ cliente.correo || '—' }}</td>
+    <td class="col-acciones">
+  <div class="acciones-wrapper">
+    <p-button icon="pi pi-eye" severity="info" size="small" (onClick)="irADetalle(cliente)" />
+    <p-button icon="pi pi-pencil" severity="secondary" size="small" [dt]="editarButtonTokens" (onClick)="irAEditar(cliente)" />
+  </div>
+</td>
+  </tr>
+</ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="3">No se encontraron clientes.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+  </div>
+</div>

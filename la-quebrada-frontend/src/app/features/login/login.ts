@@ -16,6 +16,24 @@ import { AuthService } from '../../core/auth.service';
   styleUrl: './login.scss',
 })
 export class Login {
+
+  //color boton
+readonly loginButtonTokens = {
+  colorScheme: {
+    light: {
+      root: {
+        primary: {
+          background: '#093509',
+          hoverBackground: '#0e500e',
+          activeBackground: '#072a07',
+          borderColor: '#093509',
+          color: '#ffffff'
+        },
+      },
+    },
+  },
+};
+
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
   readonly form;

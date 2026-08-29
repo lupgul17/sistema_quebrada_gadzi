@@ -1,0 +1,45 @@
+.clientes-list {
+  padding: 1.5rem;
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+
+  .buscador {
+    flex: 1;
+  }
+}
+
+  .fila-clickeable {
+    cursor: pointer;
+  }
+}
+.col-acciones {
+  width: 3rem;
+  text-align: center;
+}
+.filtro-columna {
+  width: 100%;
+  font-size: 0.85rem;
+}
+.table-container {
+  border: 1px solid var(--p-surface-200);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.col-acciones {
+  width: 5rem;
+  text-align: center;
+}
+
+.acciones-wrapper {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+}
+::ng-deep .p-paginator {
+  padding-top: 0;
+}

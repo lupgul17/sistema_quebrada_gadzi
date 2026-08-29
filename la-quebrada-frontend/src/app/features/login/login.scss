@@ -2,26 +2,38 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  background: var(--p-surface-100);
+  min-height: 98vh;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.10), rgba(0, 0, 0, 0.10)), url('/login-bg.jpg');
+  background-size: cover;
+  background-position: center;
 }
 
 .login-card {
+
   width: 100%;
   max-width: 380px;
   padding: 2.5rem;
-  background: var(--p-surface-0);
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 12px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  ::ng-deep {
+    --p-inputtext-background: white;
+    --p-inputtext-border-color: white;
+    --p-inputtext-color: #1a1a1a;
+    --p-inputtext-placeholder-color: rgba(26, 26, 26, 0.6);
+  }
 
   h1 {
     margin: 0 0 0.25rem;
     font-size: 1.5rem;
+    color: white;
   }
 
   .subtitle {
     margin: 0 0 1.5rem;
-    color: var(--p-text-muted-color);
+    color: white
   }
 
   .field {
@@ -33,6 +45,10 @@
     label {
       font-weight: 600;
       font-size: 0.9rem;
+      color: white;
     }
+
+    
   }
+  
 }

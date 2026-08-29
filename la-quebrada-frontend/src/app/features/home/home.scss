@@ -1,23 +1,12 @@
-.home-container {
-  max-width: 720px;
-  margin: 2rem auto;
-  padding: 0 1.5rem;
+.dashboard-grid {
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  align-content: start;
+}
 
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.5rem;
-
-    .usuario-info {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-  }
-
-  .hint {
-    color: var(--p-text-muted-color);
-    font-size: 0.9rem;
-  }
+.metric-placeholder {
+  color: var(--p-text-muted-color);
+  margin: 0;
 }

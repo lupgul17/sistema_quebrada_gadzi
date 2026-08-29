@@ -1,0 +1,28 @@
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">La Quebrada / GADZI</div>
+    <nav class="sidebar-nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
+      <a routerLink="/clientes" routerLinkActive="active">Clientes</a>
+      <span class="nav-item disabled">Eventos</span>
+      <span class="nav-item disabled">Pagos</span>
+      <span class="nav-item disabled">Servicios</span>
+      <span class="nav-item disabled">Menú</span>
+      <span class="nav-item disabled">Reportes</span>
+    </nav>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <h1>{{ tituloPagina() }}</h1>
+      <div class="usuario-info">
+        <span>Hola, {{ usuario()?.nombre }}</span>
+        <p-button label="Cerrar sesión" severity="secondary" size="small" (onClick)="logout()" />
+      </div>
+    </header>
+
+    <main class="content-area">
+      <router-outlet />
+    </main>
+  </div>
+</div>

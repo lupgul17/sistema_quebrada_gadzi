@@ -1,0 +1,49 @@
+<div class="cliente-form">
+  <h2>{{ esEdicion() ? 'Editar cliente' : 'Nuevo cliente' }}</h2>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="grid-2">
+      <div class="field">
+        <label for="primer_nombre">Primer nombre *</label>
+        <input pInputText id="primer_nombre" formControlName="primer_nombre" fluid />
+      </div>
+      <div class="field">
+        <label for="segundo_nombre">Segundo nombre</label>
+        <input pInputText id="segundo_nombre" formControlName="segundo_nombre" fluid />
+      </div>
+      <div class="field">
+        <label for="primer_apellido">Primer apellido *</label>
+        <input pInputText id="primer_apellido" formControlName="primer_apellido" fluid />
+      </div>
+      <div class="field">
+        <label for="segundo_apellido">Segundo apellido</label>
+        <input pInputText id="segundo_apellido" formControlName="segundo_apellido" fluid />
+      </div>
+      <div class="field">
+        <label for="cui">CUI/DPI</label>
+        <input pInputText id="cui" formControlName="cui" fluid />
+      </div>
+      <div class="field">
+        <label for="nit">NIT</label>
+        <input pInputText id="nit" formControlName="nit" fluid />
+      </div>
+      <div class="field">
+        <label for="telefono">Teléfono</label>
+        <input pInputText id="telefono" formControlName="telefono" fluid />
+      </div>
+      <div class="field">
+        <label for="correo">Correo</label>
+        <input pInputText id="correo" formControlName="correo" fluid />
+      </div>
+    </div>
+
+    @if (error()) {
+      <p-message severity="error" [text]="error()!" styleClass="w-full mb-3" />
+    }
+
+    <div class="acciones">
+      <p-button label="Cancelar" severity="secondary" type="button" (onClick)="cancelar()" />
+      <p-button label="Guardar" type="submit" [loading]="cargando()" [disabled]="cargando()" />
+    </div>
+  </form>
+</div>

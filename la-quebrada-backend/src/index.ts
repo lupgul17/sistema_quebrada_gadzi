@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { pool } from './db/pool.js';
 import salonesRouter from './routes/salones.routes.js';
 import authRouter from './routes/auth.routes.js';
+import clientesRouter from './routes/clientes.routes.js'
 import { requireAuth } from './middleware/auth.middleware.js';
 
 dotenv.config();
@@ -29,6 +30,8 @@ app.get('/api/health', async (_req, res) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/salones', requireAuth, salonesRouter);
+app.use('/api/clientes',requireAuth, clientesRouter);
+
 
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
