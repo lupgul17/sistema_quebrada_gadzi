@@ -36,25 +36,28 @@ router.post('/login', async (req, res) => {
     await pool.query('CALL sp_registrar_acceso($1::integer)', [usuario.id_usuario]);
 
     const token = jwt.sign(
-      {
-        id_usuario: usuario.id_usuario,
-        id_persona: usuario.id_persona,
-        username: usuario.username,
-        tipo_usuario: usuario.tipo_usuario,
-      },
-      process.env.JWT_SECRET as string,
-      { expiresIn: '8h' }
-    );
+  {
+    id_usuario: usuario.id_usuario,
+    id_persona: usuario.id_persona,
+    username: usuario.username,
+    tipo_usuario: usuario.tipo_usuario,
+    id_rol_acceso: usuario.id_rol_acceso,
+    rol_acceso: usuario.rol_acceso,
+  },
+  process.env.JWT_SECRET as string,
+  { expiresIn: '8h' }
+);
 
-    res.json({
-      token,
-      usuario: {
-        id_usuario: usuario.id_usuario,
-        username: usuario.username,
-        nombre: usuario.nombre_completo,
-        tipo_usuario: usuario.tipo_usuario,
-      },
-    });
+res.json({
+  token,
+  usuario: {
+    id_usuario: usuario.id_usuario,
+    username: usuario.username,
+    nombre: usuario.nombre_completo,
+    tipo_usuario: usuario.tipo_usuario,
+    rol_acceso: usuario.rol_acceso,
+  },
+});
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }

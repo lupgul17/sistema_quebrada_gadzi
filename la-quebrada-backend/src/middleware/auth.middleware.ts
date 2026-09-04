@@ -6,6 +6,8 @@ export interface UsuarioToken {
   id_persona: number;
   username: string;
   tipo_usuario: string;
+  id_rol_acceso: number | null;
+  rol_acceso: string | null;
 }
 
 export interface AuthRequest extends Request {
@@ -29,4 +31,14 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
   } catch {
     res.status(401).json({ error: 'Token inválido o expirado' });
   }
+}
+export function requireRole(...rolesPermitidos: string[]) {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    const rolUsuario = req.usuario?.rol_acceso?.toLowerCase();
+    if (!rolUsuario || !rolesPermitidos.map((r) => r.toLowerCase()).includes(rolUsuario)) {
+      res.status(403).json({ error: 'No tenés permiso para acceder a esto' });
+      return;
+    }
+    next();
+  };
 }
