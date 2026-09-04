@@ -1,10 +1,12 @@
-import { Component, computed } from '@angular/core';
+import { Component, computed,signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { Button } from 'primeng/button';
 import { AuthService } from '../auth.service';
 import {VisorArchivoDialog} from '../visor-archivo-dialog/visor-archivo-dialog';
+import { HttpClient } from '@angular/common/http';
+import { API_URL } from '../api-config';
 
 @Component({
   selector: 'app-shell',
@@ -17,12 +19,17 @@ export class Shell {
   readonly usuario;
   private readonly rutaActual;
   readonly tituloPagina;
+  readonly pagosPendientesCount = signal(0);
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {
     this.usuario = this.authService.usuario;
+    this.http.get<any[]>(`${API_URL}/pagos/pendientes`).subscribe((data) => {
+    this.pagosPendientesCount.set(data.length);
+  });
 
     this.rutaActual = toSignal(
       this.router.events.pipe(

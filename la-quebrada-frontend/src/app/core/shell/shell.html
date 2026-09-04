@@ -5,7 +5,12 @@
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
       <a routerLink="/clientes" routerLinkActive="active">Clientes</a>
       <a routerLink="/eventos" routerLinkActive="active">Eventos</a>
-      <a routerLink="/pagos" routerLinkActive="active">Pagos</a>
+      <a routerLink="/pagos" routerLinkActive="active" class="nav-item-con-badge">
+        Pagos
+        @if (pagosPendientesCount() > 0) {
+          <span class="badge-pendiente">{{ pagosPendientesCount() }}</span>
+        }
+      </a>
       <a routerLink="/servicios" routerLinkActive="active">Servicios</a>
       <a routerLink="/menu" routerLinkActive="active">Menú</a>
       <a routerLink="/degustaciones" routerLinkActive="active">Degustaciones</a>

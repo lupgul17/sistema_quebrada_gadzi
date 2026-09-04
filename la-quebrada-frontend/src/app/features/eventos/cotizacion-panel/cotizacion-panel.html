@@ -11,6 +11,13 @@
   </div>
 } @else {
   <div class="cotizacion-panel">
+    @if (descargandoPdf()) {
+      <div class="overlay-generando">
+        <p-progressSpinner strokeWidth="4" />
+        <p>Generando PDF...</p>
+      </div>
+    }
+
     @if (versiones().length > 1) {
       <div class="version-selector">
         @for (v of versiones(); track v.id_cotizacion) {
@@ -38,14 +45,15 @@
         <strong>Versión {{ cotizacion()!.version }}</strong>
         <span class="estado-badge" [class]="'estado-' + cotizacion()!.estado">{{ cotizacion()!.estado }}</span>
       </div>
-      @if (cotizacion()!.activa) {
-        <div class="header-acciones">
-          @for (opcion of opcionesEstado(); track opcion.estado) {
-            <p-button [label]="opcion.label" severity="secondary" size="small" [loading]="procesando()" (onClick)="cambiarEstado(opcion.estado)" />
-          }
+      <div class="header-acciones">
+        @for (opcion of opcionesEstado(); track opcion.estado) {
+          <p-button [label]="opcion.label" severity="secondary" size="small" [loading]="procesando()" (onClick)="cambiarEstado(opcion.estado)" />
+        }
+        <p-button label="Descargar PDF" icon="pi pi-file-pdf" severity="secondary" size="small" [loading]="descargandoPdf()" (onClick)="descargarPdf()" />
+        @if (cotizacion()!.activa) {
           <p-button label="Nueva versión" severity="secondary" size="small" [loading]="procesando()" (onClick)="crearCotizacion()" />
-        </div>
-      }
+        }
+      </div>
     </div>
 
     <div class="meta-info">
@@ -82,7 +90,7 @@
       }
       @if (cotizacion()!.activa) {
         <div class="agregar-linea">
-          <p-select [options]="menusDisponibles()" optionLabel="nombre" optionValue="id_menu" [(ngModel)]="menuSeleccionado" placeholder="Elegir menú..." fluid />
+          <p-select [options]="menusDisponibles()" optionLabel="nombre" optionValue="id_menu" [(ngModel)]="menuSeleccionado" placeholder="Elegir menú..." appendTo="body" fluid />
           <p-button label="Agregar" size="small" [disabled]="!menuSeleccionado" [loading]="procesando()" (onClick)="agregarMenu()" />
         </div>
       }
@@ -106,12 +114,12 @@
                 <td>Q{{ linea.precio_unitario_congelado }}</td>
                 <td>Q{{ linea.subtotal }}</td>
                 <td>
-                <span class="boton-con-badge">
+                  <span class="boton-con-badge">
                     <p-button icon="pi pi-percentage" severity="info" size="small" [text]="true" (onClick)="abrirDescuentos(linea)" />
                     @if (linea.tiene_descuento_pendiente) {
-                    <span class="badge-pendiente"></span>
+                      <span class="badge-pendiente"></span>
                     }
-                </span>
+                  </span>
                 </td>
                 @if (cotizacion()!.activa) {
                   <td><p-button icon="pi pi-trash" severity="danger" size="small" [text]="true" (onClick)="quitarServicio(linea.id_cotizacion_servicios)" /></td>
@@ -123,7 +131,7 @@
       }
       @if (cotizacion()!.activa) {
         <div class="agregar-linea">
-          <p-select [options]="serviciosDisponibles()" optionLabel="nombre" optionValue="id_servicio" [(ngModel)]="servicioSeleccionado" placeholder="Elegir servicio..." fluid />
+          <p-select [options]="serviciosDisponibles()" optionLabel="nombre" optionValue="id_servicio" [(ngModel)]="servicioSeleccionado" placeholder="Elegir servicio..." appendTo="body" fluid />
           <p-inputnumber [(ngModel)]="cantidadServicio" [min]="1" />
           <p-button label="Agregar" size="small" [disabled]="!servicioSeleccionado" [loading]="procesando()" (onClick)="agregarServicio()" />
         </div>
@@ -156,11 +164,11 @@
           </div>
           <div class="field">
             <label>Color de mantel</label>
-            <p-select [options]="coloresMantel()" optionLabel="descripcion" optionValue="id" [(ngModel)]="detalleForm.id_color_mantel" placeholder="Elegir..." fluid />
+            <p-select [options]="coloresMantel()" optionLabel="descripcion" optionValue="id" [(ngModel)]="detalleForm.id_color_mantel" placeholder="Elegir..." appendTo="body" fluid />
           </div>
           <div class="field">
             <label>Color de cubremanteles</label>
-            <p-select [options]="coloresCubremanteles()" optionLabel="descripcion" optionValue="id" [(ngModel)]="detalleForm.id_color_cubremanteles" placeholder="Elegir..." fluid />
+            <p-select [options]="coloresCubremanteles()" optionLabel="descripcion" optionValue="id" [(ngModel)]="detalleForm.id_color_cubremanteles" placeholder="Elegir..." appendTo="body" fluid />
           </div>
         </div>
         <div class="field field-full">
@@ -234,7 +242,7 @@
         <h5>Agregar descuento</h5>
         <div class="field">
           <label>Tipo</label>
-          <p-select [options]="tiposDescuento()" optionLabel="descripcion" optionValue="id_tipo_descuento" [(ngModel)]="descuentoForm.id_tipo_descuento" placeholder="Elegir..." fluid />
+          <p-select [options]="tiposDescuento()" optionLabel="descripcion" optionValue="id_tipo_descuento" [(ngModel)]="descuentoForm.id_tipo_descuento" placeholder="Elegir..." appendTo="body" fluid />
         </div>
         <div class="field field-checkbox">
           <p-checkbox [(ngModel)]="descuentoForm.modo" trueValue="porcentaje" falseValue="monto" [binary]="true" inputId="modoPct" />

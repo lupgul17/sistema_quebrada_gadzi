@@ -35,7 +35,15 @@ router.get('/disponibilidad-salones', async (req, res) => {
     res.status(500).json({ error: (err as Error).message });
   }
 });
-
+// GET /api/eventos/pendientes-pago
+router.get('/pendientes-pago', async (_req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM fn_eventos_pendientes_pago()');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
 // GET /api/eventos/:id
 router.get('/:id', async (req, res) => {
   try {

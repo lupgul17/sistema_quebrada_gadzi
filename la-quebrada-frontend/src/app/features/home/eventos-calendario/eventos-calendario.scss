@@ -1,0 +1,90 @@
+.calendario {
+  .calendario-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background: #093509;
+    color: white;
+    border-radius: 8px;
+    padding: 0.5rem;
+    margin-bottom: 0.75rem;
+
+    ::ng-deep .p-button-text {
+      color: white;
+    }
+
+    .mes-nombre {
+      font-weight: 600;
+      min-width: 140px;
+      text-align: center;
+      text-transform: capitalize;
+    }
+  }
+
+  .dias-semana {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--p-text-muted-color);
+    margin-bottom: 0.4rem;
+  }
+
+  .hint {
+    color: var(--p-text-muted-color);
+    text-align: center;
+  }
+
+  .grilla {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+
+  .celda {
+     min-height: 70px;
+    border: 1px solid #c2c8d0;
+    border-radius: 6px;
+    padding: 0.3rem;
+    font-size: 0.75rem;
+
+    &.fuera-de-mes {
+      opacity: 0.35;
+    }
+
+    &.hoy {
+      border-color: #093509;
+      border-width: 2px;
+    }
+
+    .numero-dia {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    .eventos-del-dia {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .evento-chip {
+      border-radius: 4px;
+      padding: 0.1rem 0.3rem;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .mas-eventos {
+      font-size: 0.68rem;
+      color: var(--p-text-muted-color);
+    }
+  }
+}

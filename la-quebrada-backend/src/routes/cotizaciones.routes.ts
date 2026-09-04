@@ -1,7 +1,20 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
+import puppeteer from 'puppeteer';
+import { armarHtmlCotizacion } from '../templates/cotizacion.template.js';
 
 const router = Router();
+
+// GET /api/cotizaciones/por-vencer?dias=3
+router.get('/por-vencer', async (req, res) => {
+  try {
+    const dias = req.query.dias ? Number(req.query.dias) : 3;
+    const result = await pool.query('SELECT * FROM fn_cotizaciones_proximas_vencer($1::integer)', [dias]);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
 
 // GET /api/cotizaciones/:id - detalle completo (header + líneas)
 router.get('/:id', async (req, res) => {
@@ -166,6 +179,66 @@ router.patch('/descuentos/:idDescuento', async (req, res) => {
     }
     await pool.query('CALL sp_resolver_descuento_servicio($1::integer, $2::varchar, $3::integer)', [req.params.idDescuento, estado, id_empleado ?? null]);
     res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+
+// GET /api/cotizaciones/:id/pdf
+router.get('/:id/pdf', async (req, res) => {
+  try {
+    const [detalleRes, menusRes, serviciosRes] = await Promise.all([
+      pool.query('SELECT * FROM fn_cotizacion_detalle($1::integer)', [req.params.id]),
+      pool.query('SELECT * FROM fn_cotizacion_menu_detalle($1::integer)', [req.params.id]),
+      pool.query('SELECT * FROM fn_cotizacion_servicios_detalle($1::integer)', [req.params.id]),
+    ]);
+
+    const cot = detalleRes.rows[0];
+    if (!cot) {
+      res.status(404).json({ error: 'Cotización no encontrada' });
+      return;
+    }
+
+    const eventoRes = await pool.query('SELECT * FROM fn_evento_detalle($1::integer)', [cot.id_evento]);
+    const evento = eventoRes.rows[0];
+
+    const html = armarHtmlCotizacion({
+      clienteNombre: evento?.cliente ?? '—',
+      clienteTelefono: evento?.telefono_cliente ?? null,
+      fechaCotizacion: new Date(cot.fecha_cotizacion).toLocaleDateString('es-GT'),
+      eventoTipo: evento?.tipo_evento ?? null,
+      eventoFecha: evento ? new Date(evento.fecha).toLocaleDateString('es-GT') : '—',
+      eventoSalones: evento?.salones ?? '—',
+      eventoLocacion: evento?.locaciones ?? 'La Quebrada',
+      version: cot.version,
+      vigenciaDias: cot.vigencia_dias,
+      vendedor: cot.vendedor,
+      menus: menusRes.rows.map((m) => ({ nombre: m.menu, precio: Number(m.precio_unitario_congelado), subtotal: Number(m.subtotal) })),
+      servicios: serviciosRes.rows.map((s) => ({ nombre: s.servicio, cantidad: s.cantidad, precio: Number(s.precio_unitario_congelado), subtotal: Number(s.subtotal) })),
+      subtotalMenus: Number(cot.subtotal_menus),
+      subtotalServicios: Number(cot.subtotal_servicios),
+      depositoGarantia: Number(cot.deposito_garantia),
+      totalDescuento: Number(cot.total_descuento),
+      total: Number(cot.total),
+      brindis: cot.brindis,
+      cantidadMesaPrincipal: cot.cantidad_mesa_principal,
+      cantidadMesasReservadas: cot.cantidad_mesas_reservadas,
+      colorMantel: cot.color_mantel,
+      colorCubremanteles: cot.color_cubremanteles,
+      boquitas: cot.boquitas,
+      observaciones: cot.observaciones,
+    });
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'domcontentloaded' });
+    const pdfBuffer = await page.pdf({ format: 'Letter', printBackground: true, margin: { top: '20px', bottom: '20px' } });
+    await browser.close();
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="cotizacion-v${cot.version}.pdf"`);
+    res.send(Buffer.from(pdfBuffer));
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }

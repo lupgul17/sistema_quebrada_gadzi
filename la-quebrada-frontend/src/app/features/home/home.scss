@@ -1,4 +1,7 @@
 .dashboard-grid {
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
   padding: 1.5rem;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -6,7 +9,59 @@
   align-content: start;
 }
 
+.tarjeta-calendario {
+  grid-column: 1 / -1;
+}
+
+::ng-deep .p-card {
+  border: 1px solid #c2c8d0;
+}
+
+::ng-deep {
+  .tarjeta-proximos {
+    border-left: 4px solid #093509;
+  }
+
+  .tarjeta-pendientes {
+    border-left: 4px solid #c0392b;
+  }
+
+  .tarjeta-vencer {
+    border-left: 4px solid #f39c12;
+  }
+}
+
 .metric-placeholder {
   color: var(--p-text-muted-color);
   margin: 0;
+}
+
+.lista-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.item-mini {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.4rem 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--p-surface-200);
+  cursor: pointer;
+  font-size: 0.85rem;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .item-sub {
+    color: var(--p-text-muted-color);
+    font-size: 0.8rem;
+  }
+}
+
+.saldo-alerta {
+  color: #c0392b !important;
+  font-weight: 600;
 }

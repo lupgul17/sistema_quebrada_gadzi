@@ -1,17 +1,50 @@
 <div class="dashboard-grid">
-  <p-card header="Calendario">
-    <p class="metric-placeholder">Próximamente</p>
+  <p-card header="Calendario" class="tarjeta-calendario">
+    <app-eventos-calendario />
   </p-card>
 
-  <p-card header="Eventos próximos">
-    <p class="metric-placeholder">Próximamente</p>
+  <p-card header="Eventos próximos" class="tarjeta-proximos">
+    @if (eventosProximos().length === 0) {
+      <p class="metric-placeholder">Sin eventos próximos.</p>
+    } @else {
+      <div class="lista-mini">
+        @for (e of eventosProximos(); track e.id_evento) {
+          <div class="item-mini" [style.border-left]="'3px solid ' + colorLocacion(e.locaciones)" (click)="irAEvento(e.id_evento)">
+            <span>{{ e.fecha | date: 'dd/MM' }} — {{ e.cliente }}</span>
+            <span class="item-sub">{{ e.tipo_evento || 'Evento' }}</span>
+          </div>
+        }
+      </div>
+    }
   </p-card>
 
-  <p-card header="Eventos pendientes de pago">
-    <p class="metric-placeholder">Próximamente</p>
+  <p-card header="Eventos pendientes de pago" class="tarjeta-pendientes">
+    @if (eventosPendientesPago().length === 0) {
+      <p class="metric-placeholder">Todo al día. 🎉</p>
+    } @else {
+      <div class="lista-mini">
+        @for (e of eventosPendientesPago(); track e.id_evento) {
+          <div class="item-mini" (click)="irAEvento(e.id_evento)">
+            <span>{{ e.fecha | date: 'dd/MM' }} — {{ e.cliente }}</span>
+            <span class="item-sub saldo-alerta">Saldo: Q{{ e.saldo_pendiente }} ({{ e.porcentaje_pagado * 100 | number: '1.0-0' }}% pagado)</span>
+          </div>
+        }
+      </div>
+    }
   </p-card>
 
-  <p-card header="Cotizaciones por vencer">
-    <p class="metric-placeholder">Próximamente</p>
+  <p-card header="Cotizaciones por vencer" class="tarjeta-vencer">
+    @if (cotizacionesPorVencer().length === 0) {
+      <p class="metric-placeholder">Ninguna por vencer en los próximos días.</p>
+    } @else {
+      <div class="lista-mini">
+        @for (c of cotizacionesPorVencer(); track c.id_cotizacion) {
+          <div class="item-mini" (click)="irAEvento(c.id_evento)">
+            <span>{{ c.cliente }}</span>
+            <span class="item-sub">Vence en {{ c.dias_restantes }} día(s)</span>
+          </div>
+        }
+      </div>
+    }
   </p-card>
 </div>

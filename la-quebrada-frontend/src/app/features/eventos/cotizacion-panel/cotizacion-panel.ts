@@ -8,6 +8,7 @@ import { Checkbox } from 'primeng/checkbox';
 import { Textarea } from 'primeng/textarea';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
+import { ProgressSpinner } from 'primeng/progressspinner';
 import { API_URL } from '../../../core/api-config';
 
 interface CotizacionResumen {
@@ -102,7 +103,7 @@ const SIGUIENTE_ESTADO_COTIZACION: Record<string, { estado: string; label: strin
 @Component({
   selector: 'app-cotizacion-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, Select, InputNumber, Checkbox, Textarea, Button, Dialog],
+  imports: [CommonModule, FormsModule, Select, InputNumber, Checkbox, Textarea, Button, Dialog, ProgressSpinner],
   templateUrl: './cotizacion-panel.html',
   styleUrl: './cotizacion-panel.scss',
 })
@@ -114,6 +115,7 @@ export class CotizacionPanel implements OnInit {
   readonly cargandoInicial = signal(true);
   readonly procesando = signal(false);
   readonly guardandoDetalles = signal(false);
+  readonly descargandoPdf = signal(false);
   readonly menusDisponibles = signal<MenuOpcion[]>([]);
   readonly serviciosDisponibles = signal<ServicioOpcion[]>([]);
   readonly coloresMantel = signal<ColorOpcion[]>([]);
@@ -213,6 +215,20 @@ export class CotizacionPanel implements OnInit {
     this.http.put(`${API_URL}/cotizaciones/${this.cotizacion()!.id_cotizacion}`, this.detalleForm).subscribe(() => {
       this.guardandoDetalles.set(false);
       this.cargarDetalle(this.cotizacion()!.id_cotizacion);
+    });
+  }
+
+  descargarPdf(): void {
+    if (!this.cotizacion()) return;
+    this.descargandoPdf.set(true);
+    this.http.get(`${API_URL}/cotizaciones/${this.cotizacion()!.id_cotizacion}/pdf`, { responseType: 'blob' }).subscribe((blob) => {
+      this.descargandoPdf.set(false);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cotizacion-v${this.cotizacion()!.version}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
     });
   }
 

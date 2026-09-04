@@ -1,0 +1,33 @@
+<div class="calendario">
+  <div class="calendario-header">
+    <p-button icon="pi pi-chevron-left" severity="secondary" size="small" [text]="true" (onClick)="mesAnterior()" />
+    <span class="mes-nombre">{{ nombreMes() }}</span>
+    <p-button icon="pi pi-chevron-right" severity="secondary" size="small" [text]="true" (onClick)="mesSiguiente()" />
+  </div>
+
+  <div class="dias-semana">
+    @for (d of diasSemana; track d) {
+      <span>{{ d }}</span>
+    }
+  </div>
+
+  @if (cargando()) {
+    <p class="hint">Cargando...</p>
+  } @else {
+    <div class="grilla">
+      @for (celda of celdas(); track celda.fecha.getTime()) {
+        <div class="celda" [class.fuera-de-mes]="!celda.esDelMesActual" [class.hoy]="celda.esHoy">
+          <span class="numero-dia">{{ celda.numeroDia }}</span>
+          <div class="eventos-del-dia">
+            @for (ev of celda.eventos.slice(0, 2); track ev.id_evento) {
+              <div class="evento-chip" [style.background]="colorEvento(ev) + '22'" [style.color]="colorEvento(ev)" (click)="irAEvento(ev.id_evento)">{{ ev.cliente }}</div>
+            }
+            @if (celda.eventos.length > 2) {
+              <div class="mas-eventos">+{{ celda.eventos.length - 2 }} más</div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
