@@ -1,0 +1,119 @@
+.evento-form {
+  width: calc(100% - 2rem);
+  box-sizing: border-box;
+  margin: 1rem auto;
+  padding: 1.5rem;
+  max-width: 900px;
+  border: 1px solid var(--p-surface-200);
+  border-radius: 12px;
+
+  h2 {
+    margin-top: 0;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+
+    label {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+  }
+
+  .field-notas {
+    margin-bottom: 1.5rem;
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 2.5rem;
+
+    .checkbox-label {
+      font-weight: 400;
+      font-size: 0.85rem;
+    }
+  }
+
+  .salones-section {
+    margin-bottom: 1.5rem;
+
+    .salones-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+
+      label {
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+    }
+
+    .hint {
+      color: var(--p-text-muted-color);
+      font-size: 0.9rem;
+    }
+
+    .salones-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+
+    .salon-card {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.75rem;
+      border: 1px solid var(--p-surface-200);
+      border-radius: 8px;
+      cursor: pointer;
+
+      strong {
+        display: block;
+        font-size: 0.9rem;
+      }
+
+      .salon-meta {
+        display: block;
+        font-size: 0.78rem;
+        color: var(--p-text-muted-color);
+      }
+
+      .no-disponible-tag {
+        display: inline-block;
+        margin-top: 0.25rem;
+        font-size: 0.72rem;
+        color: #c0392b;
+        font-weight: 600;
+      }
+
+      &.seleccionado {
+        border-color: #093509;
+        background: rgba(9, 53, 9, 0.05);
+      }
+
+      &.no-disponible {
+        cursor: default;
+        opacity: 0.55;
+      }
+    }
+  }
+
+  .acciones {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+  }
+}

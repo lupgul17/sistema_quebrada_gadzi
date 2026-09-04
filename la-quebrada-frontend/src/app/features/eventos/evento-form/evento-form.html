@@ -1,0 +1,117 @@
+<div class="evento-form">
+  <h2>{{ esEdicion() ? 'Editar evento' : 'Nuevo evento' }}</h2>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="grid-3">
+      <div class="field">
+        <label for="id_cliente">Cliente *</label>
+        <p-select
+          id="id_cliente"
+          formControlName="id_cliente"
+          [options]="clientes()"
+          optionLabel="nombre_completo"
+          optionValue="id_cliente"
+          placeholder="Seleccioná un cliente"
+          filter
+          fluid
+        />
+      </div>
+
+      <div class="field">
+        <label for="id_tipo_evento">Tipo de evento</label>
+        <p-select
+          id="id_tipo_evento"
+          formControlName="id_tipo_evento"
+          [options]="tiposEvento()"
+          optionLabel="descripcion"
+          optionValue="id_tipo_evento"
+          placeholder="Seleccioná un tipo"
+          fluid
+        />
+      </div>
+
+      <div class="field">
+        <label>Reserva temporal</label>
+        <div class="checkbox-row">
+          <p-checkbox formControlName="reserva_temporal" [binary]="true" inputId="reserva_temporal" />
+          <label for="reserva_temporal" class="checkbox-label">Sí, apartar la fecha mientras decide</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="fecha">Fecha *</label>
+        <p-datepicker id="fecha" formControlName="fecha" dateFormat="dd/mm/yy" fluid />
+      </div>
+
+      <div class="field">
+        <label for="hora_inicio">Hora inicio *</label>
+        <p-datepicker id="hora_inicio" formControlName="hora_inicio" [timeOnly]="true" fluid />
+      </div>
+
+      <div class="field">
+        <label for="hora_fin">Hora fin *</label>
+        <p-datepicker id="hora_fin" formControlName="hora_fin" [timeOnly]="true" fluid />
+      </div>
+
+      <div class="field">
+        <label for="total_adultos">Adultos</label>
+        <p-inputnumber id="total_adultos" formControlName="total_adultos" [min]="0" fluid />
+      </div>
+
+      <div class="field">
+        <label for="total_menores">Niños</label>
+        <p-inputnumber id="total_menores" formControlName="total_menores" [min]="0" fluid />
+      </div>
+    </div>
+
+    <div class="field field-notas">
+      <label for="notas">Notas</label>
+      <textarea pTextarea id="notas" formControlName="notas" rows="3" fluid></textarea>
+    </div>
+
+    <div class="salones-section">
+      <div class="salones-header">
+        <label>Salón(es) *</label>
+        <p-button label="Consultar disponibilidad" severity="secondary" size="small" type="button" (onClick)="consultarDisponibilidad()" />
+      </div>
+
+      @if (salones().length === 0) {
+        <p class="hint">Elegí fecha y horario, después consultá disponibilidad.</p>
+      } @else {
+        <div class="salones-grid">
+          @for (salon of salones(); track salon.id_salon) {
+            <div
+              class="salon-card"
+              [class.seleccionado]="salonSeleccionado(salon.id_salon)"
+              [class.no-disponible]="!salon.disponible"
+              (click)="salon.disponible && toggleSalon(salon.id_salon)"
+            >
+              <p-checkbox
+                [binary]="true"
+                [ngModel]="salonSeleccionado(salon.id_salon)"
+                [ngModelOptions]="{ standalone: true }"
+                [disabled]="!salon.disponible"
+              />
+              <div>
+                <strong>{{ salon.nombre }}</strong>
+                <span class="salon-meta">{{ salon.locacion }} — cap. {{ salon.capacidad }}</span>
+                @if (!salon.disponible) {
+                  <span class="no-disponible-tag">No disponible</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    @if (error()) {
+      <p-message severity="error" [text]="error()!" styleClass="w-full mb-3" />
+    }
+
+    <div class="acciones">
+      <p-button label="Cancelar" severity="secondary" type="button" (onClick)="cancelar()" />
+      <p-button label="Guardar" type="submit" [loading]="cargando()" [disabled]="cargando()" />
+    </div>
+  </form>
+</div>

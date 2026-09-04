@@ -4,11 +4,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { Button } from 'primeng/button';
 import { AuthService } from '../auth.service';
+import {VisorArchivoDialog} from '../visor-archivo-dialog/visor-archivo-dialog';
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, Button],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, Button, VisorArchivoDialog],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })
@@ -35,6 +36,11 @@ export class Shell {
       const ruta = this.rutaActual();
       if (ruta === '/') return 'Inicio';
       if (ruta?.startsWith('/clientes')) return 'Clientes';
+      if (ruta?.startsWith('/eventos')) return 'Eventos';
+      if (ruta?.startsWith('/servicios')) return 'Servicios';
+      if (ruta?.startsWith('/menu')) return 'Menú';
+      if (ruta?.startsWith('/pagos')) return 'Pagos';
+      if (ruta?.startsWith('/degustaciones')) return 'Degustaciones';
       return '';
     });
   }

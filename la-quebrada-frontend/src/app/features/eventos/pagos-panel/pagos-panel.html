@@ -1,0 +1,96 @@
+@if (cargando()) {
+  <p class="hint">Cargando...</p>
+} @else {
+  <div class="pagos-panel">
+    @if (saldo(); as s) {
+      <div class="saldo-resumen">
+        <div class="barra-progreso">
+          <div class="barra-relleno" [style.width.%]="s.porcentaje_pagado * 100 > 100 ? 100 : s.porcentaje_pagado * 100"></div>
+        </div>
+        <div class="saldo-cifras">
+          <div><span class="label">Total a pagar</span><span>Q{{ s.total_a_pagar }}</span></div>
+          <div><span class="label">Pagado</span><span>Q{{ s.total_pagado }} ({{ s.porcentaje_pagado * 100 | number: '1.0-0' }}%)</span></div>
+          <div><span class="label">Saldo pendiente</span><span [class.saldo-cero]="s.saldo_pendiente <= 0">Q{{ s.saldo_pendiente }}</span></div>
+        </div>
+      </div>
+    }
+
+    <div class="seccion-lineas">
+      <h4>Historial de pagos</h4>
+      @if (pagos().length === 0) {
+        <p class="hint">Sin pagos registrados todavía.</p>
+      } @else {
+        <table class="tabla-lineas">
+          <thead>
+            <tr><th>Fecha</th><th>Concepto</th><th>Tipo</th><th>Monto</th><th>Estado</th><th>Comprobante</th><th>Registrado por</th></tr>
+          </thead>
+          <tbody>
+            @for (p of pagos(); track p.id_pago) {
+              <tr>
+                <td>{{ p.fecha_pago | date: 'dd/MM/yyyy' }}</td>
+                <td class="capitalize">{{ p.concepto }}</td>
+                <td>{{ p.tipo_pago }}</td>
+                <td>Q{{ p.monto }}</td>
+                <td><span class="estado-badge" [class]="'estado-' + p.estado">{{ p.estado }}</span></td>
+                <td>{{ p.empleado || '—' }}</td>
+                <td>
+                  @if (p.path_comprobante) {
+                    <p-button icon="pi pi-eye" severity="info" size="small" [text]="true" (onClick)="verComprobante(p.path_comprobante)" />
+                  } @else {
+                    —
+                  }
+                </td>
+              </tr>
+              @if (p.estado === 'rechazado' && p.motivo_rechazo) {
+                <tr class="fila-motivo">
+                  <td colspan="7"><strong>Motivo:</strong> {{ p.motivo_rechazo }}</td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <div class="seccion-lineas">
+      <h4>Registrar pago</h4>
+      <div class="registrar-form">
+        <div class="field">
+          <label>Fecha</label>
+          <p-datepicker [(ngModel)]="pagoForm.fecha_pago" dateFormat="dd/mm/yy" fluid />
+        </div>
+        <div class="field">
+          <label>Monto (Q)</label>
+          <p-inputnumber [(ngModel)]="pagoForm.monto" mode="decimal" [minFractionDigits]="2" [min]="0" fluid />
+        </div>
+        <div class="field">
+          <label>Tipo de pago</label>
+          <p-select [options]="tiposPago()" optionLabel="descripcion" optionValue="id_tipo_pago" [(ngModel)]="pagoForm.id_tipo_pago" placeholder="Elegir..." fluid />
+        </div>
+        <div class="field">
+          <label>Concepto</label>
+          <p-select [options]="conceptos" optionLabel="label" optionValue="value" [(ngModel)]="pagoForm.concepto" fluid />
+        </div>
+        <div class="field field-full">
+          <label>Notas</label>
+          <textarea pTextarea [(ngModel)]="pagoForm.notas" rows="2" fluid placeholder="Referencia, número de transferencia..."></textarea>
+        </div>
+        <div class="field field-full">
+          <label>Comprobante (opcional)</label>
+          <input #inputArchivo type="file" accept="image/*,.pdf" (change)="onArchivoSeleccionado($event)" class="input-archivo-oculto" />
+          <p-button
+            [label]="archivoComprobante ? archivoComprobante.name : 'Seleccionar archivo'"
+            icon="pi pi-paperclip"
+            severity="secondary"
+            size="small"
+            type="button"
+            (onClick)="abrirSelectorArchivo()"
+          />
+        </div>
+        
+        <p-button label="Registrar pago" [loading]="registrando()" [disabled]="!pagoForm.monto || !pagoForm.id_tipo_pago" (onClick)="registrarPago()" />
+      </div>
+      
+    </div>
+  </div>
+}

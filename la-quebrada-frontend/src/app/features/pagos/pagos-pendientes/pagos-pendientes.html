@@ -1,0 +1,60 @@
+<div class="pagos-pendientes">
+  @if (cargando()) {
+    <p class="hint">Cargando...</p>
+  } @else if (pagos().length === 0) {
+    <p class="hint">No hay pagos pendientes de verificar. 🎉</p>
+  } @else {
+    <div class="table-container">
+      <table class="tabla-pendientes">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Evento</th>
+            <th>Fecha de pago</th>
+            <th>Concepto</th>
+            <th>Tipo</th>
+            <th>Monto</th>
+            <th>Origen</th>
+            <th>Comprobante</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of pagos(); track p.id_pago) {
+            <tr>
+              <td class="link-cliente" (click)="irAEvento(p.id_evento)">{{ p.cliente }}</td>
+              <td>{{ p.fecha_evento | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ p.fecha_pago | date: 'dd/MM/yyyy' }}</td>
+              <td class="capitalize">{{ p.concepto }}</td>
+              <td>{{ p.tipo_pago }}</td>
+              <td>Q{{ p.monto }}</td>
+              <td class="capitalize">{{ p.origen }}</td>
+              <td>
+                @if (p.path_comprobante) {
+                  <p-button icon="pi pi-eye" severity="info" size="small" [text]="true" (onClick)="verComprobante(p.path_comprobante)" />
+                } @else {
+                  —
+                }
+              </td>
+              <td class="col-acciones">
+                <div class="acciones-wrapper">
+                  <p-button icon="pi pi-check" severity="success" size="small" [loading]="procesandoId() === p.id_pago" (onClick)="resolver(p.id_pago, 'verificado')" />
+                  <p-button icon="pi pi-times" severity="danger" size="small" [loading]="procesandoId() === p.id_pago" (onClick)="resolver(p.id_pago, 'rechazado')" />
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  <p-dialog header="Motivo del rechazo" [(visible)]="dialogoRechazoVisible" [modal]="true" [style]="{ width: '420px' }">
+  @if (pagoARechazar(); as pago) {
+    <p class="hint">Rechazando el pago de Q{{ pago.monto }} de {{ pago.cliente }}.</p>
+    <textarea pTextarea [(ngModel)]="motivoRechazo" rows="3" fluid placeholder="Ej: nunca llegó el depósito, el comprobante es falso..."></textarea>
+    <div class="dialog-acciones">
+      <p-button label="Cancelar" severity="secondary" (onClick)="dialogoRechazoVisible.set(false)" />
+      <p-button label="Confirmar rechazo" severity="danger" [disabled]="!motivoRechazo.trim()" (onClick)="confirmarRechazo()" />
+    </div>
+  }
+</p-dialog>
+</div>

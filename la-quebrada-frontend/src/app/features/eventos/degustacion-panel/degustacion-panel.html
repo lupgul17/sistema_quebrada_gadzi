@@ -1,0 +1,112 @@
+@if (cargando()) {
+  <p class="hint">Cargando...</p>
+} @else if (degustaciones().length === 0) {
+  <div class="sin-degustacion">
+    <p class="hint">Este evento todavía no tiene ninguna degustación agendada.</p>
+    <p-button label="Agendar degustación" (onClick)="abrirAgendar()" />
+  </div>
+} @else {
+  <div class="degustacion-panel">
+    @if (degustaciones().length > 1) {
+      <div class="version-selector">
+        @for (d of degustaciones(); track d.id_degustacion) {
+          <button
+            type="button"
+            class="version-pill"
+            [class.seleccionada]="degustacionSeleccionada() === d.id_degustacion"
+            (click)="seleccionar(d.id_degustacion)"
+          >
+            {{ d.fecha | date: 'dd/MM/yyyy' }} · {{ d.estado }}
+          </button>
+        }
+      </div>
+    }
+
+    @if (degustacionActual(); as d) {
+      <div class="panel-header">
+        <div>
+          <strong>{{ d.fecha | date: 'dd/MM/yyyy' }} — {{ d.hora_inicio.substring(0,5) }}</strong>
+          @if (d.hora_llegada) {
+            <span class="hora-llegada">Llega: {{ d.hora_llegada.substring(0,5) }}</span>
+          }
+          <span class="estado-badge" [class]="'estado-' + d.estado">{{ d.estado }}</span>
+        </div>
+        <div class="header-acciones">
+          @for (opcion of opcionesEstado(); track opcion.estado) {
+            <p-button [label]="opcion.label" severity="secondary" size="small" [loading]="procesando()" (onClick)="cambiarEstado(opcion.estado)" />
+          }
+          <p-button label="Agendar otra" severity="secondary" size="small" (onClick)="abrirAgendar()" />
+        </div>
+      </div>
+
+      @if (d.notas) {
+        <p class="notas"><strong>Notas:</strong> {{ d.notas }}</p>
+      }
+
+      <div class="seccion-lineas">
+        <h4>Menús probados</h4>
+        @if (menusDegustados().length === 0) {
+          <p class="hint">Sin menús cargados todavía.</p>
+        } @else {
+          <table class="tabla-lineas">
+            <thead>
+              <tr><th>Menú</th><th>Tipo</th><th>Resultado</th><th></th></tr>
+            </thead>
+            <tbody>
+              @for (m of menusDegustados(); track m.id_degustacion_menu) {
+                <tr>
+                  <td>{{ m.menu }}</td>
+                  <td>{{ m.tipo_menu }}</td>
+                  <td><span class="estado-badge" [class]="'estado-' + m.resultado">{{ m.resultado }}</span></td>
+                  <td class="col-acciones">
+                    <div class="acciones-wrapper">
+                        @if (m.resultado === 'pendiente') {
+                        <p-button icon="pi pi-check" severity="success" size="small" [text]="true" (onClick)="resolverMenu(m.id_degustacion_menu, 'aprobado')" />
+                        <p-button icon="pi pi-times" severity="danger" size="small" [text]="true" (onClick)="resolverMenu(m.id_degustacion_menu, 'rechazado')" />
+                        }
+                    </div>
+                    </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+        <div class="agregar-linea">
+          <p-select [options]="menusDisponibles()" optionLabel="nombre" optionValue="id_menu" [(ngModel)]="menuParaAgregar" placeholder="Elegir menú a probar..." appendTo="body" fluid />
+          <p-button label="Agregar" size="small" [disabled]="!menuParaAgregar" [loading]="procesando()" (onClick)="agregarMenu()" />
+        </div>
+      </div>
+    }
+  </div>
+}
+
+<p-dialog header="Agendar degustación" [(visible)]="dialogoAgendarVisible" [modal]="true" [style]="{ width: '420px' }">
+  <div class="field">
+    <label>Fecha disponible</label>
+    <p-select
+      [options]="fechasDisponibles()"
+      optionLabel="label"
+      optionValue="id_fecha_degustacion"
+      [(ngModel)]="fechaElegida"
+      placeholder="Elegir fecha..."
+      appendTo="body"
+      fluid
+    >
+      <ng-template let-f pTemplate="item">
+        {{ f.fecha | date: 'dd/MM/yyyy' }} {{ f.hora_inicio.substring(0,5) }} — {{ f.estado }} ({{ f.eventos_agendados }} agendados)
+      </ng-template>
+    </p-select>
+  </div>
+  <div class="field">
+    <label>Hora estimada de llegada</label>
+    <p-datepicker [(ngModel)]="horaLlegada" [timeOnly]="true" appendTo="body" fluid />
+  </div>
+  <div class="field">
+    <label>Notas</label>
+    <textarea pTextarea [(ngModel)]="notasAgendar" rows="2" fluid placeholder="Observaciones..."></textarea>
+  </div>
+  <div class="dialog-acciones">
+    <p-button label="Cancelar" severity="secondary" (onClick)="dialogoAgendarVisible.set(false)" />
+    <p-button label="Confirmar" [disabled]="!fechaElegida" [loading]="procesando()" (onClick)="confirmarAgendar()" />
+  </div>
+</p-dialog>

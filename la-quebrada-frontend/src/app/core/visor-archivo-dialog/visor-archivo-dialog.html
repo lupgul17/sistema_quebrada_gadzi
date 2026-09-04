@@ -1,0 +1,13 @@
+<p-dialog [header]="visor.titulo()" [(visible)]="visor.visible" [modal]="true" [style]="{ width: '600px' }" (onHide)="visor.cerrar()">
+  <div class="visor-contenido">
+    @if (visor.cargando()) {
+      <p class="hint">Cargando...</p>
+    } @else if (visor.url(); as url) {
+      @if (visor.esPdf()) {
+        <iframe [src]="url" width="100%" height="500" style="border: none;"></iframe>
+      } @else {
+        <img [src]="url" alt="Archivo" class="visor-imagen" />
+      }
+    }
+  </div>
+</p-dialog>

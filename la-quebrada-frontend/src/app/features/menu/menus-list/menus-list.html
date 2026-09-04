@@ -1,0 +1,113 @@
+<div class="menus-list">
+  <div class="toolbar">
+    <p-select
+      [options]="tiposMenu()"
+      optionLabel="descripcion"
+      optionValue="id_tipo_menu"
+      [(ngModel)]="tipoFiltro"
+      (onChange)="cargarMenus()"
+      placeholder="Todos los tipos"
+      [showClear]="true"
+    />
+    <span class="spacer"></span>
+    <p-button label="+ Nuevo menú" (onClick)="abrirNuevo()" />
+  </div>
+
+  <div class="table-container">
+    <p-table [value]="menus()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Tipo</th>
+          <th>Nombre</th>
+          <th>Precio</th>
+          <th>Componentes</th>
+          <th>Activo</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-menu>
+        <tr>
+          <td>{{ menu.tipo_menu }}</td>
+          <td>{{ menu.nombre }}</td>
+          <td>Q{{ menu.precio_base }}</td>
+          <td class="col-componentes">{{ menu.componentes || '—' }}</td>
+          <td>{{ menu.activo ? 'Sí' : 'No' }}</td>
+          <td class="col-acciones">
+            <div class="acciones-wrapper">
+              <p-button icon="pi pi-pencil" severity="secondary" size="small" (onClick)="abrirEditar(menu)" />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="6">No hay menús armados todavía.</td></tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <p-dialog
+  [header]="editandoId() ? 'Editar menú' : 'Nuevo menú'"
+  [(visible)]="dialogoVisible"
+  [modal]="true"
+  [style]="{ width: '650px', maxHeight: '85vh' }"
+  [contentStyle]="{ overflow: 'visible' }"
+>
+    <form [formGroup]="form" (ngSubmit)="guardar()">
+      <div class="grid-2">
+        <div class="field">
+          <label for="nombre">Nombre *</label>
+          <input pInputText id="nombre" formControlName="nombre" fluid />
+        </div>
+        <div class="field">
+          <label for="tipo">Tipo *</label>
+          <p-select id="tipo" formControlName="id_tipo_menu" [options]="tiposMenu()" optionLabel="descripcion" optionValue="id_tipo_menu" fluid />
+        </div>
+        <div class="field">
+          <label for="precio_base">Precio (Q) *</label>
+          <p-inputnumber id="precio_base" formControlName="precio_base" mode="decimal" [minFractionDigits]="2" fluid />
+        </div>
+        <div class="field">
+          <label for="unidad_medida">Unidad *</label>
+          <input pInputText id="unidad_medida" formControlName="unidad_medida" fluid />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="descripcion">Descripción</label>
+        <textarea pTextarea id="descripcion" formControlName="descripcion" rows="2" fluid></textarea>
+      </div>
+
+      <div class="field field-checkbox">
+        <p-checkbox formControlName="activo" [binary]="true" inputId="activo" />
+        <label for="activo">Activo</label>
+      </div>
+
+     <div class="field">
+  <label>Componentes</label>
+  @for (grupo of grupos(); track grupo.categoria) {
+    <div class="categoria-select">
+      <span class="categoria-label">{{ grupo.categoria }}</span>
+      <p-multiselect
+        [formControl]="getControl(grupo.categoria)"
+        [options]="grupo.componentes"
+        optionLabel="nombre"
+        optionValue="id_componente"
+        display="chip"
+        placeholder="Elegir..."
+        fluid
+      />
+    </div>
+  }
+</div>
+
+      @if (error()) {
+        <p-message severity="error" [text]="error()!" styleClass="w-full mb-3" />
+      }
+
+      <div class="dialog-acciones">
+        <p-button label="Cancelar" severity="secondary" type="button" (onClick)="cerrarDialogo()" />
+        <p-button label="Guardar" type="submit" [loading]="guardando()" [disabled]="guardando()" />
+      </div>
+    </form>
+  </p-dialog>
+</div>

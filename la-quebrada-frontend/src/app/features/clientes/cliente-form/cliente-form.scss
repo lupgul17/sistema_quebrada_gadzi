@@ -1,6 +1,11 @@
 .cliente-form {
+  width: calc(100% - 2rem);
+  box-sizing: border-box;
+  margin: 1rem auto;
   padding: 1.5rem;
   max-width: 700px;
+  border: 1px solid var(--p-surface-200);
+  border-radius: 12px;
 
   h2 {
     margin-top: 0;

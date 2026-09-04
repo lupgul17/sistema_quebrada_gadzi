@@ -1,0 +1,49 @@
+<div class="eventos-list">
+  <div class="toolbar">
+    <p-select [options]="estados" optionLabel="label" optionValue="value" [(ngModel)]="estadoFiltro" (onChange)="cargarEventos()" placeholder="Estado" />
+    <p-datepicker [(ngModel)]="fechaDesde" (onSelect)="cargarEventos()" placeholder="Desde" dateFormat="dd/mm/yy" />
+    <p-datepicker [(ngModel)]="fechaHasta" (onSelect)="cargarEventos()" placeholder="Hasta" dateFormat="dd/mm/yy" />
+    <span class="spacer"></span>
+    <p-button label="+ Nuevo evento" (onClick)="irANuevo()" />
+  </div>
+
+  <div class="table-container">
+    <p-table [value]="eventos()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Fecha</th>
+            <th>Hora inicio</th>
+            <th>Hora fin</th>
+            <th>Cliente</th>
+            <th>Tipo</th>
+            <th>Salón(es)</th>
+            <th>Personas</th>
+            <th>Estado</th>
+            <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-evento>
+        <tr>
+          <td>{{ evento.fecha | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ evento.hora_inicio.substring(0, 5) }}</td>
+            <td>{{ evento.hora_fin.substring(0, 5) }}</td>
+          <td>{{ evento.cliente }}</td>
+          <td>{{ evento.tipo_evento || '—' }}</td>
+          <td>{{ evento.salones || '—' }}</td>
+          <td>{{ evento.total_adultos + evento.total_menores }}</td>
+          <td><span class="estado-badge" [class]="'estado-' + evento.estado">{{ evento.estado }}</span></td>
+          <td class="col-acciones">
+            <div class="acciones-wrapper">
+              <p-button icon="pi pi-eye" severity="info" size="small" (onClick)="irADetalle(evento)" />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7">No se encontraron eventos.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

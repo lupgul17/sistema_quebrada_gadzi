@@ -1,0 +1,107 @@
+.menus-list {
+  padding: 1.5rem;
+
+  .toolbar {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    .spacer { flex: 1; }
+  }
+
+  .table-container {
+    border: 1px solid var(--p-surface-200);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .col-componentes {
+    max-width: 280px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .col-acciones {
+    width: 3rem;
+    text-align: center;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+
+  label {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+}
+
+.field-checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.5rem;
+}
+
+.componentes-section {
+  margin: 1rem 0;
+
+  > label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .grupo {
+    margin-bottom: 0.75rem;
+
+    .grupo-titulo {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--p-text-muted-color);
+      margin-bottom: 0.35rem;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .chip {
+      border: 1px solid var(--p-surface-300);
+      background: white;
+      border-radius: 999px;
+      padding: 0.3rem 0.8rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+
+      &.seleccionado {
+        border-color: #093509;
+        background: rgba(9, 53, 9, 0.08);
+        color: #093509;
+        font-weight: 600;
+      }
+      
+    }
+  }
+}
+
+.dialog-acciones {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}

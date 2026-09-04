@@ -1,0 +1,75 @@
+<div class="componentes-list">
+  <div class="toolbar">
+    <p-select
+      [options]="categorias()"
+      optionLabel="descripcion"
+      optionValue="id_categoria_componente_menu"
+      [(ngModel)]="categoriaFiltro"
+      (onChange)="cargarComponentes()"
+      placeholder="Todas las categorías"
+      [showClear]="true"
+    />
+    <span class="spacer"></span>
+    <p-button label="+ Nuevo componente" (onClick)="abrirNuevo()" />
+  </div>
+
+  <div class="table-container">
+    <p-table [value]="componentes()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Categoría</th>
+          <th>Nombre</th>
+          <th>Recargo</th>
+          <th>Activo</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-componente>
+        <tr>
+          <td>{{ componente.categoria }}</td>
+          <td>{{ componente.nombre }}</td>
+          <td>{{ componente.recargo > 0 ? 'Q' + componente.recargo : '—' }}</td>
+          <td>{{ componente.activo ? 'Sí' : 'No' }}</td>
+          <td class="col-acciones">
+            <div class="acciones-wrapper">
+              <p-button icon="pi pi-pencil" severity="secondary" size="small" (onClick)="abrirEditar(componente)" />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="5">No hay componentes cargados todavía.</td></tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <p-dialog [header]="editandoId() ? 'Editar componente' : 'Nuevo componente'" [(visible)]="dialogoVisible" [modal]="true" [style]="{ width: '450px' }">
+    <form [formGroup]="form" (ngSubmit)="guardar()">
+      <div class="field">
+        <label for="categoria">Categoría *</label>
+        <p-select id="categoria" formControlName="id_categoria_componente_menu" [options]="categorias()" optionLabel="descripcion" optionValue="id_categoria_componente_menu" fluid />
+      </div>
+      <div class="field">
+        <label for="nombre">Nombre *</label>
+        <input pInputText id="nombre" formControlName="nombre" fluid />
+      </div>
+      <div class="field">
+        <label for="recargo">Recargo (Q)</label>
+        <p-inputnumber id="recargo" formControlName="recargo" mode="decimal" [minFractionDigits]="2" fluid />
+      </div>
+      <div class="field field-checkbox">
+        <p-checkbox formControlName="activo" [binary]="true" inputId="activo" />
+        <label for="activo">Activo</label>
+      </div>
+
+      @if (error()) {
+        <p-message severity="error" [text]="error()!" styleClass="w-full mb-3" />
+      }
+
+      <div class="dialog-acciones">
+        <p-button label="Cancelar" severity="secondary" type="button" (onClick)="cerrarDialogo()" />
+        <p-button label="Guardar" type="submit" [loading]="guardando()" [disabled]="guardando()" />
+      </div>
+    </form>
+  </p-dialog>
+</div>

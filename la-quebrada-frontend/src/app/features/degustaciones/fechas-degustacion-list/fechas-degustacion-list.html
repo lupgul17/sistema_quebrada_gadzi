@@ -1,0 +1,100 @@
+<div class="fechas-list">
+  <div class="toolbar">
+    <span class="spacer"></span>
+    <p-button label="+ Nueva fecha" (onClick)="abrirNueva()" />
+  </div>
+
+  <div class="table-container">
+    <p-table [value]="fechas()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Fecha</th>
+          <th>Horario</th>
+          <th>Eventos agendados</th>
+          <th>Estado</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-f>
+        <tr (click)="verAgendados(f)" class="fila-clickeable">
+          <td>{{ f.fecha | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ f.hora_inicio.substring(0,5) }}@if (f.hora_fin) { – {{ f.hora_fin.substring(0,5) }} }</td>
+          <td>{{ f.eventos_agendados }}</td>
+          <td class="col-estado" (click)="$event.stopPropagation()">
+            <p-select
+              [options]="estados"
+              optionLabel="label"
+              optionValue="value"
+              [ngModel]="f.estado"
+              (ngModelChange)="cambiarEstado(f, $event)"
+              [ngModelOptions]="{ standalone: true }"
+              appendTo="body"
+            />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="4">No hay fechas de degustación cargadas todavía.</td></tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <p-dialog
+    header="Nueva fecha de degustación"
+    [(visible)]="dialogoVisible"
+    [modal]="true"
+    [style]="{ width: '380px', maxHeight: '85vh' }"
+    [contentStyle]="{ overflow: 'visible' }"
+  >
+    <div class="field">
+      <label>Fecha</label>
+      <p-datepicker [(ngModel)]="nuevaFecha" dateFormat="dd/mm/yy" fluid />
+    </div>
+    <div class="field">
+      <label>Hora inicio</label>
+      <p-datepicker [(ngModel)]="nuevaHoraInicio" [timeOnly]="true" fluid />
+    </div>
+    <div class="field">
+      <label>Hora fin</label>
+      <p-datepicker [(ngModel)]="nuevaHoraFin" [timeOnly]="true" fluid />
+    </div>
+    <div class="dialog-acciones">
+      <p-button label="Cancelar" severity="secondary" (onClick)="dialogoVisible.set(false)" />
+      <p-button label="Crear" [disabled]="!nuevaFecha || !nuevaHoraInicio" [loading]="guardando()" (onClick)="crearFecha()" />
+    </div>
+  </p-dialog>
+
+  <p-dialog
+    [header]="'Agendados — ' + (fechaSeleccionada() ? (fechaSeleccionada()!.fecha | date: 'dd/MM/yyyy') : '')"
+    [(visible)]="dialogoAgendadosVisible"
+    [modal]="true"
+    [style]="{ width: '650px' }"
+  >
+    <div class="imprimible">
+      @if (cargandoAgendados()) {
+        <p class="hint">Cargando...</p>
+      } @else if (agendados().length === 0) {
+        <p class="hint">Nadie agendado todavía para esta fecha.</p>
+      } @else {
+        <table class="tabla-agendados">
+          <thead>
+            <tr><th>Hora llegada</th><th>Cliente</th><th>Teléfono</th><th>Evento</th><th>Fecha evento</th></tr>
+          </thead>
+          <tbody>
+            @for (a of agendados(); track a.id_degustacion) {
+              <tr>
+                <td>{{ a.hora_llegada ? a.hora_llegada.substring(0,5) : '—' }}</td>
+                <td>{{ a.cliente }}</td>
+                <td>{{ a.telefono || '—' }}</td>
+                <td>{{ a.tipo_evento || '—' }}</td>
+                <td>{{ a.fecha_evento | date: 'dd/MM/yyyy' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+    <div class="dialog-acciones no-imprimir">
+      <p-button label="Imprimir" icon="pi pi-print" severity="secondary" (onClick)="imprimir()" />
+    </div>
+  </p-dialog>
+</div>

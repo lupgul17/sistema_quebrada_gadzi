@@ -1,0 +1,81 @@
+<div class="servicios-list">
+  <div class="toolbar">
+    <p-select
+      [options]="categorias()"
+      optionLabel="descripcion"
+      optionValue="id_categoria_servicio"
+      [(ngModel)]="categoriaFiltro"
+      (onChange)="cargarServicios()"
+      placeholder="Todas las categorías"
+      [showClear]="true"
+    />
+    <span class="spacer"></span>
+    <p-button label="+ Nuevo servicio" (onClick)="abrirNuevo()" />
+  </div>
+
+  <div class="table-container">
+    <p-table [value]="servicios()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Categoría</th>
+          <th>Nombre</th>
+          <th>Precio</th>
+          <th>Unidad</th>
+          <th>Activo</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-servicio>
+        <tr>
+          <td>{{ servicio.categoria }}</td>
+          <td>{{ servicio.nombre }}</td>
+          <td>Q{{ servicio.precio_base }}</td>
+          <td>{{ servicio.unidad_medida }}</td>
+          <td>{{ servicio.activo ? 'Sí' : 'No' }}</td>
+          <td class="col-acciones">
+            <div class="acciones-wrapper">
+              <p-button icon="pi pi-pencil" severity="secondary" size="small" (onClick)="abrirEditar(servicio)" />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="6">No hay servicios cargados todavía.</td></tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <p-dialog [header]="editandoId() ? 'Editar servicio' : 'Nuevo servicio'" [(visible)]="dialogoVisible" [modal]="true" [style]="{ width: '450px' }">
+    <form [formGroup]="form" (ngSubmit)="guardar()">
+      <div class="field">
+        <label for="categoria">Categoría *</label>
+        <p-select id="categoria" formControlName="id_categoria_servicio" [options]="categorias()" optionLabel="descripcion" optionValue="id_categoria_servicio" fluid />
+      </div>
+      <div class="field">
+        <label for="nombre">Nombre *</label>
+        <input pInputText id="nombre" formControlName="nombre" fluid />
+      </div>
+      <div class="field">
+        <label for="precio_base">Precio (Q) *</label>
+        <p-inputnumber id="precio_base" formControlName="precio_base" mode="decimal" [minFractionDigits]="2" fluid />
+      </div>
+      <div class="field">
+        <label for="unidad_medida">Unidad *</label>
+        <input pInputText id="unidad_medida" formControlName="unidad_medida" placeholder="unidad, hora, por_evento..." fluid />
+      </div>
+      <div class="field field-checkbox">
+        <p-checkbox formControlName="activo" [binary]="true" inputId="activo" />
+        <label for="activo">Activo</label>
+      </div>
+
+      @if (error()) {
+        <p-message severity="error" [text]="error()!" styleClass="w-full mb-3" />
+      }
+
+      <div class="dialog-acciones">
+        <p-button label="Cancelar" severity="secondary" type="button" (onClick)="cerrarDialogo()" />
+        <p-button label="Guardar" type="submit" [loading]="guardando()" [disabled]="guardando()" />
+      </div>
+    </form>
+  </p-dialog>
+</div>

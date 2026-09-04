@@ -1,0 +1,38 @@
+.eventos-list {
+  padding: 1.5rem;
+
+  .toolbar {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    .spacer {
+      flex: 1;
+    }
+  }
+
+  .table-container {
+    border: 1px solid var(--p-surface-200);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .col-acciones {
+    width: 3rem;
+    text-align: center;
+  }
+
+  .estado-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    text-transform: capitalize;
+
+    &.estado-cotizacion { background: var(--p-surface-200); }
+    &.estado-confirmado { background: #cce5ff; color: #004085; }
+    &.estado-en_curso { background: #fff3cd; color: #856404; }
+    &.estado-cerrado { background: #d4edda; color: #155724; }
+    &.estado-cancelado { background: #f8d7da; color: #721c24; }
+  }
+}

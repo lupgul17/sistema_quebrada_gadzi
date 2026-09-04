@@ -4,10 +4,11 @@
     <nav class="sidebar-nav">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
       <a routerLink="/clientes" routerLinkActive="active">Clientes</a>
-      <span class="nav-item disabled">Eventos</span>
-      <span class="nav-item disabled">Pagos</span>
-      <span class="nav-item disabled">Servicios</span>
-      <span class="nav-item disabled">Menú</span>
+      <a routerLink="/eventos" routerLinkActive="active">Eventos</a>
+      <a routerLink="/pagos" routerLinkActive="active">Pagos</a>
+      <a routerLink="/servicios" routerLinkActive="active">Servicios</a>
+      <a routerLink="/menu" routerLinkActive="active">Menú</a>
+      <a routerLink="/degustaciones" routerLinkActive="active">Degustaciones</a>
       <span class="nav-item disabled">Reportes</span>
     </nav>
   </aside>
@@ -25,4 +26,5 @@
       <router-outlet />
     </main>
   </div>
+  <app-visor-archivo-dialog />
 </div>

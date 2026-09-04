@@ -1,0 +1,81 @@
+.fechas-list {
+  padding: 1.5rem;
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    .spacer { flex: 1; }
+  }
+
+  .table-container {
+    border: 1px solid var(--p-surface-200);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .col-estado {
+    width: 10rem;
+  }
+}
+
+.fila-clickeable {
+  cursor: pointer;
+}
+
+.hint {
+  color: var(--p-text-muted-color);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+
+  label {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+}
+
+.dialog-acciones {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.tabla-agendados {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    text-align: left;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--p-surface-200);
+    font-size: 0.88rem;
+  }
+}
+
+@media print {
+  .no-imprimir {
+    display: none;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .imprimible, .imprimible * {
+    visibility: visible;
+  }
+
+  .imprimible {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}

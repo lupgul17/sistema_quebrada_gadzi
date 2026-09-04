@@ -1,0 +1,97 @@
+.evento-detail {
+  width: calc(100% - 2rem);
+  height: calc(100% - 2rem);
+  box-sizing: border-box;
+  margin: 1rem auto;
+  padding: 1.5rem;
+  border: 1px solid var(--p-surface-200);
+  border-radius: 12px;
+  overflow-y: auto;
+
+  .detail-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+
+    .header-acciones {
+      display: flex;
+      gap: 0.5rem;
+    }
+  }
+
+  .nombre-bar {
+    border: 1px solid var(--p-surface-200);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+
+    h2 {
+      margin: 0;
+    }
+  }
+
+  p-card {
+    display: block;
+    margin-bottom: 1.25rem;
+  }
+
+  .datos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+
+    div {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .label {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--p-text-muted-color);
+    }
+  }
+
+  .notas {
+    margin-top: 1rem;
+
+    .label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--p-text-muted-color);
+    }
+  }
+
+  .placeholder {
+    color: var(--p-text-muted-color);
+    padding: 1rem 0;
+  }
+
+  .estado-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    text-transform: capitalize;
+
+    &.estado-cotizacion { background: var(--p-surface-200); }
+    &.estado-confirmado { background: #cce5ff; color: #004085; }
+    &.estado-en_curso { background: #fff3cd; color: #856404; }
+    &.estado-cerrado { background: #d4edda; color: #155724; }
+    &.estado-cancelado { background: #f8d7da; color: #721c24; }
+  }
+}
+.header-acciones {
+  display: flex;
+  gap: 0.5rem;
+
+  ::ng-deep .p-button {
+    min-width: 9rem;
+    height: 2.5rem;
+  }
+}

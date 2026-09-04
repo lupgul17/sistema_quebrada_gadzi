@@ -1,0 +1,29 @@
+.pagos-verificados {
+  padding: 1.5rem;
+
+  .hint {
+    color: var(--p-text-muted-color);
+  }
+
+  .table-container {
+    border: 1px solid var(--p-surface-200);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .capitalize {
+    text-transform: capitalize;
+  }
+
+  .link-cliente {
+    color: #093509;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+}
+.table-container {
+  ::ng-deep .pi-eye {
+    font-size: 1.15rem;
+  }
+}

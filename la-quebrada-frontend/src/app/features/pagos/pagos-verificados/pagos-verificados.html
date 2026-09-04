@@ -1,0 +1,43 @@
+
+<div class="pagos-verificados">
+  @if (cargando()) {
+    <p class="hint">Cargando...</p>
+  } @else {
+    <div class="table-container">
+      <p-table [value]="pagos()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Cliente</th>
+            <th>Fecha evento</th>
+            <th>Fecha pago</th>
+            <th>Concepto</th>
+            <th>Tipo</th>
+            <th>Monto</th>
+            <th>Comprobante</th>
+            <th>Verificó</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-p>
+          <tr>
+            <td class="link-cliente" (click)="irAEvento(p.id_evento)">{{ p.cliente }}</td>
+            <td>{{ p.fecha_evento | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ p.fecha_pago | date: 'dd/MM/yyyy' }}</td>
+            <td class="capitalize">{{ p.concepto }}</td>
+            <td>{{ p.tipo_pago }}</td>
+            <td>Q{{ p.monto }}</td>
+            <td>
+              @if (p.path_comprobante) {
+                <p-button icon="pi pi-eye" severity="info" size="small" [text]="true" (onClick)="verComprobante(p.path_comprobante)" />
+              } @else {
+                —
+              } 
+            <td>{{ p.verifico || '—' }}</td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr><td colspan="7">Todavía no hay pagos verificados.</td></tr>
+        </ng-template>
+      </p-table>
+    </div>
+  }
+</div>

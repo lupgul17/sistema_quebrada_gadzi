@@ -1,0 +1,266 @@
+@if (cargandoInicial()) {
+  <p class="hint">Cargando...</p>
+} @else if (!cotizacion()) {
+  <div class="sin-cotizacion">
+    <p class="hint">Este evento todavía no tiene ninguna cotización.</p>
+    <div class="crear-form">
+      <p-checkbox [(ngModel)]="aplicaDeposito" [binary]="true" inputId="deposito1" />
+      <label for="deposito1">Aplica depósito de garantía (Q1,000)</label>
+      <p-button label="Crear cotización" [loading]="procesando()" (onClick)="crearCotizacion()" />
+    </div>
+  </div>
+} @else {
+  <div class="cotizacion-panel">
+    @if (versiones().length > 1) {
+      <div class="version-selector">
+        @for (v of versiones(); track v.id_cotizacion) {
+          <button
+            type="button"
+            class="version-pill"
+            [class.seleccionada]="cotizacion()!.id_cotizacion === v.id_cotizacion"
+            (click)="verVersion(v.id_cotizacion)"
+          >
+            V{{ v.version }} · {{ v.estado }} · Q{{ v.total }}
+          </button>
+        }
+      </div>
+    }
+
+    @if (!cotizacion()!.activa) {
+      <div class="aviso-historico">
+        Estás viendo una versión anterior, de solo lectura.
+        <a (click)="verVersionActiva()">Volver a la versión activa</a>
+      </div>
+    }
+
+    <div class="panel-header">
+      <div>
+        <strong>Versión {{ cotizacion()!.version }}</strong>
+        <span class="estado-badge" [class]="'estado-' + cotizacion()!.estado">{{ cotizacion()!.estado }}</span>
+      </div>
+      @if (cotizacion()!.activa) {
+        <div class="header-acciones">
+          @for (opcion of opcionesEstado(); track opcion.estado) {
+            <p-button [label]="opcion.label" severity="secondary" size="small" [loading]="procesando()" (onClick)="cambiarEstado(opcion.estado)" />
+          }
+          <p-button label="Nueva versión" severity="secondary" size="small" [loading]="procesando()" (onClick)="crearCotizacion()" />
+        </div>
+      }
+    </div>
+
+    <div class="meta-info">
+      <span>Cotizada: {{ cotizacion()!.fecha_cotizacion | date: 'dd/MM/yyyy' }}</span>
+      <span>Vigencia: {{ cotizacion()!.vigencia_dias }} días</span>
+      @if (cotizacion()!.vendedor) {
+        <span>Vendedor: {{ cotizacion()!.vendedor }}</span>
+      }
+    </div>
+
+    <div class="seccion-lineas">
+      <h4>Menú</h4>
+      @if (cotizacion()!.menus.length === 0) {
+        <p class="hint">Sin líneas de menú todavía.</p>
+      } @else {
+        <table class="tabla-lineas">
+          <thead>
+            <tr><th>Menú</th><th>Tipo</th><th>Precio</th><th>Subtotal</th>@if (cotizacion()!.activa) {<th></th>}</tr>
+          </thead>
+          <tbody>
+            @for (linea of cotizacion()!.menus; track linea.id_cotizacion_menu) {
+              <tr>
+                <td>{{ linea.menu }}</td>
+                <td>{{ linea.tipo_menu }}</td>
+                <td>Q{{ linea.precio_unitario_congelado }}</td>
+                <td>Q{{ linea.subtotal }}</td>
+                @if (cotizacion()!.activa) {
+                  <td><p-button icon="pi pi-trash" severity="danger" size="small" [text]="true" (onClick)="quitarMenu(linea.id_cotizacion_menu)" /></td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+      @if (cotizacion()!.activa) {
+        <div class="agregar-linea">
+          <p-select [options]="menusDisponibles()" optionLabel="nombre" optionValue="id_menu" [(ngModel)]="menuSeleccionado" placeholder="Elegir menú..." fluid />
+          <p-button label="Agregar" size="small" [disabled]="!menuSeleccionado" [loading]="procesando()" (onClick)="agregarMenu()" />
+        </div>
+      }
+    </div>
+
+    <div class="seccion-lineas">
+      <h4>Servicios</h4>
+      @if (cotizacion()!.servicios.length === 0) {
+        <p class="hint">Sin líneas de servicios todavía.</p>
+      } @else {
+        <table class="tabla-lineas">
+          <thead>
+            <tr><th>Servicio</th><th>Categoría</th><th>Cant.</th><th>Precio</th><th>Subtotal</th><th></th>@if (cotizacion()!.activa) {<th></th>}</tr>
+          </thead>
+          <tbody>
+            @for (linea of cotizacion()!.servicios; track linea.id_cotizacion_servicios) {
+              <tr>
+                <td>{{ linea.servicio }}</td>
+                <td>{{ linea.categoria }}</td>
+                <td>{{ linea.cantidad }}</td>
+                <td>Q{{ linea.precio_unitario_congelado }}</td>
+                <td>Q{{ linea.subtotal }}</td>
+                <td>
+                <span class="boton-con-badge">
+                    <p-button icon="pi pi-percentage" severity="info" size="small" [text]="true" (onClick)="abrirDescuentos(linea)" />
+                    @if (linea.tiene_descuento_pendiente) {
+                    <span class="badge-pendiente"></span>
+                    }
+                </span>
+                </td>
+                @if (cotizacion()!.activa) {
+                  <td><p-button icon="pi pi-trash" severity="danger" size="small" [text]="true" (onClick)="quitarServicio(linea.id_cotizacion_servicios)" /></td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+      @if (cotizacion()!.activa) {
+        <div class="agregar-linea">
+          <p-select [options]="serviciosDisponibles()" optionLabel="nombre" optionValue="id_servicio" [(ngModel)]="servicioSeleccionado" placeholder="Elegir servicio..." fluid />
+          <p-inputnumber [(ngModel)]="cantidadServicio" [min]="1" />
+          <p-button label="Agregar" size="small" [disabled]="!servicioSeleccionado" [loading]="procesando()" (onClick)="agregarServicio()" />
+        </div>
+      }
+    </div>
+
+    @if (cotizacion()!.activa) {
+      <div class="seccion-lineas">
+        <h4>Depósito de garantía</h4>
+        <div class="deposito-check">
+          <p-checkbox [(ngModel)]="aplicaDeposito" [binary]="true" inputId="deposito2" />
+          <label for="deposito2">Aplica depósito de garantía (Q1,000) — se usará en la próxima versión que crees</label>
+        </div>
+      </div>
+
+      <div class="seccion-lineas">
+        <h4>Detalles del evento</h4>
+        <div class="detalles-grid">
+          <div class="field">
+            <label>Personas en mesa principal</label>
+            <p-inputnumber [(ngModel)]="detalleForm.cantidad_mesa_principal" [min]="0" fluid />
+          </div>
+          <div class="field">
+            <label>Mesas reservadas</label>
+            <p-inputnumber [(ngModel)]="detalleForm.cantidad_mesas_reservadas" [min]="0" fluid />
+          </div>
+          <div class="field field-checkbox">
+            <p-checkbox [(ngModel)]="detalleForm.brindis" [binary]="true" inputId="brindis" />
+            <label for="brindis">Incluye brindis</label>
+          </div>
+          <div class="field">
+            <label>Color de mantel</label>
+            <p-select [options]="coloresMantel()" optionLabel="descripcion" optionValue="id" [(ngModel)]="detalleForm.id_color_mantel" placeholder="Elegir..." fluid />
+          </div>
+          <div class="field">
+            <label>Color de cubremanteles</label>
+            <p-select [options]="coloresCubremanteles()" optionLabel="descripcion" optionValue="id" [(ngModel)]="detalleForm.id_color_cubremanteles" placeholder="Elegir..." fluid />
+          </div>
+        </div>
+        <div class="field field-full">
+          <label>Boquitas del menú</label>
+          <textarea pTextarea [(ngModel)]="detalleForm.boquitas" rows="2" fluid placeholder="Qué boquitas se eligieron para este evento..."></textarea>
+        </div>
+        <div class="field field-full">
+          <label>Observaciones</label>
+          <textarea pTextarea [(ngModel)]="detalleForm.observaciones" rows="2" fluid placeholder="Notas libres sobre el evento..."></textarea>
+        </div>
+        <p-button label="Guardar detalles" size="small" [loading]="guardandoDetalles()" (onClick)="guardarDetalles()" />
+      </div>
+    } @else {
+      @if (cotizacion()!.observaciones || cotizacion()!.boquitas || cotizacion()!.color_mantel) {
+        <div class="seccion-lineas">
+          <h4>Detalles del evento</h4>
+          <div class="detalles-solo-lectura">
+            @if (cotizacion()!.cantidad_mesa_principal) { <span>Mesa principal: {{ cotizacion()!.cantidad_mesa_principal }} personas</span> }
+            @if (cotizacion()!.cantidad_mesas_reservadas) { <span>Mesas reservadas: {{ cotizacion()!.cantidad_mesas_reservadas }}</span> }
+            <span>Brindis: {{ cotizacion()!.brindis ? 'Sí' : 'No' }}</span>
+            @if (cotizacion()!.color_mantel) { <span>Mantel: {{ cotizacion()!.color_mantel }}</span> }
+            @if (cotizacion()!.color_cubremanteles) { <span>Cubremanteles: {{ cotizacion()!.color_cubremanteles }}</span> }
+          </div>
+          @if (cotizacion()!.boquitas) { <p class="detalle-texto"><strong>Boquitas:</strong> {{ cotizacion()!.boquitas }}</p> }
+          @if (cotizacion()!.observaciones) { <p class="detalle-texto"><strong>Observaciones:</strong> {{ cotizacion()!.observaciones }}</p> }
+        </div>
+      }
+    }
+
+    <div class="totales">
+      <div><span>Subtotal menú</span><span>Q{{ cotizacion()!.subtotal_menus }}</span></div>
+      <div><span>Subtotal servicios</span><span>Q{{ cotizacion()!.subtotal_servicios }}</span></div>
+      <div><span>Depósito de garantía</span><span>Q{{ cotizacion()!.deposito_garantia }}</span></div>
+      @if (cotizacion()!.total_descuento > 0) {
+        <div><span>Descuento</span><span>-Q{{ cotizacion()!.total_descuento }}</span></div>
+      }
+      <div class="total-final"><span>Total</span><span>Q{{ cotizacion()!.total }}</span></div>
+    </div>
+  </div>
+}
+
+<p-dialog header="Descuentos" [(visible)]="dialogoDescuentoVisible" [modal]="true" [style]="{ width: '480px' }">
+  @if (lineaDescuentoActual(); as linea) {
+    <p class="linea-referencia">{{ linea.servicio }} — subtotal Q{{ linea.subtotal }}</p>
+
+    @if (descuentosLinea().length === 0) {
+      <p class="hint">Sin descuentos cargados en esta línea.</p>
+    } @else {
+      <div class="descuentos-lista">
+        @for (d of descuentosLinea(); track d.id_descuento) {
+          <div class="descuento-item">
+            <div>
+              <strong>{{ d.tipo_descuento }}</strong>
+              <span class="descuento-monto">-Q{{ d.monto_descontado }}</span>
+              @if (d.porcentaje) { <span class="descuento-pct">({{ d.porcentaje }}%)</span> }
+            </div>
+            <span class="estado-badge" [class]="'estado-descuento-' + d.estado">{{ d.estado }}</span>
+            @if (d.estado === 'pendiente' && cotizacion()?.activa) {
+              <div class="descuento-acciones">
+                <p-button icon="pi pi-check" severity="success" size="small" [text]="true" (onClick)="resolverDescuento(d.id_descuento, 'aprobado')" />
+                <p-button icon="pi pi-times" severity="danger" size="small" [text]="true" (onClick)="resolverDescuento(d.id_descuento, 'rechazado')" />
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    @if (cotizacion()?.activa) {
+      <div class="nuevo-descuento">
+        <h5>Agregar descuento</h5>
+        <div class="field">
+          <label>Tipo</label>
+          <p-select [options]="tiposDescuento()" optionLabel="descripcion" optionValue="id_tipo_descuento" [(ngModel)]="descuentoForm.id_tipo_descuento" placeholder="Elegir..." fluid />
+        </div>
+        <div class="field field-checkbox">
+          <p-checkbox [(ngModel)]="descuentoForm.modo" trueValue="porcentaje" falseValue="monto" [binary]="true" inputId="modoPct" />
+          <label for="modoPct">Usar porcentaje (si no, monto fijo)</label>
+        </div>
+        @if (descuentoForm.modo === 'porcentaje') {
+          <div class="field">
+            <label>Porcentaje (%)</label>
+            <p-inputnumber [(ngModel)]="descuentoForm.porcentaje" [min]="0" [max]="100" fluid />
+          </div>
+        } @else {
+          <div class="field">
+            <label>Monto (Q)</label>
+            <p-inputnumber [(ngModel)]="descuentoForm.monto" mode="decimal" [minFractionDigits]="2" [min]="0" fluid />
+          </div>
+        }
+        <div class="field">
+          <label>Motivo</label>
+          <textarea pTextarea [(ngModel)]="descuentoForm.motivo" rows="2" fluid placeholder="Por qué se aplica este descuento..."></textarea>
+        </div>
+        <p-button label="Solicitar descuento" size="small" [loading]="guardandoDescuento()" (onClick)="crearDescuento()" />
+      </div>
+    }
+  }
+
+  <div class="dialog-acciones">
+    <p-button label="Cerrar" severity="secondary" (onClick)="cerrarDialogoDescuento()" />
+  </div>
+</p-dialog>

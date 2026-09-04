@@ -4,10 +4,12 @@ node_modules/
 # Builds
 dist/
 .angular/
+uploads/
 
 # Variables de entorno — nunca subir esto, tiene contraseñas y secretos
 .env
 .env.local
+
 
 # Logs
 *.log

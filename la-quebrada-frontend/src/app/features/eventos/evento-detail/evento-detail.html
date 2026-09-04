@@ -1,0 +1,53 @@
+@if (evento(); as e) {
+  <div class="evento-detail">
+    <div class="detail-header">
+      <p-button label="← Volver" severity="secondary" size="small" (onClick)="volver()" />
+      <div class="header-acciones">
+        @for (opcion of opcionesEstado(); track opcion.estado) {
+          <p-button [label]="opcion.label" severity="secondary" size="small" [loading]="cambiandoEstado()" (onClick)="cambiarEstado(opcion.estado)" />
+        }
+        <p-button label="Editar" (onClick)="irAEditar()" />
+      </div>
+    </div>
+
+    <div class="nombre-bar">
+      <h2>{{ e.tipo_evento || 'Evento' }} — {{ e.cliente }}</h2>
+      <span class="estado-badge" [class]="'estado-' + e.estado">{{ e.estado }}</span>
+    </div>
+
+    <p-card header="Datos del evento">
+      <div class="datos-grid">
+        <div><span class="label">Fecha</span><span>{{ e.fecha | date: 'dd/MM/yyyy' }}</span></div>
+        <div><span class="label">Horario</span><span>{{ e.hora_inicio.substring(0,5) }} – {{ e.hora_fin.substring(0,5) }}</span></div>
+        <div><span class="label">Salón(es)</span><span>{{ e.salones || '—' }}</span></div>
+        <div><span class="label">Adultos / Niños</span><span>{{ e.total_adultos }} / {{ e.total_menores }}</span></div>
+        <div><span class="label">Reserva temporal</span><span>{{ e.reserva_temporal ? 'Sí' : 'No' }}</span></div>
+        <div><span class="label">Teléfono del cliente</span><span>{{ e.telefono_cliente || '—' }}</span></div>
+      </div>
+      @if (e.notas) {
+        <p class="notas"><span class="label">Notas</span> {{ e.notas }}</p>
+      }
+    </p-card>
+
+    <p-tabs value="cotizacion">
+      <p-tablist>
+        <p-tab value="cotizacion">Cotización</p-tab>
+        <p-tab value="degustacion">Degustación</p-tab>
+        <p-tab value="extras">Extras</p-tab>
+        <p-tab value="pagos">Pagos</p-tab>
+      </p-tablist>
+      <p-tabpanels>
+        <p-tabpanel value="cotizacion">
+          <app-cotizacion-panel [idEvento]="e.id_evento" />
+        </p-tabpanel>
+        <p-tabpanel value="degustacion">
+          <app-degustacion-panel [idEvento]="e.id_evento" />
+        </p-tabpanel>
+        <p-tabpanel value="extras"><p class="placeholder">Próximamente — Módulo Extras.</p></p-tabpanel>
+        <p-tabpanel value="pagos">
+          <app-pagos-panel [idEvento]="e.id_evento" />
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+}
