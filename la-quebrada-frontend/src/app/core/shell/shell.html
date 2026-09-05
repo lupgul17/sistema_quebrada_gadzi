@@ -7,8 +7,8 @@
       <a routerLink="/eventos" routerLinkActive="active">Eventos</a>
       <a routerLink="/pagos" routerLinkActive="active" class="nav-item-con-badge">
         Pagos
-        @if (pagosPendientesCount() > 0) {
-          <span class="badge-pendiente">{{ pagosPendientesCount() }}</span>
+        @if (pagosPendientesService.count() > 0) {
+          <span class="badge-pendiente">{{ pagosPendientesService.count() }}</span>
         }
       </a>
       <a routerLink="/servicios" routerLinkActive="active">Servicios</a>

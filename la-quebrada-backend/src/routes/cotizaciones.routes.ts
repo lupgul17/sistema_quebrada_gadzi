@@ -200,8 +200,14 @@ router.get('/:id/pdf', async (req, res) => {
       return;
     }
 
-    const eventoRes = await pool.query('SELECT * FROM fn_evento_detalle($1::integer)', [cot.id_evento]);
+    const [eventoRes, pagosRes, saldoRes] = await Promise.all([
+      pool.query('SELECT * FROM fn_evento_detalle($1::integer)', [cot.id_evento]),
+      pool.query('SELECT * FROM fn_listar_pagos_evento($1::integer)', [cot.id_evento]),
+      pool.query('SELECT * FROM fn_saldo_evento($1::integer)', [cot.id_evento]),
+    ]);
     const evento = eventoRes.rows[0];
+    const pagosVerificados = pagosRes.rows.filter((p) => p.estado === 'verificado');
+    const saldo = saldoRes.rows[0];
 
     const html = armarHtmlCotizacion({
       clienteNombre: evento?.cliente ?? '—',
@@ -211,6 +217,7 @@ router.get('/:id/pdf', async (req, res) => {
       eventoFecha: evento ? new Date(evento.fecha).toLocaleDateString('es-GT') : '—',
       eventoSalones: evento?.salones ?? '—',
       eventoLocacion: evento?.locaciones ?? 'La Quebrada',
+      eventoHorario: evento ? `${evento.hora_inicio.substring(0, 5)} - ${evento.hora_fin.substring(0, 5)}` : '—',
       version: cot.version,
       vigenciaDias: cot.vigencia_dias,
       vendedor: cot.vendedor,
@@ -228,6 +235,8 @@ router.get('/:id/pdf', async (req, res) => {
       colorCubremanteles: cot.color_cubremanteles,
       boquitas: cot.boquitas,
       observaciones: cot.observaciones,
+      pagos: pagosVerificados.map((p) => ({ fecha: p.fecha_pago, concepto: p.concepto, monto: Number(p.monto) })),
+      saldoPendiente: saldo ? Number(saldo.saldo_pendiente) : Number(cot.total),
     });
 
     const browser = await puppeteer.launch();

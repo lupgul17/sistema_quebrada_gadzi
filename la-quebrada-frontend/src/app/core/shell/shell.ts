@@ -5,6 +5,7 @@ import { filter, map, startWith } from 'rxjs';
 import { Button } from 'primeng/button';
 import { AuthService } from '../auth.service';
 import {VisorArchivoDialog} from '../visor-archivo-dialog/visor-archivo-dialog';
+import { PagosPendientesService } from '../pagos-pendientes.service';
 import { HttpClient } from '@angular/common/http';
 import { API_URL } from '../api-config';
 
@@ -19,17 +20,15 @@ export class Shell {
   readonly usuario;
   private readonly rutaActual;
   readonly tituloPagina;
-  readonly pagosPendientesCount = signal(0);
 
   constructor(
     private authService: AuthService,
     private router: Router,
-    private http: HttpClient
+    public pagosPendientesService: PagosPendientesService,
+
   ) {
     this.usuario = this.authService.usuario;
-    this.http.get<any[]>(`${API_URL}/pagos/pendientes`).subscribe((data) => {
-    this.pagosPendientesCount.set(data.length);
-  });
+    this.pagosPendientesService.actualizar();
 
     this.rutaActual = toSignal(
       this.router.events.pipe(

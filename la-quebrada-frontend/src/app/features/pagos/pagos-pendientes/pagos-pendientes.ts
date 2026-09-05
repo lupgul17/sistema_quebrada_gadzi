@@ -8,6 +8,7 @@ import {VisorArchivoService} from "../../../core/visor-archivo.service";
 import { Dialog } from 'primeng/dialog';
 import { Textarea } from 'primeng/textarea';
 import { FormsModule } from '@angular/forms';
+import { PagosPendientesService } from '../../../core/pagos-pendientes.service';
 
 interface PagoPendiente {
   id_pago: number;
@@ -41,7 +42,8 @@ export class PagosPendientes implements OnInit {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private visor: VisorArchivoService
+    private visor: VisorArchivoService,
+    private pagosPendientesService: PagosPendientesService
   ) {}
 
   ngOnInit(): void {
@@ -59,7 +61,7 @@ export class PagosPendientes implements OnInit {
     });
   }
 
-  resolver(idPago: number, estado: 'verificado' | 'rechazado'): void {
+ resolver(idPago: number, estado: 'verificado' | 'rechazado'): void {
   if (estado === 'rechazado') {
     const pago = this.pagos().find((p) => p.id_pago === idPago);
     this.pagoARechazar.set(pago ?? null);
@@ -72,6 +74,7 @@ export class PagosPendientes implements OnInit {
   this.http.patch(`${API_URL}/pagos/${idPago}/verificar`, { estado }).subscribe(() => {
     this.procesandoId.set(null);
     this.cargarPendientes();
+    this.pagosPendientesService.actualizar();
   });
 }
 
@@ -83,6 +86,7 @@ confirmarRechazo(): void {
   this.http.patch(`${API_URL}/pagos/${pago.id_pago}/verificar`, { estado: 'rechazado', motivo_rechazo: this.motivoRechazo }).subscribe(() => {
     this.procesandoId.set(null);
     this.cargarPendientes();
+    this.pagosPendientesService.actualizar();
   });
 }
 
