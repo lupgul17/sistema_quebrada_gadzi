@@ -44,6 +44,16 @@ router.get('/pendientes-pago', async (_req, res) => {
     res.status(500).json({ error: (err as Error).message });
   }
 });
+
+// GET /api/eventos/:id/extras
+router.get('/:id/extras', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM fn_listar_extras_evento($1::integer)', [req.params.id]);
+    res.json(result.rows[0] ?? { id_extra: null, total: 0, servicios: [], menus: [] });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
 // GET /api/eventos/:id
 router.get('/:id', async (req, res) => {
   try {

@@ -19,13 +19,41 @@
         </div>
       </p-card>
 
-      <p-card header="Pagos realizados" class="pagos-card">
-        <p class="placeholder">Próximamente — se conecta cuando esté listo el Módulo Pagos.</p>
+      <p-card header="Pagos realizados" class="pagos-card tarjeta-pagos">
+        @if (pagos().length === 0) {
+          <p class="placeholder">Sin pagos registrados todavía.</p>
+        } @else {
+          <div class="lista-mini">
+            @for (p of pagos(); track p.id_pago) {
+              <div class="item-mini" (click)="irAEvento(p.id_evento)">
+              <span>{{ p.fecha_pago | date: 'dd/MM/yyyy' }} — {{ p.concepto }}</span>
+              <span class="item-sub">
+                Q{{ p.monto }}
+                <span class="estado-badge" [class]="'estado-' + p.estado">{{ p.estado }}</span>
+              </span>
+            </div>
+            }
+          </div>
+        }
       </p-card>
     </div>
 
-    <p-card header="Eventos de este cliente">
-      <p class="placeholder">Próximamente — se conecta cuando esté listo el Módulo Evento. Cotizaciones, degustaciones y extras se ven dentro de cada evento en particular, no acá.</p>
+    <p-card header="Eventos de este cliente" class="tarjeta-eventos">
+      @if (eventos().length === 0) {
+        <p class="placeholder">Sin eventos registrados todavía.</p>
+      } @else {
+        <div class="lista-mini">
+          @for (e of eventos(); track e.id_evento) {
+            <div class="item-mini" (click)="irAEvento(e.id_evento)">
+              <span>{{ e.fecha | date: 'dd/MM/yyyy' }} — {{ e.tipo_evento || 'Evento' }}</span>
+              <span class="item-sub">
+                {{ e.salones || '—' }}
+                <span class="estado-badge" [class]="'estado-' + e.estado">{{ e.estado }}</span>
+              </span>
+            </div>
+          }
+        </div>
+      }
     </p-card>
   </div>
 }

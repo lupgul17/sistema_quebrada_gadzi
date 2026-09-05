@@ -43,7 +43,9 @@
         <p-tabpanel value="degustacion">
           <app-degustacion-panel [idEvento]="e.id_evento" />
         </p-tabpanel>
-        <p-tabpanel value="extras"><p class="placeholder">Próximamente — Módulo Extras.</p></p-tabpanel>
+        <p-tabpanel value="extras">
+          <app-extras-panel [idEvento]="e.id_evento" />
+        </p-tabpanel>
         <p-tabpanel value="pagos">
           <app-pagos-panel [idEvento]="e.id_evento" />
         </p-tabpanel>

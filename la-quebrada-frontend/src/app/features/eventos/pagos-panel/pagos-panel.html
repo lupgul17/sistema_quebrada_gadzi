@@ -2,7 +2,7 @@
   <p class="hint">Cargando...</p>
 } @else {
   <div class="pagos-panel">
-    @if (saldo(); as s) {
+    @if (saldoService.saldo(); as s) {
       <div class="saldo-resumen">
         <div class="barra-progreso">
           <div class="barra-relleno" [style.width.%]="s.porcentaje_pagado * 100 > 100 ? 100 : s.porcentaje_pagado * 100"></div>
@@ -22,7 +22,7 @@
       } @else {
         <table class="tabla-lineas">
           <thead>
-            <tr><th>Fecha</th><th>Concepto</th><th>Tipo</th><th>Monto</th><th>Estado</th><th>Comprobante</th><th>Registrado por</th></tr>
+            <tr><th>Fecha</th><th>Concepto</th><th>Tipo</th><th>Monto</th><th>Estado</th><th>Registrado por</th><th>Comprobante</th></tr>
           </thead>
           <tbody>
             @for (p of pagos(); track p.id_pago) {
@@ -71,11 +71,7 @@
           <label>Concepto</label>
           <p-select [options]="conceptos" optionLabel="label" optionValue="value" [(ngModel)]="pagoForm.concepto" fluid />
         </div>
-        <div class="field field-full">
-          <label>Notas</label>
-          <textarea pTextarea [(ngModel)]="pagoForm.notas" rows="2" fluid placeholder="Referencia, número de transferencia..."></textarea>
-        </div>
-        <div class="field field-full">
+        <div class="field">
           <label>Comprobante (opcional)</label>
           <input #inputArchivo type="file" accept="image/*,.pdf" (change)="onArchivoSeleccionado($event)" class="input-archivo-oculto" />
           <p-button
@@ -87,10 +83,12 @@
             (onClick)="abrirSelectorArchivo()"
           />
         </div>
-        
+        <div class="field field-full">
+          <label>Notas</label>
+          <textarea pTextarea [(ngModel)]="pagoForm.notas" rows="2" fluid placeholder="Referencia, número de transferencia..."></textarea>
+        </div>
         <p-button label="Registrar pago" [loading]="registrando()" [disabled]="!pagoForm.monto || !pagoForm.id_tipo_pago" (onClick)="registrarPago()" />
       </div>
-      
     </div>
   </div>
 }

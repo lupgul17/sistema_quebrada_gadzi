@@ -9,6 +9,7 @@ import { Textarea } from 'primeng/textarea';
 import { Button } from 'primeng/button';
 import { API_URL } from '../../../core/api-config';
 import {VisorArchivoService} from "../../../core/visor-archivo.service";
+import { SaldoEventoService } from '../../../core/saldo-evento.service';
 
 
 
@@ -74,7 +75,7 @@ export class PagosPanel implements OnInit {
     notas: '',
   };
 
-  constructor(private http: HttpClient, public visor: VisorArchivoService) {}
+  constructor(private http: HttpClient, public visor: VisorArchivoService,public saldoService: SaldoEventoService) {}
 
   ngOnInit(): void {
     this.http.get<TipoPagoOpcion[]>(`${API_URL}/catalogos/tipos-pago`).subscribe((data) => this.tiposPago.set(data));
@@ -86,14 +87,14 @@ export class PagosPanel implements OnInit {
 abrirSelectorArchivo(): void {
   this.inputArchivo.nativeElement.click();
 }
-  cargarTodo(): void {
-    this.cargando.set(true);
-    this.http.get<Saldo>(`${API_URL}/eventos/${this.idEvento}/saldo`).subscribe((data) => this.saldo.set(data));
-    this.http.get<Pago[]>(`${API_URL}/eventos/${this.idEvento}/pagos`).subscribe((data) => {
-      this.pagos.set(data);
-      this.cargando.set(false);
-    });
-  }
+cargarTodo(): void {
+  this.cargando.set(true);
+  this.saldoService.actualizar(this.idEvento);
+  this.http.get<Pago[]>(`${API_URL}/eventos/${this.idEvento}/pagos`).subscribe((data) => {
+    this.pagos.set(data);
+    this.cargando.set(false);
+  });
+}
 
   private formatearFecha(fecha: Date): string {
     return fecha.toISOString().split('T')[0];

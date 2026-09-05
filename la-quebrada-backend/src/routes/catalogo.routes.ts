@@ -63,4 +63,13 @@ router.get('/tipos-pago', async (_req, res) => {
   }
 });
 
+router.get('/tipos-cargo-extra', async (_req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM fn_listar_tipos_cargo_extra()');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
 export default router;

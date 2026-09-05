@@ -90,5 +90,13 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ error: (err as Error).message });
   }
 });
-
+// GET /api/clientes/:id/pagos
+router.get('/:id/pagos', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM fn_listar_pagos_cliente($1::integer)', [req.params.id]);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
 export default router;

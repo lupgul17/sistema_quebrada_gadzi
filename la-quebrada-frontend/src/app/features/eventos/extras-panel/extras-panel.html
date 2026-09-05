@@ -1,0 +1,107 @@
+@if (cargando()) {
+  <p class="hint">Cargando...</p>
+} @else if (extras(); as ex) {
+  <div class="extras-panel">
+    <div class="seccion-lineas">
+      <h4>Servicios extra</h4>
+      @if (ex.servicios.length === 0) {
+        <p class="hint">Sin servicios extra cargados todavía.</p>
+      } @else {
+        <table class="tabla-lineas">
+          <thead>
+            <tr><th>Tipo</th><th>Servicio</th><th>Cant.</th><th>Precio</th><th>Subtotal</th><th>Estado</th><th></th></tr>
+          </thead>
+          <tbody>
+            @for (linea of ex.servicios; track linea.id_extras_servicios) {
+              <tr [class.cancelado]="linea.estado === 'cancelado'">
+                <td>{{ linea.tipo_cargo_extra }}</td>
+                <td>{{ linea.servicio || linea.descripcion }}</td>
+                <td>{{ linea.cantidad }}</td>
+                <td>Q{{ linea.precio_unitario }}</td>
+                <td>Q{{ linea.subtotal }}</td>
+                <td><span class="estado-badge" [class]="'estado-' + linea.estado">{{ linea.estado }}</span></td>
+                <td class="col-acciones">
+                  <div class="acciones-wrapper">
+                    @if (linea.estado !== 'cancelado') {
+                      <p-button icon="pi pi-times" severity="danger" size="small" [text]="true" (onClick)="cancelarLinea('servicio', linea.id_extras_servicios)" />
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+
+      <div class="agregar-form">
+        <div class="modo-toggle">
+          <button type="button" [class.activo]="servicioForm.modo === 'catalogo'" (click)="servicioForm.modo = 'catalogo'">Del catálogo</button>
+          <button type="button" [class.activo]="servicioForm.modo === 'personalizado'" (click)="servicioForm.modo = 'personalizado'">Personalizado</button>
+        </div>
+        <div class="fila-campos">
+          <p-select [options]="tiposCargo()" optionLabel="descripcion" optionValue="id_tipo_cargo_extra" [(ngModel)]="servicioForm.id_tipo_cargo_extra" placeholder="Tipo de cargo" appendTo="body" fluid />
+          @if (servicioForm.modo === 'catalogo') {
+            <p-select [options]="serviciosDisponibles()" optionLabel="nombre" optionValue="id_servicio" [(ngModel)]="servicioForm.id_servicio" (ngModelChange)="onServicioSeleccionado($event)" placeholder="Elegir servicio..." appendTo="body" fluid />
+          } @else {
+            <input pInputText [(ngModel)]="servicioForm.descripcion" placeholder="Descripción del cargo..." fluid />
+          }
+          <p-inputnumber [(ngModel)]="servicioForm.cantidad" [min]="1" placeholder="Cant." />
+          <p-inputnumber [(ngModel)]="servicioForm.precio_unitario" mode="decimal" [minFractionDigits]="2" placeholder="Precio" />
+          <p-button label="Agregar" size="small" [loading]="procesandoServicio()" (onClick)="agregarServicio()" />
+        </div>
+      </div>
+    </div>
+
+    <div class="seccion-lineas">
+      <h4>Menú extra</h4>
+      @if (ex.menus.length === 0) {
+        <p class="hint">Sin menú extra cargado todavía.</p>
+      } @else {
+        <table class="tabla-lineas">
+          <thead>
+            <tr><th>Menú</th><th>Cant.</th><th>Precio</th><th>Subtotal</th><th>Estado</th><th></th></tr>
+          </thead>
+          <tbody>
+            @for (linea of ex.menus; track linea.id_extras_menu) {
+              <tr [class.cancelado]="linea.estado === 'cancelado'">
+                <td>{{ linea.menu || linea.descripcion }}</td>
+                <td>{{ linea.cantidad }}</td>
+                <td>Q{{ linea.precio_base }}</td>
+                <td>Q{{ linea.subtotal }}</td>
+                <td><span class="estado-badge" [class]="'estado-' + linea.estado">{{ linea.estado }}</span></td>
+                <td class="col-acciones">
+                  <div class="acciones-wrapper">
+                    @if (linea.estado !== 'cancelado') {
+                      <p-button icon="pi pi-times" severity="danger" size="small" [text]="true" (onClick)="cancelarLinea('menu', linea.id_extras_menu)" />
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+
+      <div class="agregar-form">
+        <div class="modo-toggle">
+          <button type="button" [class.activo]="menuForm.modo === 'catalogo'" (click)="menuForm.modo = 'catalogo'">Del catálogo</button>
+          <button type="button" [class.activo]="menuForm.modo === 'personalizado'" (click)="menuForm.modo = 'personalizado'">Personalizado</button>
+        </div>
+        <div class="fila-campos">
+          @if (menuForm.modo === 'catalogo') {
+            <p-select [options]="menusDisponibles()" optionLabel="nombre" optionValue="id_menu" [(ngModel)]="menuForm.id_menu" (ngModelChange)="onMenuSeleccionado($event)" placeholder="Elegir menú..." appendTo="body" fluid />
+          } @else {
+            <input pInputText [(ngModel)]="menuForm.descripcion" placeholder="Descripción del menú..." fluid />
+          }
+          <p-inputnumber [(ngModel)]="menuForm.cantidad" [min]="1" placeholder="Cant." />
+          <p-inputnumber [(ngModel)]="menuForm.precio_base" mode="decimal" [minFractionDigits]="2" placeholder="Precio" />
+          <p-button label="Agregar" size="small" [loading]="procesandoMenu()" (onClick)="agregarMenu()" />
+        </div>
+      </div>
+    </div>
+
+    <div class="totales">
+      <div class="total-final"><span>Total extras</span><span>Q{{ ex.total }}</span></div>
+    </div>
+  </div>
+}

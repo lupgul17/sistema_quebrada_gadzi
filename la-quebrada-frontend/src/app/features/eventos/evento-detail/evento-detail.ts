@@ -9,6 +9,7 @@ import { DatePipe } from '@angular/common';
 import { CotizacionPanel } from '../cotizacion-panel/cotizacion-panel';
 import { PagosPanel } from '../pagos-panel/pagos-panel';
 import { DegustacionPanel } from '../degustacion-panel/degustacion-panel';
+import { ExtrasPanel } from '../extras-panel/extras-panel';
 
 interface EventoDetalle {
   id_evento: number;
@@ -44,7 +45,7 @@ const SIGUIENTE_ESTADO: Record<string, { estado: string; label: string }[]> = {
 @Component({
   selector: 'app-evento-detail',
   standalone: true,
-  imports: [Button, Card, Tabs, TabList, Tab, TabPanels, TabPanel,DatePipe, CotizacionPanel, PagosPanel, DegustacionPanel],
+  imports: [Button, Card, Tabs, TabList, Tab, TabPanels, TabPanel,DatePipe, CotizacionPanel, PagosPanel, DegustacionPanel,ExtrasPanel],
   templateUrl: './evento-detail.html',
   styleUrl: './evento-detail.scss',
 })

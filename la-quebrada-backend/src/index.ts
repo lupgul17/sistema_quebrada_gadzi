@@ -14,6 +14,7 @@ import menusRouter from './routes/menus.routes.js';
 import cotizacionesRouter from './routes/cotizaciones.routes.js';
 import pagosRouter from './routes/pagos.routes.js';
 import degustacionesRouter from './routes/degustaciones.routes.js';
+import extrasRouter from './routes/extras.routes.js';
 import { requireAuth } from './middleware/auth.middleware.js';
 
 dotenv.config();
@@ -49,6 +50,7 @@ app.use('/api/menus', requireAuth, menusRouter);
 app.use('/api/cotizaciones', requireAuth, cotizacionesRouter);
 app.use('/api/pagos', requireAuth, pagosRouter);
 app.use('/api/degustaciones', requireAuth, degustacionesRouter);
+app.use('/api/extras', requireAuth, extrasRouter);
 
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
