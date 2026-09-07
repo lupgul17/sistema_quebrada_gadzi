@@ -71,17 +71,24 @@
       } @else {
         <table class="tabla-lineas">
           <thead>
-            <tr><th>Menú</th><th>Tipo</th><th>Precio</th><th>Subtotal</th>@if (cotizacion()!.activa) {<th></th>}</tr>
+            <tr><th>Menú</th><th>Tipo</th><th>Precio</th><th>Cantidad</th><th>Subtotal</th>@if (cotizacion()!.activa) {<th></th>}</tr>
           </thead>
           <tbody>
             @for (linea of cotizacion()!.menus; track linea.id_cotizacion_menu) {
               <tr>
                 <td>{{ linea.menu }}</td>
                 <td>{{ linea.tipo_menu }}</td>
+                <td>
+                  {{ linea.tipo_menu }}
+                  @if (linea.es_extra_degustacion) {
+                    <span class="badge-degustacion">Degustación</span>
+                  }
+                </td>
+                <td>{{ linea.cantidad }}</td>
                 <td>Q{{ linea.precio_unitario_congelado }}</td>
                 <td>Q{{ linea.subtotal }}</td>
                 @if (cotizacion()!.activa) {
-                  <td><p-button icon="pi pi-trash" severity="danger" size="small" [text]="true" (onClick)="quitarMenu(linea.id_cotizacion_menu)" /></td>
+                  <td><p-button icon="pi pi-trash" severity="danger" size="large" [text]="true" (onClick)="quitarMenu(linea.id_cotizacion_menu)" /></td>
                 }
               </tr>
             }
@@ -115,14 +122,14 @@
                 <td>Q{{ linea.subtotal }}</td>
                 <td>
                   <span class="boton-con-badge">
-                    <p-button icon="pi pi-percentage" severity="info" size="small" [text]="true" (onClick)="abrirDescuentos(linea)" />
+                    <p-button icon="pi pi-percentage" severity="info" size="large" [text]="true" (onClick)="abrirDescuentos(linea)" />
                     @if (linea.tiene_descuento_pendiente) {
                       <span class="badge-pendiente"></span>
                     }
                   </span>
                 </td>
                 @if (cotizacion()!.activa) {
-                  <td><p-button icon="pi pi-trash" severity="danger" size="small" [text]="true" (onClick)="quitarServicio(linea.id_cotizacion_servicios)" /></td>
+                  <td><p-button icon="pi pi-trash" severity="danger" size="large" [text]="true" (onClick)="quitarServicio(linea.id_cotizacion_servicios)" /></td>
                 }
               </tr>
             }
@@ -160,7 +167,7 @@
           </div>
           <div class="field field-checkbox">
             <p-checkbox [(ngModel)]="detalleForm.brindis" [binary]="true" inputId="brindis" />
-            <label for="brindis">Incluye brindis</label>
+            <label for="brindis"> necesita copas de brindis</label>
           </div>
           <div class="field">
             <label>Color de mantel</label>

@@ -2,7 +2,7 @@
   <div class="cliente-detail">
     <div class="detail-header">
       <p-button label="← Volver" severity="secondary" size="small" (onClick)="volver()" />
-      <p-button label="Editar" (onClick)="irAEditar()" />
+      <p-button label="Editar" (onClick)="abrirEditar()" />
     </div>
 
     <div class="detail-grid">
@@ -57,3 +57,4 @@
     </p-card>
   </div>
 }
+<app-cliente-form-dialog #clienteFormDialog (guardado)="recargar()" />

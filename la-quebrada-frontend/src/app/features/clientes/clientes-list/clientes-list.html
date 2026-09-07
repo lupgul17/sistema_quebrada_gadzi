@@ -8,7 +8,7 @@
       (ngModelChange)="onBusquedaChange($event)"
       class="buscador"
     />
-    <p-button label="+ Nuevo cliente" (onClick)="irANuevo()" />
+    <p-button label="+ Nuevo cliente" (onClick)="abrirNuevo()" />
   </div>
 <div class="table-container">
   <p-table #dt [value]="clientes()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
@@ -40,7 +40,7 @@
     <td class="col-acciones">
   <div class="acciones-wrapper">
     <p-button icon="pi pi-eye" severity="info" size="small" (onClick)="irADetalle(cliente)" />
-    <p-button icon="pi pi-pencil" severity="secondary" size="small" [dt]="editarButtonTokens" (onClick)="irAEditar(cliente)" />
+    <p-button icon="pi pi-pencil" severity="secondary" size="small" [dt]="editarButtonTokens" (onClick)="abrirEditar(cliente, $event)" />
   </div>
 </td>
   </tr>
@@ -53,3 +53,4 @@
   </p-table>
   </div>
 </div>
+<app-cliente-form-dialog #clienteFormDialog (guardado)="cargarClientes()" /> 

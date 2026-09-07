@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ViewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -8,6 +8,7 @@ import { DatePicker } from 'primeng/datepicker';
 import { Button } from 'primeng/button';
 import { API_URL } from '../../../core/api-config';
 import { DatePipe } from '@angular/common';
+import { EventoFormDialog } from '../evento-form-dialog/evento-form-dialog';
 
 interface Evento {
   id_evento: number;
@@ -34,13 +35,15 @@ const ESTADOS = [
 @Component({
   selector: 'app-eventos-list',
   standalone: true,
-  imports: [TableModule, Select, DatePicker, Button, FormsModule,DatePipe],
+  imports: [TableModule, Select, DatePicker, Button, FormsModule,DatePipe, EventoFormDialog],
   templateUrl: './eventos-list.html',
   styleUrl: './eventos-list.scss',
 })
 export class EventosList implements OnInit {
   readonly eventos = signal<Evento[]>([]);
   readonly estados = ESTADOS;
+  @ViewChild('eventoFormDialog') eventoFormDialog!: EventoFormDialog;
+
 
   estadoFiltro: string | null = null;
   fechaDesde: Date | null = null;
@@ -73,9 +76,9 @@ export class EventosList implements OnInit {
     this.router.navigate(['/eventos', evento.id_evento]);
   }
 
-  irANuevo(): void {
-    this.router.navigate(['/eventos/nuevo']);
-  }
+  abrirNuevo(): void {
+  this.eventoFormDialog.abrirNuevo();
+}
 
   estadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
     const mapa: Record<string, 'success' | 'info' | 'warn' | 'danger' | 'secondary'> = {

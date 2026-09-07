@@ -1,10 +1,11 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { API_URL } from '../../../core/api-config';
+import { ClienteFormDialog } from '../cliente-form-dialog/cliente-form-dialog';
 
 interface Cliente {
   id_cliente: number;
@@ -38,7 +39,7 @@ interface PagoCliente {
 @Component({
   selector: 'app-cliente-detail',
   standalone: true,
-  imports: [CommonModule, Button, Card],
+  imports: [CommonModule, Button, Card, ClienteFormDialog],
   templateUrl: './cliente-detail.html',
   styleUrl: './cliente-detail.scss',
 })
@@ -47,6 +48,7 @@ export class ClienteDetail implements OnInit {
   readonly eventos = signal<EventoCliente[]>([]);
   readonly pagos = signal<PagoCliente[]>([]);
   private idCliente!: string;
+  @ViewChild('clienteFormDialog') clienteFormDialog!: ClienteFormDialog;
 
   constructor(
     private http: HttpClient,
@@ -67,9 +69,13 @@ export class ClienteDetail implements OnInit {
     return [c.primer_nombre, c.segundo_nombre, c.primer_apellido, c.segundo_apellido].filter(Boolean).join(' ');
   }
 
-  irAEditar(): void {
-    this.router.navigate(['/clientes', this.idCliente, 'editar']);
-  }
+  abrirEditar(): void {
+  this.clienteFormDialog.abrirEditar(Number(this.idCliente));
+}
+
+recargar(): void {
+  this.http.get<Cliente>(`${API_URL}/clientes/${this.idCliente}`).subscribe((data) => this.cliente.set(data));
+}
 
   irAEvento(idEvento: number): void {
     this.router.navigate(['/eventos', idEvento]);

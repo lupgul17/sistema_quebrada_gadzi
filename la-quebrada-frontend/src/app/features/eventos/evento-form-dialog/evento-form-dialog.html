@@ -1,6 +1,4 @@
-<div class="evento-form">
-  <h2>{{ esEdicion() ? 'Editar evento' : 'Nuevo evento' }}</h2>
-
+<p-dialog [header]="esEdicion() ? 'Editar evento' : 'Nuevo evento'" [(visible)]="visible" [modal]="true" [style]="{ width: '750px', maxHeight: '90vh' }" [contentStyle]="{ overflow: 'auto' }">
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="grid-3">
       <div class="field">
@@ -13,6 +11,7 @@
           optionValue="id_cliente"
           placeholder="Seleccioná un cliente"
           filter
+          appendTo="body"
           fluid
         />
       </div>
@@ -26,6 +25,7 @@
           optionLabel="descripcion"
           optionValue="id_tipo_evento"
           placeholder="Seleccioná un tipo"
+          appendTo="body"
           fluid
         />
       </div>
@@ -40,17 +40,17 @@
 
       <div class="field">
         <label for="fecha">Fecha *</label>
-        <p-datepicker id="fecha" formControlName="fecha" dateFormat="dd/mm/yy" fluid />
+        <p-datepicker id="fecha" formControlName="fecha" dateFormat="dd/mm/yy" appendTo="body" fluid />
       </div>
 
       <div class="field">
         <label for="hora_inicio">Hora inicio *</label>
-        <p-datepicker id="hora_inicio" formControlName="hora_inicio" [timeOnly]="true" fluid />
+        <p-datepicker id="hora_inicio" formControlName="hora_inicio" [timeOnly]="true" appendTo="body" fluid />
       </div>
 
       <div class="field">
         <label for="hora_fin">Hora fin *</label>
-        <p-datepicker id="hora_fin" formControlName="hora_fin" [timeOnly]="true" fluid />
+        <p-datepicker id="hora_fin" formControlName="hora_fin" [timeOnly]="true" appendTo="body" fluid />
       </div>
 
       <div class="field">
@@ -114,4 +114,4 @@
       <p-button label="Guardar" type="submit" [loading]="cargando()" [disabled]="cargando()" />
     </div>
   </form>
-</div>
+</p-dialog>

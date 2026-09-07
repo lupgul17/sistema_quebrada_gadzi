@@ -57,24 +57,36 @@
                 <tr>
                   <td>{{ m.menu }}</td>
                   <td>{{ m.tipo_menu }}</td>
-                  <td><span class="estado-badge" [class]="'estado-' + m.resultado">{{ m.resultado }}</span></td>
+                  <td>
+                    <span class="estado-badge" [class]="'estado-' + m.resultado">{{ m.resultado }}</span>
+                    @if (m.es_adicional) {
+                      <span class="badge-extra">Extra</span>
+                    } @else {
+                      <span class="badge-incluido">Incluido</span>
+                    }
+                  </td>
                   <td class="col-acciones">
                     <div class="acciones-wrapper">
-                        @if (m.resultado === 'pendiente') {
-                        <p-button icon="pi pi-check" severity="success" size="small" [text]="true" (onClick)="resolverMenu(m.id_degustacion_menu, 'aprobado')" />
-                        <p-button icon="pi pi-times" severity="danger" size="small" [text]="true" (onClick)="resolverMenu(m.id_degustacion_menu, 'rechazado')" />
-                        }
+                      @if (m.resultado === 'pendiente') {
+                        <p-button icon="pi pi-check" severity="success" size="large" [text]="true" (onClick)="resolverMenu(m.id_degustacion_menu, 'aprobado')" />
+                        <p-button icon="pi pi-times" severity="danger" size="large" [text]="true" (onClick)="resolverMenu(m.id_degustacion_menu, 'rechazado')" />
+                      }
+                      <p-button icon="pi pi-trash" severity="danger" size="large" [text]="true" (onClick)="quitarMenu(m.id_degustacion_menu)" />
                     </div>
-                    </td>
+                  </td>
                 </tr>
               }
             </tbody>
           </table>
         }
-        <div class="agregar-linea">
-          <p-select [options]="menusDisponibles()" optionLabel="nombre" optionValue="id_menu" [(ngModel)]="menuParaAgregar" placeholder="Elegir menú a probar..." appendTo="body" fluid />
-          <p-button label="Agregar" size="small" [disabled]="!menuParaAgregar" [loading]="procesando()" (onClick)="agregarMenu()" />
-        </div>
+        @if (menusDegustados().length < 4) {
+          <div class="agregar-linea">
+            <p-select [options]="menusDisponibles()" optionLabel="nombre" optionValue="id_menu" [(ngModel)]="menuParaAgregar" placeholder="Elegir menú a probar..." appendTo="body" fluid />
+            <p-button label="Agregar" size="small" [disabled]="!menuParaAgregar" [loading]="procesando()" (onClick)="agregarMenu()" />
+          </div>
+        } @else {
+          <p class="hint">Ya se alcanzó el máximo de 4 platillos de degustación para este evento.</p>
+        }
       </div>
     }
   </div>

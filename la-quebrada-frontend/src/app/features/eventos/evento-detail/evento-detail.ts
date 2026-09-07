@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ViewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Button } from 'primeng/button';
@@ -10,6 +10,7 @@ import { CotizacionPanel } from '../cotizacion-panel/cotizacion-panel';
 import { PagosPanel } from '../pagos-panel/pagos-panel';
 import { DegustacionPanel } from '../degustacion-panel/degustacion-panel';
 import { ExtrasPanel } from '../extras-panel/extras-panel';
+import { EventoFormDialog } from '../evento-form-dialog/evento-form-dialog';
 
 interface EventoDetalle {
   id_evento: number;
@@ -45,7 +46,7 @@ const SIGUIENTE_ESTADO: Record<string, { estado: string; label: string }[]> = {
 @Component({
   selector: 'app-evento-detail',
   standalone: true,
-  imports: [Button, Card, Tabs, TabList, Tab, TabPanels, TabPanel,DatePipe, CotizacionPanel, PagosPanel, DegustacionPanel,ExtrasPanel],
+  imports: [Button, Card, Tabs, TabList, Tab, TabPanels, TabPanel,DatePipe, CotizacionPanel, PagosPanel, DegustacionPanel,ExtrasPanel,EventoFormDialog],
   templateUrl: './evento-detail.html',
   styleUrl: './evento-detail.scss',
 })
@@ -53,6 +54,7 @@ export class EventoDetail implements OnInit {
   readonly evento = signal<EventoDetalle | null>(null);
   readonly cambiandoEstado = signal(false);
   private idEvento!: string;
+  @ViewChild('eventoFormDialog') eventoFormDialog!: EventoFormDialog;
 
   constructor(
     private http: HttpClient,
@@ -88,9 +90,9 @@ export class EventoDetail implements OnInit {
     });
   }
 
-  irAEditar(): void {
-    this.router.navigate(['/eventos', this.idEvento, 'editar']);
-  }
+  abrirEditar(): void {
+  this.eventoFormDialog.abrirEditar(Number(this.idEvento));
+}
 
   volver(): void {
     this.router.navigate(['/eventos']);

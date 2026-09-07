@@ -18,33 +18,17 @@ export const routes: Routes = [
         path: 'clientes',
         loadComponent: () => import('./features/clientes/clientes-list/clientes-list').then((m) => m.ClientesList),
       },
-     {
-        path: 'clientes/nuevo',
-        loadComponent: () => import('./features/clientes/cliente-form/cliente-form').then((m) => m.ClienteForm),
-      },
       {
         path: 'clientes/:id',
         loadComponent: () => import('./features/clientes/cliente-detail/cliente-detail').then((m) => m.ClienteDetail),
-      },
-      {
-        path: 'clientes/:id/editar',
-        loadComponent: () => import('./features/clientes/cliente-form/cliente-form').then((m) => m.ClienteForm),
       },
       {
         path: 'eventos',
         loadComponent: () => import('./features/eventos/eventos-list/eventos-list').then((m) => m.EventosList),
       },
       {
-        path: 'eventos/nuevo',
-        loadComponent: () => import('./features/eventos/evento-form/evento-form').then((m) => m.EventoForm),
-      },
-      {
         path: 'eventos/:id',
         loadComponent: () => import('./features/eventos/evento-detail/evento-detail').then((m) => m.EventoDetail),
-      },
-      {
-      path: 'eventos/:id/editar',
-        loadComponent: () => import('./features/eventos/evento-form/evento-form').then((m) => m.EventoForm),
       },
       {
         path: 'servicios',
@@ -62,7 +46,11 @@ export const routes: Routes = [
         path: 'degustaciones',
         loadComponent: () => import('./features/degustaciones/fechas-degustacion-list/fechas-degustacion-list').then((m) => m.FechasDegustacionList),
       },
-      
+      {
+        path: 'reportes',
+        loadComponent: () => import('./features/reportes/reportes-page/reportes-page').then((m) => m.ReportesPage),
+      },
+            
     ],
   },
   { path: '**', redirectTo: '' },

@@ -5,6 +5,7 @@ interface PagoResumen {
 }
 
 interface DatosPlantilla {
+  logoUrl: string;
   clienteNombre: string;
   clienteTelefono: string | null;
   fechaCotizacion: string;
@@ -16,7 +17,7 @@ interface DatosPlantilla {
   version: number;
   vigenciaDias: number;
   vendedor: string | null;
-  menus: { nombre: string; precio: number; subtotal: number }[];
+  menus: { nombre: string; cantidad: number; precio: number; subtotal: number; esExtraDegustacion: boolean }[];
   servicios: { nombre: string; cantidad: number; precio: number; subtotal: number }[];
   subtotalMenus: number;
   subtotalServicios: number;
@@ -42,9 +43,14 @@ const NOMBRE_CONCEPTO: Record<string, string> = {
 };
 
 export function armarHtmlCotizacion(d: DatosPlantilla): string {
-  const filaMenu = (m: { nombre: string; precio: number; subtotal: number }) => `
-    <tr><td>${m.nombre}</td><td class="num">Q${m.precio.toFixed(2)}</td><td class="num">Q${m.subtotal.toFixed(2)}</td></tr>
-  `;
+  const filaMenu = (m: { nombre: string; cantidad: number; precio: number; subtotal: number; esExtraDegustacion: boolean }) => `
+  <tr>
+    <td>${m.nombre}${m.esExtraDegustacion ? ' <span class="tag-degustacion">Degustación</span>' : ''}</td>
+    <td class="num">${m.cantidad}</td>
+    <td class="num">Q${m.precio.toFixed(2)}</td>
+    <td class="num">Q${m.subtotal.toFixed(2)}</td>
+  </tr>
+`;
   const filaServicio = (s: { nombre: string; cantidad: number; precio: number; subtotal: number }) => `
     <tr><td>${s.nombre}</td><td class="num">${s.cantidad}</td><td class="num">Q${s.precio.toFixed(2)}</td><td class="num">Q${s.subtotal.toFixed(2)}</td></tr>
   `;
@@ -83,14 +89,23 @@ export function armarHtmlCotizacion(d: DatosPlantilla): string {
   .detalles-grid { display: flex; flex-wrap: wrap; gap: 15px; }
   .footer { margin-top: 25px; font-size: 9px; color: #777; border-top: 1px solid #eee; padding-top: 10px; }
   .footer p { margin: 2px 0; }
+  .tag-degustacion {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 8px;
+  font-weight: bold;
+  background: #fff3cd;
+  color: #856404;
+  margin-left: 4px;
+}
 </style>
 </head>
 <body>
   <div class="header">
-    <p class="etiqueta">Cotización de servicio</p>
-    <h1>${d.eventoLocacion}</h1>
-    <p>El escenario perfecto para su evento</p>
-  </div>
+  <img src="${d.logoUrl}" alt="Logo" style="max-height:100px; margin-bottom:8px;" />
+  <p class="etiqueta">Cotización de servicio</p>
+</div>
 
   <div class="info-boxes">
     <div class="info-box">
@@ -117,7 +132,7 @@ export function armarHtmlCotizacion(d: DatosPlantilla): string {
   ${d.menus.length > 0 ? `
     <div class="seccion-titulo">Descripción — Menú</div>
     <table>
-      <thead><tr><th>Descripción</th><th>P/unitario</th><th>Total</th></tr></thead>
+      <thead><tr><th>Descripción</th><th class="num">Cant.</th><th class="num">P/unitario</th><th class="num">Total</th></tr></thead>
       <tbody>${d.menus.map(filaMenu).join('')}</tbody>
     </table>
   ` : ''}
@@ -125,7 +140,7 @@ export function armarHtmlCotizacion(d: DatosPlantilla): string {
   ${d.servicios.length > 0 ? `
     <div class="seccion-titulo">Descripción — Servicios</div>
     <table>
-      <thead><tr><th>Descripción</th><th>Cant.</th><th>P/unitario</th><th>Total</th></tr></thead>
+      <thead><tr><th>Descripción</th><th class="num">Cant.</th><th class="num">P/unitario</th><th class="num">Total</th></tr></thead>
       <tbody>${d.servicios.map(filaServicio).join('')}</tbody>
     </table>
   ` : ''}

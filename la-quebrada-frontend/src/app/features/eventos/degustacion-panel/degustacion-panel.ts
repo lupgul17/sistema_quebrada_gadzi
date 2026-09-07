@@ -8,6 +8,7 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { DatePicker } from 'primeng/datepicker';
 import { API_URL } from '../../../core/api-config';
+import { SaldoEventoService } from '../../../core/saldo-evento.service';
 
 interface DegustacionResumen {
   id_degustacion: number;
@@ -35,6 +36,7 @@ interface MenuDegustado {
   menu: string;
   tipo_menu: string;
   resultado: string;
+  es_adicional: boolean;
   notas: string | null;
 }
 
@@ -55,7 +57,7 @@ const SIGUIENTE_ESTADO_DEGUSTACION: Record<string, { estado: string; label: stri
 @Component({
   selector: 'app-degustacion-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, Select, Textarea, Button, Dialog, DatePicker],
+  imports: [CommonModule, FormsModule, Select, Textarea, Button, Dialog, DatePicker, ],
   templateUrl: './degustacion-panel.html',
   styleUrl: './degustacion-panel.scss',
 })
@@ -76,19 +78,13 @@ export class DegustacionPanel implements OnInit {
   horaLlegada: Date | null = null;
   menuParaAgregar: number | null = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,private saldoService: SaldoEventoService) {}
 
   ngOnInit(): void {
     this.http.get<MenuOpcion[]>(`${API_URL}/menus`).subscribe((data) => this.menusDisponibles.set(data));
     this.cargarDegustaciones();
   }
-  private formatearFechaCorta(fechaIso: string): string {
-    const d = new Date(fechaIso);
-    const dia = d.getUTCDate().toString().padStart(2, '0');
-    const mes = (d.getUTCMonth() + 1).toString().padStart(2, '0');
-    const anio = d.getUTCFullYear();
-    return `${dia}/${mes}/${anio}`;
-  }
+
   cargarDegustaciones(): void {
     this.cargando.set(true);
     this.http.get<DegustacionResumen[]>(`${API_URL}/eventos/${this.idEvento}/degustaciones`).subscribe((data) => {
@@ -133,7 +129,7 @@ export class DegustacionPanel implements OnInit {
     this.http.get<FechaDisponible[]>(`${API_URL}/degustaciones/fechas`).subscribe((data) => {
       const conLabel = data.map((f) => ({
         ...f,
-        label: `${this.formatearFechaCorta(f.fecha)} ${f.hora_inicio.substring(0, 5)} — ${f.estado} (${f.eventos_agendados} agendados)`,
+        label: `${f.fecha} ${f.hora_inicio.substring(0, 5)} — ${f.estado} (${f.eventos_agendados} agendados)`,
       }));
       this.fechasDisponibles.set(conLabel);
     });
@@ -163,17 +159,36 @@ export class DegustacionPanel implements OnInit {
   agregarMenu(): void {
     const id = this.degustacionSeleccionada();
     if (!id || !this.menuParaAgregar) return;
+    if (this.menusDegustados().length >= 4) return;
+
     this.procesando.set(true);
-    this.http.post(`${API_URL}/degustaciones/${id}/menu`, { id_menu: this.menuParaAgregar }).subscribe(() => {
-      this.procesando.set(false);
-      this.menuParaAgregar = null;
-      this.seleccionar(id);
+    this.http.post(`${API_URL}/degustaciones/${id}/menu`, { id_menu: this.menuParaAgregar }).subscribe({
+      next: () => {
+        this.procesando.set(false);
+        this.menuParaAgregar = null;
+        this.seleccionar(id);
+      },
+      error: (err) => {
+        this.procesando.set(false);
+        alert(err.error?.error ?? 'Error al agregar el menú');
+      },
     });
   }
 
   resolverMenu(idLinea: number, resultado: 'aprobado' | 'rechazado'): void {
     const id = this.degustacionSeleccionada();
     if (!id) return;
-    this.http.patch(`${API_URL}/degustaciones/menu/${idLinea}`, { resultado }).subscribe(() => this.seleccionar(id));
+    this.http.patch(`${API_URL}/degustaciones/menu/${idLinea}`, { resultado }).subscribe(() => {
+        this.seleccionar(id);
+        this.saldoService.actualizar(this.idEvento);});
   }
+
+  quitarMenu(idLinea: number): void {
+  const id = this.degustacionSeleccionada();
+  if (!id) return;
+  this.http.patch(`${API_URL}/degustaciones/menu/${idLinea}/quitar`, {}).subscribe(() => {
+    this.seleccionar(id);
+    this.saldoService.actualizar(this.idEvento);
+  });
+}
 }

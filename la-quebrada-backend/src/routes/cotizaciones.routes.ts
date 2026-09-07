@@ -1,7 +1,12 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
 import puppeteer from 'puppeteer';
-import { armarHtmlCotizacion } from '../templates/cotizacion.template.js';
+import { armarHtmlCotizacion } from '../templates/reports/cotizacion.template.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const router = Router();
 
@@ -188,6 +193,10 @@ router.patch('/descuentos/:idDescuento', async (req, res) => {
 // GET /api/cotizaciones/:id/pdf
 router.get('/:id/pdf', async (req, res) => {
   try {
+
+    const logoPath = path.join(__dirname, '..', '..', 'assets', 'logo-quebrada.png');
+    const logoBase64 = fs.readFileSync(logoPath).toString('base64');
+    const logoDataUri = `data:image/png;base64,${logoBase64}`;
     const [detalleRes, menusRes, serviciosRes] = await Promise.all([
       pool.query('SELECT * FROM fn_cotizacion_detalle($1::integer)', [req.params.id]),
       pool.query('SELECT * FROM fn_cotizacion_menu_detalle($1::integer)', [req.params.id]),
@@ -210,6 +219,7 @@ router.get('/:id/pdf', async (req, res) => {
     const saldo = saldoRes.rows[0];
 
     const html = armarHtmlCotizacion({
+      logoUrl: logoDataUri,
       clienteNombre: evento?.cliente ?? '—',
       clienteTelefono: evento?.telefono_cliente ?? null,
       fechaCotizacion: new Date(cot.fecha_cotizacion).toLocaleDateString('es-GT'),
@@ -221,7 +231,7 @@ router.get('/:id/pdf', async (req, res) => {
       version: cot.version,
       vigenciaDias: cot.vigencia_dias,
       vendedor: cot.vendedor,
-      menus: menusRes.rows.map((m) => ({ nombre: m.menu, precio: Number(m.precio_unitario_congelado), subtotal: Number(m.subtotal) })),
+      menus: menusRes.rows.map((m) => ({ nombre: m.menu, cantidad: m.cantidad, precio: Number(m.precio_unitario_congelado), subtotal: Number(m.subtotal), esExtraDegustacion: m.es_extra_degustacion })),
       servicios: serviciosRes.rows.map((s) => ({ nombre: s.servicio, cantidad: s.cantidad, precio: Number(s.precio_unitario_congelado), subtotal: Number(s.subtotal) })),
       subtotalMenus: Number(cot.subtotal_menus),
       subtotalServicios: Number(cot.subtotal_servicios),

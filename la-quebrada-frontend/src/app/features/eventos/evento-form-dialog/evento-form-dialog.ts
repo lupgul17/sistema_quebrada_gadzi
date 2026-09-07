@@ -1,7 +1,6 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, EventEmitter, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { InputText } from 'primeng/inputtext';
 import { InputNumber } from 'primeng/inputnumber';
@@ -10,9 +9,9 @@ import { Select } from 'primeng/select';
 import { DatePicker } from 'primeng/datepicker';
 import { Checkbox } from 'primeng/checkbox';
 import { Button } from 'primeng/button';
+import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { API_URL } from '../../../core/api-config';
-
 
 interface ClienteOpcion {
   id_cliente: number;
@@ -35,16 +34,19 @@ interface SalonDisponibilidad {
 }
 
 @Component({
-  selector: 'app-evento-form',
+  selector: 'app-evento-form-dialog',
   standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule, FormsModule, InputText, InputNumber, Textarea,
-    Select, DatePicker, Checkbox, Button, Message,
+    CommonModule, ReactiveFormsModule, InputText, InputNumber, Textarea,
+    Select, DatePicker, Checkbox, Button, Dialog, Message,FormsModule
   ],
-  templateUrl: './evento-form.html',
-  styleUrl: './evento-form.scss',
+  templateUrl: './evento-form-dialog.html',
+  styleUrl: './evento-form-dialog.scss',
 })
-export class EventoForm implements OnInit {
+export class EventoFormDialog {
+  @Output() guardado = new EventEmitter<void>();
+
+  readonly visible = signal(false);
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
   readonly esEdicion = signal(false);
@@ -53,55 +55,65 @@ export class EventoForm implements OnInit {
   readonly salones = signal<SalonDisponibilidad[]>([]);
   readonly form;
 
-  private idEvento: string | null = null;
+  private idEvento: number | null = null;
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient,
-    private route: ActivatedRoute,
-    private router: Router
+    private http: HttpClient
   ) {
     this.form = this.fb.group({
-  id_cliente: this.fb.control<number | null>(null, Validators.required),
-  id_tipo_evento: this.fb.control<number | null>(null),
-  fecha: this.fb.control<Date | null>(null, Validators.required),
-  hora_inicio: this.fb.control<Date | null>(null, Validators.required),
-  hora_fin: this.fb.control<Date | null>(null, Validators.required),
-  total_adultos: [0],
-  total_menores: [0],
-  notas: [''],
-  reserva_temporal: [false],
-  salones: this.fb.control<number[]>([]),
-});
+      id_cliente: this.fb.control<number | null>(null, Validators.required),
+      id_tipo_evento: this.fb.control<number | null>(null),
+      fecha: this.fb.control<Date | null>(null, Validators.required),
+      hora_inicio: this.fb.control<Date | null>(null, Validators.required),
+      hora_fin: this.fb.control<Date | null>(null, Validators.required),
+      total_adultos: [0],
+      total_menores: [0],
+      notas: [''],
+      reserva_temporal: [false],
+      salones: this.fb.control<number[]>([]),
+    });
   }
 
-  ngOnInit(): void {
+  private cargarCatalogos(): void {
     this.http.get<ClienteOpcion[]>(`${API_URL}/clientes`).subscribe((data) => {
-  const conNombreCompleto = data.map((c) => ({ ...c, nombre_completo: this.nombreCliente(c) }));
-  this.clientes.set(conNombreCompleto);
-});
+      const conNombreCompleto = data.map((c) => ({ ...c, nombre_completo: this.nombreCliente(c) }));
+      this.clientes.set(conNombreCompleto);
+    });
     this.http.get<TipoEventoOpcion[]>(`${API_URL}/tipos-evento`).subscribe((data) => this.tiposEvento.set(data));
+  }
 
-    this.idEvento = this.route.snapshot.paramMap.get('id');
+  abrirNuevo(): void {
+    this.idEvento = null;
+    this.esEdicion.set(false);
+    this.error.set(null);
+    this.form.reset({ total_adultos: 0, total_menores: 0, reserva_temporal: false, salones: [] });
+    this.salones.set([]);
+    this.cargarCatalogos();
+    this.visible.set(true);
+  }
 
-    if (this.idEvento && this.idEvento !== 'nuevo') {
-      this.esEdicion.set(true);
-      this.http.get<any>(`${API_URL}/eventos/${this.idEvento}`).subscribe((evento) => {
-        this.form.patchValue({
-  id_cliente: evento.id_cliente,
-  id_tipo_evento: evento.id_tipo_evento,
-  fecha: new Date(evento.fecha),
-  hora_inicio: this.horaAFecha(evento.hora_inicio),
-  hora_fin: this.horaAFecha(evento.hora_fin),
-  total_adultos: evento.total_adultos,
-  total_menores: evento.total_menores,
-  notas: evento.notas,
-  reserva_temporal: evento.reserva_temporal,
-  salones: evento.salones_ids ?? [],
-});
-        this.consultarDisponibilidad();
+  abrirEditar(idEvento: number): void {
+    this.idEvento = idEvento;
+    this.esEdicion.set(true);
+    this.error.set(null);
+    this.cargarCatalogos();
+    this.http.get<any>(`${API_URL}/eventos/${idEvento}`).subscribe((evento) => {
+      this.form.patchValue({
+        id_cliente: evento.id_cliente,
+        id_tipo_evento: evento.id_tipo_evento,
+        fecha: new Date(evento.fecha),
+        hora_inicio: this.horaAFecha(evento.hora_inicio),
+        hora_fin: this.horaAFecha(evento.hora_fin),
+        total_adultos: evento.total_adultos,
+        total_menores: evento.total_menores,
+        notas: evento.notas,
+        reserva_temporal: evento.reserva_temporal,
+        salones: evento.salones_ids ?? [],
       });
-    }
+      this.consultarDisponibilidad();
+    });
+    this.visible.set(true);
   }
 
   nombreCliente(c: ClienteOpcion): string {
@@ -118,7 +130,7 @@ export class EventoForm implements OnInit {
       hora_fin: this.formatearHora(hora_fin),
     });
     if (this.esEdicion() && this.idEvento) {
-      params.set('excluir_evento', this.idEvento);
+      params.set('excluir_evento', this.idEvento.toString());
     }
 
     this.http.get<SalonDisponibilidad[]>(`${API_URL}/eventos/disponibilidad-salones?${params}`).subscribe((data) => {
@@ -165,9 +177,10 @@ export class EventoForm implements OnInit {
       : this.http.post(`${API_URL}/eventos`, body);
 
     peticion.subscribe({
-      next: (res: any) => {
+      next: () => {
         this.cargando.set(false);
-        this.router.navigate(['/eventos', this.esEdicion() ? this.idEvento : res.id_evento]);
+        this.visible.set(false);
+        this.guardado.emit();
       },
       error: (err) => {
         this.cargando.set(false);
@@ -177,7 +190,7 @@ export class EventoForm implements OnInit {
   }
 
   cancelar(): void {
-    this.router.navigate(['/eventos']);
+    this.visible.set(false);
   }
 
   private formatearFecha(fecha: Date): string {

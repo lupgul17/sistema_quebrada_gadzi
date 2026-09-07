@@ -60,6 +60,13 @@
   }
 
   .col-acciones {
+    ::ng-deep .pi-check,
+    ::ng-deep .pi-times {
+      font-size: 1.15rem;
+    }
+  }
+
+  .acciones-wrapper {
     display: flex;
     gap: 0.2rem;
   }
@@ -80,6 +87,24 @@
     &.estado-agendada, &.estado-pendiente { background: #fff3cd; color: #856404; }
     &.estado-realizada, &.estado-aprobado { background: #d4edda; color: #155724; }
     &.estado-cancelada, &.estado-rechazado { background: #f8d7da; color: #721c24; }
+  }
+
+  .badge-incluido, .badge-extra {
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin-left: 0.4rem;
+  }
+
+  .badge-incluido {
+    background: var(--p-surface-200);
+    color: var(--p-text-muted-color);
+  }
+
+  .badge-extra {
+    background: #fff3cd;
+    color: #856404;
   }
 }
 
@@ -124,17 +149,4 @@
   gap: 0.75rem;
   justify-content: flex-end;
   margin-top: 0.5rem;
-}
-.col-acciones {
-  ::ng-deep .pi-check,
-  ::ng-deep .pi-times {
-    font-size: 1.15rem;
-  }
-}
-
-.acciones-wrapper {
-  display: flex;
-  gap: 0.2rem;
-  width: 100%;
-  min-height: 2rem;
 }

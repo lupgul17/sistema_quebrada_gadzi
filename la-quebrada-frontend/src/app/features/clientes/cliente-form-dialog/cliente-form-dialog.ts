@@ -1,33 +1,34 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, EventEmitter, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { InputText } from 'primeng/inputtext';
 import { Button } from 'primeng/button';
+import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { API_URL } from '../../../core/api-config';
 
 @Component({
-  selector: 'app-cliente-form',
+  selector: 'app-cliente-form-dialog',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, InputText, Button, Message],
-  templateUrl: './cliente-form.html',
-  styleUrl: './cliente-form.scss',
+  imports: [CommonModule, ReactiveFormsModule, InputText, Button, Dialog, Message],
+  templateUrl: './cliente-form-dialog.html',
+  styleUrl: './cliente-form-dialog.scss',
 })
-export class ClienteForm implements OnInit {
+export class ClienteFormDialog {
+  @Output() guardado = new EventEmitter<void>();
+
+  readonly visible = signal(false);
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
   readonly esEdicion = signal(false);
   readonly form;
 
-  private idCliente: string | null = null;
+  private idCliente: number | null = null;
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient,
-    private route: ActivatedRoute,
-    private router: Router
+    private http: HttpClient
   ) {
     this.form = this.fb.group({
       primer_nombre: ['', Validators.required],
@@ -41,15 +42,22 @@ export class ClienteForm implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    this.idCliente = this.route.snapshot.paramMap.get('id');
+  abrirNuevo(): void {
+    this.idCliente = null;
+    this.esEdicion.set(false);
+    this.form.reset();
+    this.error.set(null);
+    this.visible.set(true);
+  }
 
-    if (this.idCliente && this.idCliente !== 'nuevo') {
-      this.esEdicion.set(true);
-      this.http.get<any>(`${API_URL}/clientes/${this.idCliente}`).subscribe((cliente) => {
-        this.form.patchValue(cliente);
-      });
-    }
+  abrirEditar(idCliente: number): void {
+    this.idCliente = idCliente;
+    this.esEdicion.set(true);
+    this.error.set(null);
+    this.http.get<any>(`${API_URL}/clientes/${idCliente}`).subscribe((cliente) => {
+      this.form.patchValue(cliente);
+    });
+    this.visible.set(true);
   }
 
   onSubmit(): void {
@@ -69,7 +77,8 @@ export class ClienteForm implements OnInit {
     peticion.subscribe({
       next: () => {
         this.cargando.set(false);
-        this.router.navigate(['/clientes']);
+        this.visible.set(false);
+        this.guardado.emit();
       },
       error: (err) => {
         this.cargando.set(false);
@@ -79,6 +88,6 @@ export class ClienteForm implements OnInit {
   }
 
   cancelar(): void {
-    this.router.navigate(['/clientes']);
+    this.visible.set(false);
   }
 }

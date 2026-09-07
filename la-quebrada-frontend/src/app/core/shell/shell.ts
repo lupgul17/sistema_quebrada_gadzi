@@ -47,6 +47,7 @@ export class Shell {
       if (ruta?.startsWith('/menu')) return 'Menú';
       if (ruta?.startsWith('/pagos')) return 'Pagos';
       if (ruta?.startsWith('/degustaciones')) return 'Degustaciones';
+      if (ruta?.startsWith('/reportes')) return 'Reportes';
       return '';
     });
   }

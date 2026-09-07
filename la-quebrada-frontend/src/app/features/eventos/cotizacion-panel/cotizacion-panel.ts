@@ -23,8 +23,11 @@ interface LineaMenu {
   id_cotizacion_menu: number;
   menu: string;
   tipo_menu: string;
+  cantidad: number;
   precio_unitario_congelado: number;
   subtotal: number;
+  es_extra_degustacion: boolean;
+  
 }
 
 interface LineaServicio {

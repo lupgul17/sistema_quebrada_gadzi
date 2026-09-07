@@ -4,7 +4,7 @@
     <p-datepicker [(ngModel)]="fechaDesde" (onSelect)="cargarEventos()" placeholder="Desde" dateFormat="dd/mm/yy" />
     <p-datepicker [(ngModel)]="fechaHasta" (onSelect)="cargarEventos()" placeholder="Hasta" dateFormat="dd/mm/yy" />
     <span class="spacer"></span>
-    <p-button label="+ Nuevo evento" (onClick)="irANuevo()" />
+    <p-button label="+ Nuevo evento" (onClick)="abrirNuevo()" />
   </div>
 
   <div class="table-container">
@@ -47,3 +47,4 @@
     </p-table>
   </div>
 </div>
+<app-evento-form-dialog #eventoFormDialog (guardado)="cargarEventos()" />

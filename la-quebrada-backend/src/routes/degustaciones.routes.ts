@@ -135,5 +135,14 @@ router.get('/fechas/:id/agendados', async (req, res) => {
     res.status(500).json({ error: (err as Error).message });
   }
 });
+// PATCH /api/degustaciones/menu/:idLinea/quitar
+router.patch('/menu/:idLinea/quitar', async (req, res) => {
+  try {
+    await pool.query('CALL sp_quitar_menu_degustacion($1::integer)', [req.params.idLinea]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
 
 export default router;

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal , ViewChild} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -7,6 +7,7 @@ import { Table, TableModule } from 'primeng/table';
 import { InputText } from 'primeng/inputtext';
 import { Button } from 'primeng/button';
 import { API_URL } from '../../../core/api-config';
+import { ClienteFormDialog } from '../cliente-form-dialog/cliente-form-dialog';
 
 interface Cliente {
   id_cliente: number;
@@ -21,7 +22,7 @@ interface Cliente {
 @Component({
   selector: 'app-clientes-list',
   standalone: true,
-  imports: [TableModule, InputText, Button, FormsModule],
+  imports: [TableModule, InputText, Button, FormsModule, ClienteFormDialog],
   templateUrl: './clientes-list.html',
   styleUrl: './clientes-list.scss',
 })
@@ -45,6 +46,7 @@ export class ClientesList implements OnInit {
   busqueda = '';
 
   private readonly busquedaSubject = new Subject<string>();
+  @ViewChild('clienteFormDialog') clienteFormDialog!: ClienteFormDialog;
 
   constructor(
     private http: HttpClient,
@@ -78,11 +80,15 @@ export class ClientesList implements OnInit {
     this.router.navigate(['/clientes', cliente.id_cliente]);
   }
 
-  irANuevo(): void {
-    this.router.navigate(['/clientes/nuevo']);
-  }
-  irAEditar(cliente: Cliente): void {
-  this.router.navigate(['/clientes', cliente.id_cliente, 'editar']);
+ 
+
+abrirNuevo(): void {
+  this.clienteFormDialog.abrirNuevo();
+}
+
+abrirEditar(cliente: Cliente, event: Event): void {
+  event.stopPropagation();
+  this.clienteFormDialog.abrirEditar(cliente.id_cliente);
 }
 
   nombreCompleto(c: Cliente): string {

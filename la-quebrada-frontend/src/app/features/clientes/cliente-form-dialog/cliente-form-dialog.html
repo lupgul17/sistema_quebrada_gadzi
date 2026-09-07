@@ -1,6 +1,4 @@
-<div class="cliente-form">
-  <h2>{{ esEdicion() ? 'Editar cliente' : 'Nuevo cliente' }}</h2>
-
+<p-dialog [header]="esEdicion() ? 'Editar cliente' : 'Nuevo cliente'" [(visible)]="visible" [modal]="true" [style]="{ width: '600px' }" [contentStyle]="{ overflow: 'visible' }">
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="grid-2">
       <div class="field">
@@ -46,4 +44,4 @@
       <p-button label="Guardar" type="submit" [loading]="cargando()" [disabled]="cargando()" />
     </div>
   </form>
-</div>
+</p-dialog>

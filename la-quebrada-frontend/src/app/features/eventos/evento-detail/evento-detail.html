@@ -6,7 +6,7 @@
         @for (opcion of opcionesEstado(); track opcion.estado) {
           <p-button [label]="opcion.label" severity="secondary" size="small" [loading]="cambiandoEstado()" (onClick)="cambiarEstado(opcion.estado)" />
         }
-        <p-button label="Editar" (onClick)="irAEditar()" />
+        <p-button label="Editar" (onClick)="abrirEditar()" />
       </div>
     </div>
 
@@ -53,3 +53,4 @@
     </p-tabs>
   </div>
 }
+<app-evento-form-dialog #eventoFormDialog (guardado)="cargarEvento()" />
