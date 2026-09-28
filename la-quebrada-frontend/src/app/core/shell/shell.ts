@@ -8,11 +8,13 @@ import {VisorArchivoDialog} from '../visor-archivo-dialog/visor-archivo-dialog';
 import { PagosPendientesService } from '../pagos-pendientes.service';
 import { HttpClient } from '@angular/common/http';
 import { API_URL } from '../api-config';
+import { InactividadDialog } from '../inactividad-dialog/inactividad-dialog';
+import { InactividadService } from '../inactividad.service';
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, Button, VisorArchivoDialog],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, Button, VisorArchivoDialog, InactividadDialog],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })
@@ -25,10 +27,13 @@ export class Shell {
     private authService: AuthService,
     private router: Router,
     public pagosPendientesService: PagosPendientesService,
+    private inactividadService: InactividadService,
 
   ) {
     this.usuario = this.authService.usuario;
     this.pagosPendientesService.actualizar();
+    this.inactividadService.iniciar();
+
 
     this.rutaActual = toSignal(
       this.router.events.pipe(

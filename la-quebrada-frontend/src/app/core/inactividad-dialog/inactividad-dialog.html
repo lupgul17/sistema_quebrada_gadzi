@@ -1,0 +1,17 @@
+<p-dialog
+  header="¿Seguís ahí?"
+  [visible]="inactividadService.mostrandoAviso()"
+  [modal]="true"
+  [closable]="false"
+  [style]="{ width: '460px' }"
+  appendTo="body"
+>
+  <div class="contenido-centrado">
+    <i class="pi pi-clock icono"></i>
+    <p class="mensaje">
+      Tu sesión se va a cerrar por inactividad en
+      <strong>{{ inactividadService.segundosRestantes() }} segundos</strong>.
+    </p>
+    <p-button label="Seguir activo" (onClick)="seguirActivo()" />
+  </div>
+</p-dialog>
