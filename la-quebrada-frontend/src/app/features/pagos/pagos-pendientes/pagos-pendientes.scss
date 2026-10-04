@@ -6,7 +6,7 @@
   }
 
   .table-container {
-    border: 1px solid var(--p-surface-200);
+    border: 1px solid var(--lq-borde);
     border-radius: 12px;
     overflow: hidden;
   }
@@ -18,7 +18,7 @@
     th, td {
       text-align: left;
       padding: 0.75rem;
-      border-bottom: 1px solid var(--p-surface-200);
+      border-bottom: 1px solid var(--lq-borde);
       font-size: 0.9rem;
     }
   }
@@ -28,8 +28,8 @@
   }
 
   .link-cliente {
-    color: #093509;
-    font-weight: 600;
+    color: var(--lq-verde-claro);
+    font-weight: 500;
     cursor: pointer;
     text-decoration: underline;
   }

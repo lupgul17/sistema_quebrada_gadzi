@@ -1,7 +1,7 @@
 import { Injectable, signal, NgZone } from '@angular/core';
 import { AuthService } from './auth.service';
 
-const MINUTOS_INACTIVIDAD = 1;
+const MINUTOS_INACTIVIDAD = 30;
 const SEGUNDOS_AVISO = 60;
 const EVENTOS_ACTIVIDAD = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
 

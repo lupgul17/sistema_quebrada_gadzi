@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { pool } from '../db/pool.js';
 import { armarHtmlReporte } from '../templates/reports/reporte.template.js';
+import { armarHtmlDegustaciones } from '../templates/reports/reporte-degustacion.template.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -67,63 +68,79 @@ router.get('/:tipo/pdf', async (req, res) => {
     const { tipo } = req.params;
     const { fecha_desde, fecha_hasta } = req.query;
 
-    let titulo = '';
-    let subtitulo = '';
-    let columnas: string[] = [];
-    let filas: (string | number)[][] = [];
+    const logoPath = path.join(__dirname, '..', '..', 'assets', 'logo-quebrada.png');
+    const logoUrl = `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}`;
+
+    const tabla = (titulo: string, subtitulo: string, columnas: string[], filas: (string | number)[][]) =>
+      armarHtmlReporte({ titulo, subtitulo, columnas, filas, logoUrl });
+
+    let html = '';
+    let landscape = true;
 
     if (tipo === 'eventos') {
       const result = await pool.query('SELECT * FROM fn_listar_eventos(NULL, $1::date, $2::date, NULL)', [fecha_desde ?? null, fecha_hasta ?? null]);
-      titulo = 'Lista de eventos';
-      subtitulo = fecha_desde && fecha_hasta ? `${fecha_desde} al ${fecha_hasta}` : 'Todos';
-      columnas = ['Fecha', 'Cliente', 'Tipo', 'Salón(es)', 'Estado'];
-      filas = result.rows.map((r) => [new Date(r.fecha).toLocaleDateString('es-GT'), r.cliente, r.tipo_evento ?? '—', r.salones ?? '—', r.estado]);
+      html = tabla(
+        'Lista de eventos',
+        fecha_desde && fecha_hasta ? `${fecha_desde} al ${fecha_hasta}` : 'Todos',
+        ['Fecha', 'Cliente', 'Tipo', 'Salón(es)', 'Estado'],
+        result.rows.map((r) => [new Date(r.fecha).toLocaleDateString('es-GT'), r.cliente, r.tipo_evento ?? '—', r.salones ?? '—', r.estado])
+      );
     } else if (tipo === 'eventos-detallado') {
       const result = await pool.query('SELECT * FROM fn_reporte_eventos_detallado($1::date, $2::date)', [fecha_desde, fecha_hasta]);
-      titulo = 'Lista de eventos — Detallado';
-      subtitulo = `${fecha_desde} al ${fecha_hasta}`;
-      columnas = ['Fecha', 'Cliente', 'Tipo', 'Estado', 'Personas', 'Total a pagar', 'Pagado', 'Saldo', 'Degustación', 'Extras'];
-      filas = result.rows.map((r) => [
-        new Date(r.fecha).toLocaleDateString('es-GT'), r.cliente, r.tipo_evento ?? '—', r.estado,
-        `${r.total_adultos + r.total_menores}`, `Q${Number(r.total_a_pagar).toFixed(2)}`, `Q${Number(r.total_pagado).toFixed(2)}`,
-        `Q${Number(r.saldo_pendiente).toFixed(2)}`, r.tiene_degustacion ? 'Sí' : 'No', `Q${Number(r.total_extras).toFixed(2)}`,
-      ]);
+      html = tabla(
+        'Lista de eventos — Detallado',
+        `${fecha_desde} al ${fecha_hasta}`,
+        ['Fecha', 'Cliente', 'Tipo', 'Estado', 'Personas', 'Total a pagar', 'Pagado', 'Saldo', 'Degustación', 'Extras'],
+        result.rows.map((r) => [
+          new Date(r.fecha).toLocaleDateString('es-GT'), r.cliente, r.tipo_evento ?? '—', r.estado,
+          `${r.total_adultos + r.total_menores}`, `Q${Number(r.total_a_pagar).toFixed(2)}`, `Q${Number(r.total_pagado).toFixed(2)}`,
+          `Q${Number(r.saldo_pendiente).toFixed(2)}`, r.tiene_degustacion ? 'Sí' : 'No', `Q${Number(r.total_extras).toFixed(2)}`,
+        ])
+      );
     } else if (tipo === 'pendientes-pago') {
       const result = await pool.query('SELECT * FROM fn_reporte_pendientes_pago()');
-      titulo = 'Eventos pendientes de pago';
-      columnas = ['Fecha', 'Días restantes', 'Cliente', 'Total', 'Pagado', 'Saldo', 'Checkpoint'];
-      filas = result.rows.map((r) => [
-        new Date(r.fecha).toLocaleDateString('es-GT'), r.dias_para_evento, r.cliente,
-        `Q${Number(r.total_a_pagar).toFixed(2)}`, `Q${Number(r.total_pagado).toFixed(2)}`, `Q${Number(r.saldo_pendiente).toFixed(2)}`, r.checkpoint,
-      ]);
+      html = tabla(
+        'Eventos pendientes de pago',
+        '',
+        ['Fecha', 'Días restantes', 'Cliente', 'Total', 'Pagado', 'Saldo', 'Checkpoint'],
+        result.rows.map((r) => [
+          new Date(r.fecha).toLocaleDateString('es-GT'), r.dias_para_evento, r.cliente,
+          `Q${Number(r.total_a_pagar).toFixed(2)}`, `Q${Number(r.total_pagado).toFixed(2)}`, `Q${Number(r.saldo_pendiente).toFixed(2)}`, r.checkpoint,
+        ])
+      );
     } else if (tipo === 'degustaciones') {
       const result = await pool.query('SELECT * FROM fn_reporte_degustaciones_detallado($1::date, $2::date)', [fecha_desde, fecha_hasta]);
-      titulo = 'Degustaciones — Detallado';
-      subtitulo = `${fecha_desde} al ${fecha_hasta}`;
-      columnas = ['Fecha sesión', 'Hora', 'Cliente', 'Teléfono', 'Tipo evento', 'Menús a probar'];
-      filas = result.rows.map((r) => [
-        new Date(r.fecha_sesion).toLocaleDateString('es-GT'), r.hora_inicio.substring(0, 5), r.cliente, r.telefono ?? '—', r.tipo_evento ?? '—', r.menus,
-      ]);
+
+      const sesiones = new Map<string, { titulo: string; cards: any[] }>();
+      for (const r of result.rows) {
+        const clave = `${new Date(r.fecha_sesion).getTime()}-${r.hora_inicio}`;
+        if (!sesiones.has(clave)) {
+          const fechaLarga = new Date(r.fecha_sesion).toLocaleDateString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+          sesiones.set(clave, { titulo: `Degustación — ${fechaLarga}, ${r.hora_inicio.substring(0, 5)}`, cards: [] });
+        }
+        sesiones.get(clave)!.cards.push({
+          cliente: r.cliente,
+          tipoEvento: r.tipo_evento,
+          fechaEvento: new Date(r.fecha_evento).toLocaleDateString('es-GT'),
+          menus: r.menus,
+        });
+      }
+
+      html = armarHtmlDegustaciones({
+        logoUrl,
+        subtitulo: `${fecha_desde} al ${fecha_hasta}`,
+        sesiones: Array.from(sesiones.values()),
+      });
+      landscape = false;
     } else {
       res.status(400).json({ error: 'Tipo de reporte inválido' });
       return;
     }
 
-    const logoPath = path.join(__dirname, '..', '..', 'assets', 'logo-quebrada.png');
-    const logoBase64 = fs.readFileSync(logoPath).toString('base64');
-
-    const html = armarHtmlReporte({
-      titulo,
-      subtitulo,
-      columnas,
-      filas,
-      logoUrl: `data:image/png;base64,${logoBase64}`,
-    });
-
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'domcontentloaded' });
-    const pdfBuffer = await page.pdf({ format: 'Letter', printBackground: true, landscape: true, margin: { top: '20px', bottom: '20px' } });
+    const pdfBuffer = await page.pdf({ format: 'Letter', printBackground: true, landscape, margin: { top: '20px', bottom: '20px' } });
     await browser.close();
 
     res.setHeader('Content-Type', 'application/pdf');

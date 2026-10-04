@@ -10,7 +10,7 @@
   }
 
   .table-container {
-    border: 1px solid var(--p-surface-200);
+    border: 1px solid var(--lq-borde);
     border-radius: 12px;
     overflow: hidden;
   }
@@ -35,7 +35,7 @@
   margin-bottom: 1rem;
 
   label {
-    font-weight: 600;
+    font-weight: 500;
     font-size: 0.9rem;
   }
 }
@@ -54,7 +54,7 @@
   th, td {
     text-align: left;
     padding: 0.5rem;
-    border-bottom: 1px solid var(--p-surface-200);
+    border-bottom: 1px solid var(--lq-borde);
     font-size: 0.88rem;
   }
 }

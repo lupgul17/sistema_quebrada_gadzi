@@ -4,18 +4,21 @@
     align-items: center;
     justify-content: center;
     gap: 1rem;
-    background: #093509;
-    color: white;
-    border-radius: 8px;
+    background: var(--lq-charcoal);
+    border: 1px solid var(--lq-borde);
+    color: var(--lq-paper);
+    border-radius: var(--lq-radius-pill);
     padding: 0.5rem;
     margin-bottom: 0.75rem;
 
     ::ng-deep .p-button-text {
-      color: white;
+      color: var(--lq-fog);
     }
 
     .mes-nombre {
-      font-weight: 600;
+      font-family: var(--lq-font-display);
+      font-size: 1.35rem;
+      font-weight: 400;
       min-width: 140px;
       text-align: center;
       text-transform: capitalize;
@@ -27,7 +30,7 @@
     grid-template-columns: repeat(7, 1fr);
     text-align: center;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--p-text-muted-color);
     margin-bottom: 0.4rem;
   }
@@ -45,7 +48,7 @@
 
   .celda {
      min-height: 70px;
-    border: 1px solid #c2c8d0;
+    border: 1px solid var(--lq-borde);
     border-radius: 6px;
     padding: 0.3rem;
     font-size: 0.75rem;
@@ -55,12 +58,12 @@
     }
 
     &.hoy {
-      border-color: #093509;
+      border-color: var(--lq-verde-claro);
       border-width: 2px;
     }
 
     .numero-dia {
-      font-weight: 600;
+      font-weight: 500;
       display: block;
       margin-bottom: 0.2rem;
     }
@@ -79,7 +82,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
       font-size: 0.7rem;
-      font-weight: 600;
+      font-weight: 500;
     }
 
     .mas-eventos {

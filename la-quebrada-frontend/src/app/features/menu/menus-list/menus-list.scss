@@ -11,7 +11,7 @@
   }
 
   .table-container {
-    border: 1px solid var(--p-surface-200);
+    border: 1px solid var(--lq-borde);
     border-radius: 12px;
     overflow: hidden;
   }
@@ -36,7 +36,7 @@
   margin-bottom: 1rem;
 
   label {
-    font-weight: 600;
+    font-weight: 500;
     font-size: 0.9rem;
   }
 }
@@ -57,7 +57,7 @@
   margin: 1rem 0;
 
   > label {
-    font-weight: 600;
+    font-weight: 500;
     font-size: 0.9rem;
     display: block;
     margin-bottom: 0.5rem;
@@ -69,7 +69,7 @@
     .grupo-titulo {
       display: block;
       font-size: 0.78rem;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--p-text-muted-color);
       margin-bottom: 0.35rem;
     }
@@ -81,18 +81,18 @@
     }
 
     .chip {
-      border: 1px solid var(--p-surface-300);
-      background: white;
+      border: 1px solid var(--lq-borde-fuerte);
+      background: transparent;
       border-radius: 999px;
       padding: 0.3rem 0.8rem;
       font-size: 0.82rem;
       cursor: pointer;
 
       &.seleccionado {
-        border-color: #093509;
-        background: rgba(9, 53, 9, 0.08);
-        color: #093509;
-        font-weight: 600;
+        border-color: var(--lq-verde-claro);
+        background: var(--lq-verde-tinte);
+        color: var(--lq-verde-claro);
+        font-weight: 500;
       }
       
     }

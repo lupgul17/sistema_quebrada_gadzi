@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, OnInit, computed, signal, ViewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Button } from 'primeng/button';
@@ -43,6 +43,9 @@ const SIGUIENTE_ESTADO: Record<string, { estado: string; label: string }[]> = {
   cancelado: [],
 };
 
+// Degustación, extras y pagos solo aplican desde que el evento se confirma
+const ESTADOS_CONFIRMADOS = ['confirmado', 'en_curso', 'cerrado'];
+
 @Component({
   selector: 'app-evento-detail',
   standalone: true,
@@ -53,6 +56,7 @@ const SIGUIENTE_ESTADO: Record<string, { estado: string; label: string }[]> = {
 export class EventoDetail implements OnInit {
   readonly evento = signal<EventoDetalle | null>(null);
   readonly cambiandoEstado = signal(false);
+  readonly eventoConfirmado = computed(() => ESTADOS_CONFIRMADOS.includes(this.evento()?.estado ?? ''));
   private idEvento!: string;
   @ViewChild('eventoFormDialog') eventoFormDialog!: EventoFormDialog;
 

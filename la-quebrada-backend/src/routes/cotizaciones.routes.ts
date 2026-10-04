@@ -191,12 +191,9 @@ router.patch('/descuentos/:idDescuento', async (req, res) => {
 
 
 // GET /api/cotizaciones/:id/pdf
+// GET /api/cotizaciones/:id/pdf
 router.get('/:id/pdf', async (req, res) => {
   try {
-
-    const logoPath = path.join(__dirname, '..', '..', 'assets', 'logo-quebrada.png');
-    const logoBase64 = fs.readFileSync(logoPath).toString('base64');
-    const logoDataUri = `data:image/png;base64,${logoBase64}`;
     const [detalleRes, menusRes, serviciosRes] = await Promise.all([
       pool.query('SELECT * FROM fn_cotizacion_detalle($1::integer)', [req.params.id]),
       pool.query('SELECT * FROM fn_cotizacion_menu_detalle($1::integer)', [req.params.id]),
@@ -209,14 +206,46 @@ router.get('/:id/pdf', async (req, res) => {
       return;
     }
 
-    const [eventoRes, pagosRes, saldoRes] = await Promise.all([
+    const [eventoRes, pagosRes, saldoRes, extrasRes] = await Promise.all([
       pool.query('SELECT * FROM fn_evento_detalle($1::integer)', [cot.id_evento]),
       pool.query('SELECT * FROM fn_listar_pagos_evento($1::integer)', [cot.id_evento]),
       pool.query('SELECT * FROM fn_saldo_evento($1::integer)', [cot.id_evento]),
+      pool.query('SELECT * FROM fn_listar_extras_evento($1::integer)', [cot.id_evento]),
     ]);
     const evento = eventoRes.rows[0];
     const pagosVerificados = pagosRes.rows.filter((p) => p.estado === 'verificado');
     const saldo = saldoRes.rows[0];
+
+    // Extras: solo los que cuentan para el saldo (aprobado / pagado), y solo en la versión activa
+    const extrasFila = extrasRes.rows[0];
+    const estadosQueCuentan = ['aprobado', 'pagado'];
+    const extras = cot.activa && extrasFila
+      ? [
+          ...(extrasFila.servicios ?? [])
+            .filter((s: any) => estadosQueCuentan.includes(s.estado))
+            .map((s: any) => ({
+              nombre: s.servicio ?? s.descripcion ?? 'Cargo extra',
+              etiqueta: s.tipo_cargo_extra as string,
+              cantidad: Number(s.cantidad),
+              precio: Number(s.precio_unitario),
+              subtotal: Number(s.subtotal),
+            })),
+          ...(extrasFila.menus ?? [])
+            .filter((m: any) => estadosQueCuentan.includes(m.estado))
+            .map((m: any) => ({
+              nombre: m.menu ?? m.descripcion ?? 'Menú extra',
+              etiqueta: 'Menú',
+              cantidad: Number(m.cantidad),
+              precio: Number(m.precio_base),
+              subtotal: Number(m.subtotal),
+            })),
+        ]
+      : [];
+    const totalExtras = extras.reduce((acc, e) => acc + e.subtotal, 0);
+
+    // Logo incrustado como base64
+    const logoPath = path.join(__dirname, '..', '..', 'assets', 'logo-quebrada.png');
+    const logoDataUri = `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}`;
 
     const html = armarHtmlCotizacion({
       logoUrl: logoDataUri,
@@ -231,13 +260,26 @@ router.get('/:id/pdf', async (req, res) => {
       version: cot.version,
       vigenciaDias: cot.vigencia_dias,
       vendedor: cot.vendedor,
-      menus: menusRes.rows.map((m) => ({ nombre: m.menu, cantidad: m.cantidad, precio: Number(m.precio_unitario_congelado), subtotal: Number(m.subtotal), esExtraDegustacion: m.es_extra_degustacion })),
-      servicios: serviciosRes.rows.map((s) => ({ nombre: s.servicio, cantidad: s.cantidad, precio: Number(s.precio_unitario_congelado), subtotal: Number(s.subtotal) })),
+      menus: menusRes.rows.map((m) => ({
+        nombre: m.menu,
+        cantidad: m.cantidad,
+        precio: Number(m.precio_unitario_congelado),
+        subtotal: Number(m.subtotal),
+        esExtraDegustacion: m.es_extra_degustacion,
+      })),
+      servicios: serviciosRes.rows.map((s) => ({
+        nombre: s.servicio,
+        cantidad: s.cantidad,
+        precio: Number(s.precio_unitario_congelado),
+        subtotal: Number(s.subtotal),
+      })),
+      extras,
       subtotalMenus: Number(cot.subtotal_menus),
       subtotalServicios: Number(cot.subtotal_servicios),
       depositoGarantia: Number(cot.deposito_garantia),
       totalDescuento: Number(cot.total_descuento),
       total: Number(cot.total),
+      totalExtras,
       brindis: cot.brindis,
       cantidadMesaPrincipal: cot.cantidad_mesa_principal,
       cantidadMesasReservadas: cot.cantidad_mesas_reservadas,

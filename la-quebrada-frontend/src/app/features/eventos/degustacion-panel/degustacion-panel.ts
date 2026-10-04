@@ -19,6 +19,8 @@ interface DegustacionResumen {
   hora_llegada: string | null;
   estado: string;
   notas: string | null;
+  resultado: string;
+  motivo_rechazo: string | null;
 }
 
 interface FechaDisponible {
@@ -72,11 +74,13 @@ export class DegustacionPanel implements OnInit {
   readonly cargando = signal(true);
   readonly procesando = signal(false);
   readonly dialogoAgendarVisible = signal(false);
+  readonly dialogoRechazoVisible = signal(false);
 
   fechaElegida: number | null = null;
   notasAgendar = '';
   horaLlegada: Date | null = null;
   menuParaAgregar: number | null = null;
+  motivoRechazo = '';
 
   constructor(private http: HttpClient,private saldoService: SaldoEventoService) {}
 
@@ -86,7 +90,6 @@ export class DegustacionPanel implements OnInit {
   }
 
   cargarDegustaciones(): void {
-    this.cargando.set(true);
     this.http.get<DegustacionResumen[]>(`${API_URL}/eventos/${this.idEvento}/degustaciones`).subscribe((data) => {
       this.degustaciones.set(data);
       this.cargando.set(false);
@@ -119,6 +122,47 @@ export class DegustacionPanel implements OnInit {
     this.http.patch(`${API_URL}/degustaciones/${id}/estado`, { estado: nuevoEstado }).subscribe(() => {
       this.procesando.set(false);
       this.cargarDegustaciones();
+    });
+  }
+
+  aprobarDegustacion(): void {
+    const id = this.degustacionSeleccionada();
+    if (!id) return;
+    this.procesando.set(true);
+    this.http.patch(`${API_URL}/degustaciones/${id}/resultado`, { resultado: 'aprobada' }).subscribe({
+      next: () => {
+        this.procesando.set(false);
+        this.cargarDegustaciones();
+      },
+      error: (err) => {
+        this.procesando.set(false);
+        alert(err.error?.error ?? 'Error al aprobar la degustación');
+      },
+    });
+  }
+
+  abrirRechazo(): void {
+    this.motivoRechazo = '';
+    this.dialogoRechazoVisible.set(true);
+  }
+
+  confirmarRechazo(): void {
+    const id = this.degustacionSeleccionada();
+    if (!id || !this.motivoRechazo.trim()) return;
+    this.procesando.set(true);
+    this.http.patch(`${API_URL}/degustaciones/${id}/resultado`, {
+      resultado: 'rechazada',
+      motivo_rechazo: this.motivoRechazo,
+    }).subscribe({
+      next: () => {
+        this.procesando.set(false);
+        this.dialogoRechazoVisible.set(false);
+        this.cargarDegustaciones();
+      },
+      error: (err) => {
+        this.procesando.set(false);
+        alert(err.error?.error ?? 'Error al rechazar la degustación');
+      },
     });
   }
 

@@ -1,6 +1,136 @@
-/* You can add global styles to this file, and also import other style files */
 @import "primeicons/primeicons.css";
+
+/*
+ * Sistema visual La Quebrada — basado en la referencia "Giga" (oscuro, cinematográfico),
+ * adaptado a los colores del logo: verde bosque + dorado del ornamento.
+ */
+:root {
+  /* Superficies (negros cálidos) */
+  --lq-obsidian: #000000;
+  --lq-onyx: #0f0d0d;      /* canvas principal */
+  --lq-charcoal: #171615;  /* tarjetas, sidebar */
+  --lq-graphite: #262828;  /* paneles elevados */
+
+  /* Texto */
+  --lq-paper: #ffffff;
+  --lq-crema: #ece4d0;     /* texto del logo en versión clara */
+  --lq-fog: #939292;
+  --lq-ash: #878686;
+  --lq-smoke: #6f6e6e;
+
+  /* Marca */
+  --lq-verde: #344c2b;     /* verde del logo */
+  --lq-verde-claro: #84a56c; /* verde legible sobre oscuro (acento) */
+  --lq-dorado: #c9b085;    /* ornamento del logo */
+  --lq-ember: #fe2c02;     /* solo errores / vencidos */
+
+  /* Estados (badges translúcidos sobre oscuro) */
+  --lq-ok-bg: rgba(132, 165, 108, 0.16);
+  --lq-ok-fg: #a9c793;
+  --lq-warn-bg: rgba(201, 176, 133, 0.16);
+  --lq-warn-fg: #e3cc9f;
+  --lq-danger-bg: rgba(254, 44, 2, 0.14);
+  --lq-danger-fg: #ff8a6b;
+  --lq-info-bg: rgba(120, 160, 220, 0.15);
+  --lq-info-fg: #a6c4ee;
+  --lq-neutral-bg: rgba(255, 255, 255, 0.06);
+  --lq-verde-tinte: rgba(132, 165, 108, 0.12);
+
+  /* Bordes */
+  --lq-borde: rgba(255, 255, 255, 0.08);
+  --lq-borde-fuerte: rgba(255, 255, 255, 0.14);
+
+  /* Tipografía */
+  --lq-font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --lq-font-display: 'Cormorant Garamond', 'Times New Roman', serif;
+  --lq-font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+
+  /* Radios */
+  --lq-radius-card: 16px;
+  --lq-radius-input: 6px;
+  --lq-radius-pill: 9999px;
+
+  --lq-shadow-xl: rgba(0, 0, 0, 0.7) 0px 12px 32px -16px;
+
+  color-scheme: dark;
+}
+
+/* Modo claro: mismos nombres de token, valores sobre crema cálido */
+html:not(.app-dark) {
+  --lq-onyx: #fbfaf7;                      /* canvas casi blanco */
+  --lq-charcoal: rgba(255, 255, 255, 0.55); /* sidebar, tarjetas: vidrio blanco */
+  --lq-graphite: rgba(255, 255, 255, 0.75);
+
+  --lq-paper: #1d1b1a;     /* texto principal */
+  --lq-fog: #5f5d5b;
+  --lq-ash: #6f6d6b;
+  --lq-smoke: #9a9896;
+
+  --lq-verde-claro: #415737;
+  --lq-dorado: #8a6d3b;
+
+  --lq-ok-bg: rgba(84, 112, 67, 0.12);
+  --lq-ok-fg: #3d5a2c;
+  --lq-warn-bg: rgba(201, 176, 133, 0.25);
+  --lq-warn-fg: #6e521a;
+  --lq-danger-bg: rgba(254, 44, 2, 0.1);
+  --lq-danger-fg: #b42a0c;
+  --lq-info-bg: rgba(60, 110, 190, 0.1);
+  --lq-info-fg: #2c5aa0;
+  --lq-neutral-bg: rgba(0, 0, 0, 0.05);
+  --lq-verde-tinte: rgba(84, 112, 67, 0.1);
+
+  --lq-borde: rgba(0, 0, 0, 0.06);
+  --lq-borde-fuerte: rgba(0, 0, 0, 0.12);
+
+  --lq-shadow-xl: rgba(0, 0, 0, 0.18) 0px 12px 32px -16px;
+
+  color-scheme: light;
+}
+
+/* Fondo claro con un velo muy suave de los colores del logo, para que el vidrio se note */
+html:not(.app-dark) body {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(132, 165, 108, 0.10), transparent 45%),
+    radial-gradient(circle at 100% 100%, rgba(201, 176, 133, 0.14), transparent 50%),
+    var(--lq-onyx);
+  background-attachment: fixed;
+}
+
+html,
+body {
+  background: var(--lq-onyx);
+  color: var(--lq-paper);
+}
+
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--lq-font-sans);
+  font-size: 14px;
+  line-height: 1.43;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Títulos display: serif fina, la "voz" de la marca */
+.lq-display {
+  font-family: var(--lq-font-display);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* Etiqueta mono en mayúsculas (eyebrow) */
+.lq-eyebrow {
+  font-family: var(--lq-font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--lq-dorado);
+}
+
+/* Títulos de sección en las pantallas: serif de la marca */
+h2 {
+  font-family: var(--lq-font-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }

@@ -32,23 +32,30 @@
     <p-tabs value="cotizacion">
       <p-tablist>
         <p-tab value="cotizacion">Cotización</p-tab>
-        <p-tab value="degustacion">Degustación</p-tab>
-        <p-tab value="extras">Extras</p-tab>
-        <p-tab value="pagos">Pagos</p-tab>
+        @if (eventoConfirmado()) {
+          <p-tab value="degustacion">Degustación</p-tab>
+          <p-tab value="extras">Extras</p-tab>
+          <p-tab value="pagos">Pagos</p-tab>
+        }
       </p-tablist>
       <p-tabpanels>
         <p-tabpanel value="cotizacion">
           <app-cotizacion-panel [idEvento]="e.id_evento" />
+          @if (!eventoConfirmado() && e.estado === 'cotizacion') {
+            <p class="placeholder">Degustación, extras y pagos se habilitan cuando el evento se confirma.</p>
+          }
         </p-tabpanel>
-        <p-tabpanel value="degustacion">
-          <app-degustacion-panel [idEvento]="e.id_evento" />
-        </p-tabpanel>
-        <p-tabpanel value="extras">
-          <app-extras-panel [idEvento]="e.id_evento" />
-        </p-tabpanel>
-        <p-tabpanel value="pagos">
-          <app-pagos-panel [idEvento]="e.id_evento" />
-        </p-tabpanel>
+        @if (eventoConfirmado()) {
+          <p-tabpanel value="degustacion">
+            <app-degustacion-panel [idEvento]="e.id_evento" />
+          </p-tabpanel>
+          <p-tabpanel value="extras">
+            <app-extras-panel [idEvento]="e.id_evento" />
+          </p-tabpanel>
+          <p-tabpanel value="pagos">
+            <app-pagos-panel [idEvento]="e.id_evento" />
+          </p-tabpanel>
+        }
       </p-tabpanels>
     </p-tabs>
   </div>

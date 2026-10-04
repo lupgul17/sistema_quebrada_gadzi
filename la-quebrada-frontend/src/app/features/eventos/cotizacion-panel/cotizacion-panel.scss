@@ -67,7 +67,7 @@
     th, td {
       text-align: left;
       padding: 0.5rem;
-      border-bottom: 1px solid var(--p-surface-200);
+      border-bottom: 1px solid var(--lq-borde);
       font-size: 0.88rem;
     }
   }
@@ -82,7 +82,7 @@
   .totales {
     max-width: 320px;
     margin-left: auto;
-    border-top: 1px solid var(--p-surface-200);
+    border-top: 1px solid var(--lq-borde);
     padding-top: 0.75rem;
 
     div {
@@ -93,9 +93,9 @@
     }
 
     .total-final {
-      font-weight: 700;
+      font-weight: 500;
       font-size: 1.1rem;
-      border-top: 1px solid var(--p-surface-200);
+      border-top: 1px solid var(--lq-borde);
       margin-top: 0.4rem;
       padding-top: 0.5rem;
     }
@@ -107,18 +107,18 @@
     font-size: 0.8rem;
     text-transform: capitalize;
 
-    &.estado-estimada { background: var(--p-surface-200); }
-    &.estado-enviada { background: #cce5ff; color: #004085; }
-    &.estado-aceptada { background: #d4edda; color: #155724; }
-    &.estado-vencida { background: #f8d7da; color: #721c24; }
-    &.estado-reemplazada { background: var(--p-surface-200); color: var(--p-text-muted-color); }
+    &.estado-estimada { background: var(--lq-neutral-bg); }
+    &.estado-enviada { background: var(--lq-info-bg); color: var(--lq-info-fg); }
+    &.estado-aceptada { background: var(--lq-ok-bg); color: var(--lq-ok-fg); }
+    &.estado-vencida { background: var(--lq-danger-bg); color: var(--lq-danger-fg); }
+    &.estado-reemplazada { background: var(--lq-neutral-bg); color: var(--p-text-muted-color); }
   }
 }
 
 .overlay-generando {
   position: fixed;
   inset: 0;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(15, 13, 13, 0.9);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -144,8 +144,8 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #dc3545;
-    border: 1.5px solid white;
+    background: var(--lq-ember);
+    border: 1.5px solid var(--lq-onyx);
     pointer-events: none;
   }
 }
@@ -158,8 +158,8 @@
 }
 
 .version-pill {
-  border: 1px solid var(--p-surface-300);
-  background: white;
+  border: 1px solid var(--lq-borde-fuerte);
+  background: transparent;
   border-radius: 999px;
   padding: 0.3rem 0.8rem;
   font-size: 0.78rem;
@@ -167,24 +167,24 @@
   text-transform: capitalize;
 
   &.seleccionada {
-    border-color: #093509;
-    background: rgba(9, 53, 9, 0.08);
-    color: #093509;
-    font-weight: 600;
+    border-color: var(--lq-verde-claro);
+    background: var(--lq-verde-tinte);
+    color: var(--lq-verde-claro);
+    font-weight: 500;
   }
 }
 
 .aviso-historico {
-  background: #fff3cd;
-  color: #856404;
+  background: var(--lq-warn-bg);
+  color: var(--lq-warn-fg);
   padding: 0.6rem 0.9rem;
   border-radius: 8px;
   font-size: 0.85rem;
   margin-bottom: 1rem;
 
   a {
-    color: #093509;
-    font-weight: 600;
+    color: var(--lq-verde-claro);
+    font-weight: 500;
     cursor: pointer;
     margin-left: 0.5rem;
     text-decoration: underline;
@@ -206,7 +206,7 @@
 
   label {
     font-size: 0.82rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--p-text-muted-color);
   }
 }
@@ -237,7 +237,7 @@
 }
 
 .linea-referencia {
-  font-weight: 600;
+  font-weight: 500;
   margin-bottom: 1rem;
 }
 
@@ -250,12 +250,12 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0;
-  border-bottom: 1px solid var(--p-surface-200);
+  border-bottom: 1px solid var(--lq-borde);
   font-size: 0.85rem;
 
   .descuento-monto {
     margin-left: 0.5rem;
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .descuento-pct {
@@ -269,12 +269,12 @@
   }
 }
 
-.estado-descuento-pendiente { background: #fff3cd; color: #856404; padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.75rem; }
-.estado-descuento-aprobado { background: #d4edda; color: #155724; padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.75rem; }
-.estado-descuento-rechazado { background: #f8d7da; color: #721c24; padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.75rem; }
+.estado-descuento-pendiente { background: var(--lq-warn-bg); color: var(--lq-warn-fg); padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.75rem; }
+.estado-descuento-aprobado { background: var(--lq-ok-bg); color: var(--lq-ok-fg); padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.75rem; }
+.estado-descuento-rechazado { background: var(--lq-danger-bg); color: var(--lq-danger-fg); padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.75rem; }
 
 .nuevo-descuento {
-  border-top: 1px solid var(--p-surface-200);
+  border-top: 1px solid var(--lq-borde);
   padding-top: 1rem;
 
   h5 {
@@ -295,7 +295,7 @@
   padding: 0.1rem 0.4rem;
   border-radius: 6px;
   font-size: 0.68rem;
-  font-weight: 600;
-  background: #fff3cd;
-  color: #856404;
+  font-weight: 500;
+  background: var(--lq-warn-bg);
+  color: var(--lq-warn-fg);
 }

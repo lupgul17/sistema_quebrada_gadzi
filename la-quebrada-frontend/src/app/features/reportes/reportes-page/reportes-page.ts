@@ -110,7 +110,14 @@ export class ReportesPage {
     }
 
     this.http.get<any[]>(`${API_URL}/reportes/${tipo}?fecha_desde=${rango.desde}&fecha_hasta=${rango.hasta}`).subscribe((data) => {
-      this.filas.set(data);
+      this.filas.set(
+        tipo === 'degustaciones'
+          ? data.map((f) => ({
+              ...f,
+              menus: f.menus.map((m: { menu: string; es_adicional: boolean }) => m.menu + (m.es_adicional ? ' (extra)' : '')).join(', '),
+            }))
+          : data
+      );
       this.cargando.set(false);
     });
   }

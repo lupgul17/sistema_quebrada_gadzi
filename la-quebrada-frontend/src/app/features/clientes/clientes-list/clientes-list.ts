@@ -37,7 +37,23 @@ export class ClientesList implements OnInit {
           background: '#E67E22',
           hoverBackground: '#D35400',
           activeBackground: '#B8460E',
+          borderColor: '#E67E22',
+          hoverBorderColor: '#D35400',
           color: '#ffffff',
+          hoverColor: '#ffffff',
+        },
+      },
+    },
+    dark: {
+      root: {
+        secondary: {
+          background: '#d9894a',
+          hoverBackground: '#e69a5e',
+          activeBackground: '#c27638',
+          borderColor: '#d9894a',
+          hoverBorderColor: '#e69a5e',
+          color: '#0f0d0d',
+          hoverColor: '#0f0d0d',
         },
       },
     },

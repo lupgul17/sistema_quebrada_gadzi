@@ -46,6 +46,21 @@ router.patch('/fechas/:id/estado', async (req, res) => {
   }
 });
 
+// PATCH /api/degustaciones/:id/resultado
+router.patch('/:id/resultado', async (req, res) => {
+  try {
+    const { resultado, motivo_rechazo } = req.body;
+    if (!resultado) {
+      res.status(400).json({ error: 'Falta resultado' });
+      return;
+    }
+    await pool.query('CALL sp_resolver_degustacion($1::integer, $2::varchar, $3::text)', [req.params.id, resultado, motivo_rechazo ?? null]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
 // GET /api/degustaciones/:id
 router.get('/:id', async (req, res) => {
   try {

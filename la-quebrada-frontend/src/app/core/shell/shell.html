@@ -1,6 +1,8 @@
 <div class="app-shell">
   <aside class="sidebar">
-    <div class="sidebar-brand">La Quebrada / GADZI</div>
+    <div class="sidebar-brand">
+      <img [src]="temaService.oscuro() ? '/brand/logo-claro.png' : '/brand/logo.png'" alt="La Quebrada" />
+    </div>
     <nav class="sidebar-nav">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
       <a routerLink="/clientes" routerLinkActive="active">Clientes</a>
@@ -20,10 +22,20 @@
 
   <div class="main-area">
     <header class="topbar">
-      <h1>{{ tituloPagina() }}</h1>
+      <h1 class="lq-display">{{ tituloPagina() }}</h1>
       <div class="usuario-info">
         <span>Hola, {{ usuario()?.nombre }}</span>
-        <p-button label="Cerrar sesión" severity="secondary" size="small" (onClick)="logout()" />
+        <p-button
+          [icon]="temaService.oscuro() ? 'pi pi-sun' : 'pi pi-moon'"
+          [rounded]="true"
+          [text]="true"
+          severity="secondary"
+          [ariaLabel]="temaService.oscuro() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+          [pTooltip]="temaService.oscuro() ? 'Modo claro' : 'Modo oscuro'"
+          tooltipPosition="bottom"
+          (onClick)="temaService.alternar()"
+        />
+        <p-button label="Cerrar sesión" severity="secondary" size="small" [outlined]="true" (onClick)="logout()" />
       </div>
     </header>
 

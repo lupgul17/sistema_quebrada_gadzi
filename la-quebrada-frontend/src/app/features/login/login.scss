@@ -2,38 +2,49 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 98vh;
-  background-image: linear-gradient(rgba(0, 0, 0, 0.10), rgba(0, 0, 0, 0.10)), url('/login-bg.jpg');
+  min-height: 100vh;
+  padding: 1rem;
+  box-sizing: border-box;
+  /* Foto aérea + degradado cinematográfico que oscurece hacia abajo */
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.25) 0%, rgba(15, 13, 13, 0.85) 100%),
+    url('/login-bg.jpg');
   background-size: cover;
   background-position: center;
 }
 
 .login-card {
+  /* El login siempre va sobre la foto: tokens de texto fijos en claro-sobre-oscuro */
+  --lq-paper: #ffffff;
+  --lq-fog: #c9c6c2;
+  --lq-dorado: #c9b085;
+  --lq-borde: rgba(255, 255, 255, 0.12);
 
   width: 100%;
-  max-width: 380px;
-  padding: 2.5rem;
-  background: rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-  ::ng-deep {
-    --p-inputtext-background: white;
-    --p-inputtext-border-color: white;
-    --p-inputtext-color: #1a1a1a;
-    --p-inputtext-placeholder-color: rgba(26, 26, 26, 0.6);
+  max-width: 400px;
+  padding: 2rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  /* Tarjeta de vidrio translúcido */
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--lq-borde);
+  border-radius: var(--lq-radius-card);
+  box-shadow: var(--lq-shadow-xl);
+
+  .login-logo {
+    width: 220px;
+    max-width: 100%;
+    align-self: center;
+    margin-bottom: 1.75rem;
   }
 
   h1 {
-    margin: 0 0 0.25rem;
-    font-size: 1.5rem;
-    color: white;
-  }
-
-  .subtitle {
-    margin: 0 0 1.5rem;
-    color: white
+    margin: 0.25rem 0 1.5rem;
+    font-size: 2.5rem;
+    color: var(--lq-paper);
   }
 
   .field {
@@ -43,12 +54,9 @@
     gap: 0.4rem;
 
     label {
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: white;
+      font-weight: 500;
+      font-size: 0.85rem;
+      color: var(--lq-fog);
     }
-
-    
   }
-  
 }

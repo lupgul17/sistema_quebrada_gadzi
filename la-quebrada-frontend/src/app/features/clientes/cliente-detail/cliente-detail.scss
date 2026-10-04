@@ -4,7 +4,7 @@
   box-sizing: border-box;
   margin: 1rem auto;
   padding: 1.5rem;
-  border: 1px solid #c2c8d0;
+  border: 1px solid var(--lq-borde);
   border-radius: 12px;
   overflow-y: auto;
 
@@ -30,7 +30,7 @@
   .nombre-bar {
     grid-column: 1;
     grid-row: 1;
-    border: 1px solid #c2c8d0;
+    border: 1px solid var(--lq-borde);
     border-radius: 8px;
     padding: 0.75rem 1rem;
     text-align: center;
@@ -44,7 +44,7 @@
   }
 
   .datos-card {
-    border: 1px solid #c2c8d0;
+    border: 1px solid var(--lq-borde);
     grid-column: 1;
     grid-row: 2;
   }
@@ -72,7 +72,7 @@
     }
 
     .label {
-      font-weight: 600;
+      font-weight: 500;
       font-size: 0.85rem;
       color: var(--p-text-muted-color);
     }
@@ -94,7 +94,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.4rem 0;
-    border-bottom: 1px solid var(--p-surface-200);
+    border-bottom: 1px solid var(--lq-borde);
     cursor: pointer;
     font-size: 0.85rem;
 
@@ -113,27 +113,27 @@
   padding: 0.2rem 0.6rem;
   border-radius: 6px;
   font-size: 0.78rem;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: capitalize;
   margin-left: 0.4rem;
 
-  &.estado-pendiente { background: #fff3cd; color: #856404; }
-  &.estado-verificado { background: #d4edda; color: #155724; }
-  &.estado-rechazado { background: #f8d7da; color: #721c24; }
-  &.estado-cotizacion { background: #fff3cd; color: #856404; }
-  &.estado-confirmado { background: #d4edda; color: #155724; }
-  &.estado-en_curso { background: #d4edda; color: #155724; }
-  &.estado-cerrado { background: #d4edda; color: #155724; }
-  &.estado-cancelado { background: #f8d7da; color: #721c24; }
+  &.estado-pendiente { background: var(--lq-warn-bg); color: var(--lq-warn-fg); }
+  &.estado-verificado { background: var(--lq-ok-bg); color: var(--lq-ok-fg); }
+  &.estado-rechazado { background: var(--lq-danger-bg); color: var(--lq-danger-fg); }
+  &.estado-cotizacion { background: var(--lq-warn-bg); color: var(--lq-warn-fg); }
+  &.estado-confirmado { background: var(--lq-ok-bg); color: var(--lq-ok-fg); }
+  &.estado-en_curso { background: var(--lq-ok-bg); color: var(--lq-ok-fg); }
+  &.estado-cerrado { background: var(--lq-ok-bg); color: var(--lq-ok-fg); }
+  &.estado-cancelado { background: var(--lq-danger-bg); color: var(--lq-danger-fg); }
 }
 ::ng-deep {
   .tarjeta-pagos {
-    border: 1px solid #c2c8d0;
-    border-left: 4px solid #093509;
+    border: 1px solid var(--lq-borde);
+    border-left: 4px solid var(--lq-verde-claro);
   }
 
   .tarjeta-eventos {
-    border: 1px solid #c2c8d0;
-    border-left: 4px solid #093509;
+    border: 1px solid var(--lq-borde);
+    border-left: 4px solid var(--lq-verde-claro);
   }
 }

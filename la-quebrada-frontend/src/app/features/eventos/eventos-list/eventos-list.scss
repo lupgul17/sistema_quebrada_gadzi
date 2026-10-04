@@ -13,7 +13,7 @@
   }
 
   .table-container {
-    border: 1px solid var(--p-surface-200);
+    border: 1px solid var(--lq-borde);
     border-radius: 12px;
     overflow: hidden;
   }
@@ -29,10 +29,10 @@
     font-size: 0.8rem;
     text-transform: capitalize;
 
-    &.estado-cotizacion { background: var(--p-surface-200); }
-    &.estado-confirmado { background: #cce5ff; color: #004085; }
-    &.estado-en_curso { background: #fff3cd; color: #856404; }
-    &.estado-cerrado { background: #d4edda; color: #155724; }
-    &.estado-cancelado { background: #f8d7da; color: #721c24; }
+    &.estado-cotizacion { background: var(--lq-neutral-bg); }
+    &.estado-confirmado { background: var(--lq-info-bg); color: var(--lq-info-fg); }
+    &.estado-en_curso { background: var(--lq-warn-bg); color: var(--lq-warn-fg); }
+    &.estado-cerrado { background: var(--lq-ok-bg); color: var(--lq-ok-fg); }
+    &.estado-cancelado { background: var(--lq-danger-bg); color: var(--lq-danger-fg); }
   }
 }

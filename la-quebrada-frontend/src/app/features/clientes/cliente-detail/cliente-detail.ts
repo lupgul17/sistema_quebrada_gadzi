@@ -81,15 +81,15 @@ recargar(): void {
     this.router.navigate(['/eventos', idEvento]);
   }
   colorEstadoPago(estado: string): string {
-  if (estado === 'verificado') return '#155724';
-  if (estado === 'rechazado') return '#721c24';
-  return '#856404'; // pendiente
+  if (estado === 'verificado') return '#a9c793';
+  if (estado === 'rechazado') return '#ff8a6b';
+  return '#e3cc9f'; // pendiente
 }
 
 colorEstadoEvento(estado: string): string {
-  if (estado === 'cancelado') return '#721c24';
-  if (estado === 'cotizacion') return '#856404';
-  return '#155724'; // confirmado, en_curso, cerrado
+  if (estado === 'cancelado') return '#ff8a6b';
+  if (estado === 'cotizacion') return '#e3cc9f';
+  return '#a9c793'; // confirmado, en_curso, cerrado
 }
   volver(): void {
     this.router.navigate(['/clientes']);

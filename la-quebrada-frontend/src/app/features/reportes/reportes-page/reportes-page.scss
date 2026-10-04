@@ -16,13 +16,13 @@
     min-width: 160px;
 
     label {
-      font-weight: 600;
+      font-weight: 500;
       font-size: 0.85rem;
     }
   }
 
   .table-container {
-    border: 1px solid #c2c8d0;
+    border: 1px solid var(--lq-borde);
     border-radius: 12px;
     overflow: hidden;
   }

@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Button } from 'primeng/button';
 import { API_URL } from '../../../core/api-config';
+import { TemaService } from '../../../core/tema.service';
 
 interface EventoCalendario {
   id_evento: number;
@@ -83,7 +84,8 @@ export class EventosCalendario implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private temaService: TemaService
   ) {}
 
   ngOnInit(): void {
@@ -131,10 +133,14 @@ export class EventosCalendario implements OnInit {
 
     const enGadzi = ev.locaciones?.includes('GADZI') ?? false;
 
+    // Tonos suaves en oscuro, saturados en claro (mismo significado)
+    const oscuro = this.temaService.oscuro();
     if (enGadzi) {
-      return esTemporal ? '#e67e22' : '#8e44ad';
+      if (esTemporal) return oscuro ? '#e8a05c' : '#c0661c';
+      return oscuro ? '#b48ce0' : '#7d3c98';
     }
-    return esTemporal ? '#f1c40f' : '#27ae60';
+    if (esTemporal) return oscuro ? '#e6c96a' : '#a37f00';
+    return oscuro ? '#84a56c' : '#415737';
   }
 
   mesAnterior(): void {

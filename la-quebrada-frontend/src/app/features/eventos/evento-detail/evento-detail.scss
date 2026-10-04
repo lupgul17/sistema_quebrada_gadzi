@@ -4,7 +4,7 @@
   box-sizing: border-box;
   margin: 1rem auto;
   padding: 1.5rem;
-  border: 1px solid var(--p-surface-200);
+  border: 1px solid var(--lq-borde);
   border-radius: 12px;
   overflow-y: auto;
 
@@ -20,7 +20,7 @@
   }
 
   .nombre-bar {
-    border: 1px solid var(--p-surface-200);
+    border: 1px solid var(--lq-borde);
     border-radius: 8px;
     padding: 0.75rem 1rem;
     margin-bottom: 1.25rem;
@@ -51,7 +51,7 @@
     }
 
     .label {
-      font-weight: 600;
+      font-weight: 500;
       font-size: 0.85rem;
       color: var(--p-text-muted-color);
     }
@@ -62,7 +62,7 @@
 
     .label {
       display: block;
-      font-weight: 600;
+      font-weight: 500;
       font-size: 0.85rem;
       color: var(--p-text-muted-color);
     }
@@ -79,11 +79,11 @@
     font-size: 0.8rem;
     text-transform: capitalize;
 
-    &.estado-cotizacion { background: var(--p-surface-200); }
-    &.estado-confirmado { background: #cce5ff; color: #004085; }
-    &.estado-en_curso { background: #fff3cd; color: #856404; }
-    &.estado-cerrado { background: #d4edda; color: #155724; }
-    &.estado-cancelado { background: #f8d7da; color: #721c24; }
+    &.estado-cotizacion { background: var(--lq-neutral-bg); }
+    &.estado-confirmado { background: var(--lq-info-bg); color: var(--lq-info-fg); }
+    &.estado-en_curso { background: var(--lq-warn-bg); color: var(--lq-warn-fg); }
+    &.estado-cerrado { background: var(--lq-ok-bg); color: var(--lq-ok-fg); }
+    &.estado-cancelado { background: var(--lq-danger-bg); color: var(--lq-danger-fg); }
   }
 }
 .header-acciones {

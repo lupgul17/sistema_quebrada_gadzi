@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { Card } from 'primeng/card';
 import { EventosCalendario } from './eventos-calendario/eventos-calendario';
 import { API_URL } from '../../core/api-config';
+import { TemaService } from '../../core/tema.service';
 
 interface EventoResumen {
   id_evento: number;
@@ -43,7 +44,8 @@ export class Home implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private temaService: TemaService
   ) {}
 
   ngOnInit(): void {
@@ -65,7 +67,8 @@ export class Home implements OnInit {
 
   colorLocacion(locaciones: string | null): string {
     const enGadzi = locaciones?.includes('GADZI') ?? false;
-    return enGadzi ? '#8e44ad' : '#27ae60';
+    if (this.temaService.oscuro()) return enGadzi ? '#b48ce0' : '#84a56c';
+    return enGadzi ? '#7d3c98' : '#415737';
   }
 
   irAEvento(idEvento: number): void {

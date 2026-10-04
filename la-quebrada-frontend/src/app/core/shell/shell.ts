@@ -3,6 +3,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } fro
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { Button } from 'primeng/button';
+import { Tooltip } from 'primeng/tooltip';
 import { AuthService } from '../auth.service';
 import {VisorArchivoDialog} from '../visor-archivo-dialog/visor-archivo-dialog';
 import { PagosPendientesService } from '../pagos-pendientes.service';
@@ -10,11 +11,12 @@ import { HttpClient } from '@angular/common/http';
 import { API_URL } from '../api-config';
 import { InactividadDialog } from '../inactividad-dialog/inactividad-dialog';
 import { InactividadService } from '../inactividad.service';
+import { TemaService } from '../tema.service';
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, Button, VisorArchivoDialog, InactividadDialog],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, Button, Tooltip, VisorArchivoDialog, InactividadDialog],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })
@@ -28,6 +30,7 @@ export class Shell {
     private router: Router,
     public pagosPendientesService: PagosPendientesService,
     private inactividadService: InactividadService,
+    public temaService: TemaService,
 
   ) {
     this.usuario = this.authService.usuario;

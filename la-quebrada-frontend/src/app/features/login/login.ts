@@ -17,22 +17,27 @@ import { AuthService } from '../../core/auth.service';
 })
 export class Login {
 
-  //color boton
-readonly loginButtonTokens = {
-  colorScheme: {
-    light: {
-      root: {
-        primary: {
-          background: '#093509',
-          hoverBackground: '#0e500e',
-          activeBackground: '#072a07',
-          borderColor: '#093509',
-          color: '#ffffff'
-        },
+  // Botón principal crema (CTA de mayor contraste, estilo pill)
+  private readonly botonCrema = {
+    root: {
+      primary: {
+        background: '#ece4d0',
+        hoverBackground: '#ffffff',
+        activeBackground: '#d9cfb6',
+        borderColor: '#ece4d0',
+        hoverBorderColor: '#ffffff',
+        activeBorderColor: '#d9cfb6',
+        color: '#0f0d0d',
+        hoverColor: '#0f0d0d',
+        activeColor: '#0f0d0d',
       },
     },
-  },
-};
+  };
+
+  readonly loginButtonTokens = {
+    colorScheme: { light: this.botonCrema, dark: this.botonCrema },
+  };
+
 
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);

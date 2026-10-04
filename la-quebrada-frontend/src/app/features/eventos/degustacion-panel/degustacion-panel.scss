@@ -40,6 +40,12 @@
     margin-bottom: 1rem;
   }
 
+  .motivo-rechazo {
+    font-size: 0.88rem;
+    margin-bottom: 1rem;
+    color: var(--lq-danger-fg);
+  }
+
   .seccion-lineas {
     h4 {
       margin-bottom: 0.5rem;
@@ -54,7 +60,7 @@
     th, td {
       text-align: left;
       padding: 0.5rem;
-      border-bottom: 1px solid var(--p-surface-200);
+      border-bottom: 1px solid var(--lq-borde);
       font-size: 0.88rem;
     }
   }
@@ -84,27 +90,29 @@
     font-size: 0.8rem;
     text-transform: capitalize;
 
-    &.estado-agendada, &.estado-pendiente { background: #fff3cd; color: #856404; }
-    &.estado-realizada, &.estado-aprobado { background: #d4edda; color: #155724; }
-    &.estado-cancelada, &.estado-rechazado { background: #f8d7da; color: #721c24; }
+    &.estado-agendada, &.estado-pendiente { background: var(--lq-warn-bg); color: var(--lq-warn-fg); }
+    &.estado-realizada, &.estado-aprobado { background: var(--lq-ok-bg); color: var(--lq-ok-fg); }
+    &.estado-cancelada, &.estado-rechazado { background: var(--lq-danger-bg); color: var(--lq-danger-fg); }
+    &.estado-aprobada { background: var(--lq-ok-bg); color: var(--lq-ok-fg); }
+    &.estado-rechazada { background: var(--lq-danger-bg); color: var(--lq-danger-fg); }
   }
 
   .badge-incluido, .badge-extra {
     padding: 0.15rem 0.5rem;
     border-radius: 6px;
     font-size: 0.72rem;
-    font-weight: 600;
+    font-weight: 500;
     margin-left: 0.4rem;
   }
 
   .badge-incluido {
-    background: var(--p-surface-200);
+    background: var(--lq-neutral-bg);
     color: var(--p-text-muted-color);
   }
 
   .badge-extra {
-    background: #fff3cd;
-    color: #856404;
+    background: var(--lq-warn-bg);
+    color: var(--lq-warn-fg);
   }
 }
 
@@ -116,8 +124,8 @@
 }
 
 .version-pill {
-  border: 1px solid var(--p-surface-300);
-  background: white;
+  border: 1px solid var(--lq-borde-fuerte);
+  background: transparent;
   border-radius: 999px;
   padding: 0.3rem 0.8rem;
   font-size: 0.78rem;
@@ -125,10 +133,10 @@
   text-transform: capitalize;
 
   &.seleccionada {
-    border-color: #093509;
-    background: rgba(9, 53, 9, 0.08);
-    color: #093509;
-    font-weight: 600;
+    border-color: var(--lq-verde-claro);
+    background: var(--lq-verde-tinte);
+    color: var(--lq-verde-claro);
+    font-weight: 500;
   }
 }
 
@@ -139,7 +147,7 @@
   margin-bottom: 1rem;
 
   label {
-    font-weight: 600;
+    font-weight: 500;
     font-size: 0.9rem;
   }
 }
