@@ -1,28 +1,6 @@
-CREATE OR REPLACE FUNCTION fn_listar_prospectos(
-    p_estado VARCHAR DEFAULT NULL
-)
-RETURNS TABLE (
-    id_prospecto     INTEGER,
-    nombre           VARCHAR,
-    telefono         VARCHAR,
-    correo           VARCHAR,
-    id_tipo_evento   INTEGER,
-    tipo_evento      VARCHAR,
-    id_salon         INTEGER,
-    salon            VARCHAR,
-    locacion         VARCHAR,
-    fecha_tentativa  DATE,
-    invitados        INTEGER,
-    mensaje          TEXT,
-    estado           VARCHAR,
-    notas_internas   TEXT,
-    id_cliente       INTEGER,
-    id_evento        INTEGER,
-    fecha_creacion   TIMESTAMPTZ
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_listar_prospectos(p_estado character varying DEFAULT NULL::character varying) RETURNS TABLE(id_prospecto integer, nombre character varying, telefono character varying, correo character varying, id_tipo_evento integer, tipo_evento character varying, id_salon integer, salon character varying, locacion character varying, fecha_tentativa date, invitados integer, mensaje text, estado character varying, notas_internas text, id_cliente integer, id_evento integer, fecha_creacion timestamp with time zone)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         p.id_prospecto, p.nombre, p.telefono, p.correo,
         p.id_tipo_evento, te.descripcion AS tipo_evento,

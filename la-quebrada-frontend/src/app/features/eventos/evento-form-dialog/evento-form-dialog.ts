@@ -2,7 +2,6 @@ import { Component, EventEmitter, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { InputText } from 'primeng/inputtext';
 import { InputNumber } from 'primeng/inputnumber';
 import { Textarea } from 'primeng/textarea';
 import { Select } from 'primeng/select';
@@ -12,6 +11,8 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { API_URL } from '../../../core/api-config';
+import { ERROR_EN_LINEA } from '../../../core/http-errores';
+import { fechaLocalISO } from '../../../core/fechas';
 
 interface ClienteOpcion {
   id_cliente: number;
@@ -37,7 +38,7 @@ interface SalonDisponibilidad {
   selector: 'app-evento-form-dialog',
   standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule, InputText, InputNumber, Textarea,
+    CommonModule, ReactiveFormsModule, InputNumber, Textarea,
     Select, DatePicker, Checkbox, Button, Dialog, Message,FormsModule
   ],
   templateUrl: './evento-form-dialog.html',
@@ -177,8 +178,8 @@ export class EventoFormDialog {
     };
 
     const peticion = this.esEdicion()
-      ? this.http.put(`${API_URL}/eventos/${this.idEvento}`, body)
-      : this.http.post(`${API_URL}/eventos`, body);
+      ? this.http.put(`${API_URL}/eventos/${this.idEvento}`, body, ERROR_EN_LINEA)
+      : this.http.post(`${API_URL}/eventos`, body, ERROR_EN_LINEA);
 
     peticion.subscribe({
       next: (res: any) => {
@@ -199,7 +200,7 @@ export class EventoFormDialog {
   }
 
   private formatearFecha(fecha: Date): string {
-    return fecha.toISOString().split('T')[0];
+    return fechaLocalISO(fecha);
   }
 
   private formatearHora(fecha: Date): string {

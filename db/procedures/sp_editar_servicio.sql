@@ -1,13 +1,6 @@
-CREATE OR REPLACE PROCEDURE sp_editar_servicio(
-    p_id_servicio            INTEGER,
-    p_id_categoria_servicio  INTEGER,
-    p_nombre                 VARCHAR,
-    p_precio_base            DECIMAL,
-    p_unidad_medida          VARCHAR,
-    p_activo                 BOOLEAN
-)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_editar_servicio(IN p_id_servicio integer, IN p_id_categoria_servicio integer, IN p_nombre character varying, IN p_precio_base numeric, IN p_unidad_medida character varying, IN p_activo boolean)
+    LANGUAGE plpgsql
+    AS $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM servicios WHERE id_servicio = p_id_servicio) THEN
         RAISE EXCEPTION 'No existe un servicio con id_servicio = %', p_id_servicio;

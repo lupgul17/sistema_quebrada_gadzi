@@ -1,16 +1,6 @@
-CREATE OR REPLACE PROCEDURE sp_editar_cliente(
-    p_id_cliente       INTEGER,
-    p_primer_nombre    VARCHAR,
-    p_segundo_nombre   VARCHAR,
-    p_primer_apellido  VARCHAR,
-    p_segundo_apellido VARCHAR,
-    p_cui              VARCHAR,
-    p_nit              VARCHAR,
-    p_telefono         VARCHAR,
-    p_correo           VARCHAR
-)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_editar_cliente(IN p_id_cliente integer, IN p_primer_nombre character varying, IN p_segundo_nombre character varying, IN p_primer_apellido character varying, IN p_segundo_apellido character varying, IN p_cui character varying, IN p_nit character varying, IN p_telefono character varying, IN p_correo character varying)
+    LANGUAGE plpgsql
+    AS $$
 DECLARE
     v_id_persona INTEGER;
 BEGIN

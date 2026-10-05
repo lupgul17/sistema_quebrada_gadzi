@@ -11,6 +11,7 @@ import { Textarea } from 'primeng/textarea';
 import { MultiSelect } from 'primeng/multiselect';
 import { Message } from 'primeng/message';
 import { API_URL } from '../../../core/api-config';
+import { ERROR_EN_LINEA } from '../../../core/http-errores';
 
 interface Componente {
   id_componente: number;
@@ -102,6 +103,7 @@ export class MenuPersonalizadoDialog {
   idTipoMenu: number | null = null;
   precio: number | null = null;
   descripcion = '';
+  cantidad: number | null = null; // vacío = cantidad automática (niños o adultos del evento)
 
   /** Si el usuario tocó el precio, deja de recalcularse solo. */
   private precioEditadoAMano = false;
@@ -118,6 +120,7 @@ export class MenuPersonalizadoDialog {
     this.idTipoMenu = null;
     this.precio = null;
     this.descripcion = '';
+    this.cantidad = null;
     this.precioEditadoAMano = false;
     this.nombreAuto = '';
     this.tipoAuto = null;
@@ -223,7 +226,8 @@ export class MenuPersonalizadoDialog {
         precio: this.precio,
         descripcion: this.descripcion || null,
         componentes,
-      })
+        cantidad: this.cantidad,
+      }, ERROR_EN_LINEA)
       .subscribe({
         next: () => {
           this.guardando.set(false);

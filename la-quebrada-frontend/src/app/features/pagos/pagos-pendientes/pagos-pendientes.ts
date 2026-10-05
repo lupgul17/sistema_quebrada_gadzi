@@ -57,10 +57,10 @@ export class PagosPendientes implements OnInit {
   }
   cargarPendientes(): void {
     this.cargando.set(true);
-    this.http.get<PagoPendiente[]>(`${API_URL}/pagos/pendientes`).subscribe((data) => {
+    this.http.get<PagoPendiente[]>(`${API_URL}/pagos/pendientes`).subscribe({ next: (data) => {
       this.pagos.set(data);
       this.cargando.set(false);
-    });
+    }, error: () => this.cargando.set(false) });
   }
 
  resolver(idPago: number, estado: 'verificado' | 'rechazado'): void {

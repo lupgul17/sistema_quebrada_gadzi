@@ -138,7 +138,6 @@ export class ProspectosPage implements OnInit {
         },
         error: (err) => {
           this.procesando.set(false);
-          alert(err.error?.error ?? 'Error al actualizar el prospecto');
         },
       });
   }

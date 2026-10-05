@@ -1,19 +1,6 @@
-DROP FUNCTION fn_cotizacion_servicios_detalle(integer);
-
-CREATE OR REPLACE FUNCTION fn_cotizacion_servicios_detalle(p_id_cotizacion INTEGER)
-RETURNS TABLE (
-    id_cotizacion_servicios    INTEGER,
-    id_servicio                INTEGER,
-    servicio                   VARCHAR,
-    categoria                  VARCHAR,
-    cantidad                   INTEGER,
-    precio_unitario_congelado  DECIMAL,
-    subtotal                   DECIMAL,
-    tiene_descuento_pendiente  BOOLEAN
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_cotizacion_servicios_detalle(p_id_cotizacion integer) RETURNS TABLE(id_cotizacion_servicios integer, id_servicio integer, servicio character varying, categoria character varying, cantidad integer, precio_unitario_congelado numeric, subtotal numeric, tiene_descuento_pendiente boolean)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         cs.id_cotizacion_servicios, cs.id_servicio, s.nombre AS servicio, csc.descripcion AS categoria,
         cs.cantidad, cs.precio_unitario_congelado, cs.subtotal,

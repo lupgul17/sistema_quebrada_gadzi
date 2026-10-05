@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
+import { responderError } from '../utils/errores.js';
 
 const router = Router();
 
@@ -9,7 +10,7 @@ router.get('/', async (req, res) => {
     const result = await pool.query('SELECT * FROM fn_listar_servicios($1::integer)', [id_categoria_servicio ?? null]);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -26,7 +27,7 @@ router.post('/', async (req, res) => {
     );
     res.status(201).json({ id_servicio: result.rows[0].p_id_servicio });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -43,7 +44,7 @@ router.put('/:id', async (req, res) => {
     );
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 

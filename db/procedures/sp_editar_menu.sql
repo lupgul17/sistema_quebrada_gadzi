@@ -1,15 +1,6 @@
-CREATE OR REPLACE PROCEDURE sp_editar_menu(
-    p_id_menu        INTEGER,
-    p_nombre         VARCHAR,
-    p_id_tipo_menu   INTEGER,
-    p_precio_base    DECIMAL,
-    p_unidad_medida  VARCHAR,
-    p_descripcion    TEXT,
-    p_activo         BOOLEAN,
-    p_componentes    INTEGER[]
-)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_editar_menu(IN p_id_menu integer, IN p_nombre character varying, IN p_id_tipo_menu integer, IN p_precio_base numeric, IN p_unidad_medida character varying, IN p_descripcion text, IN p_activo boolean, IN p_componentes integer[])
+    LANGUAGE plpgsql
+    AS $$
 DECLARE
     v_id_componente INTEGER;
 BEGIN

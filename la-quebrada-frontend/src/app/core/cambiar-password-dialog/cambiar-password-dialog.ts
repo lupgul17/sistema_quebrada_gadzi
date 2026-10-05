@@ -7,6 +7,7 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { API_URL } from '../api-config';
+import { ERROR_EN_LINEA } from '../http-errores';
 
 @Component({
   selector: 'app-cambiar-password-dialog',
@@ -48,7 +49,7 @@ export class CambiarPasswordDialog {
 
     this.cargando.set(true);
     this.error.set(null);
-    this.http.post(`${API_URL}/auth/cambiar-password`, { password_actual: this.actual, password_nueva: this.nueva }).subscribe({
+    this.http.post(`${API_URL}/auth/cambiar-password`, { password_actual: this.actual, password_nueva: this.nueva }, ERROR_EN_LINEA).subscribe({
       next: () => {
         this.cargando.set(false);
         this.exito.set(true);

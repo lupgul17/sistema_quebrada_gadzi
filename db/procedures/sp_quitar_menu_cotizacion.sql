@@ -1,6 +1,6 @@
-CREATE OR REPLACE PROCEDURE sp_quitar_menu_cotizacion(p_id_cotizacion_menu INTEGER)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_quitar_menu_cotizacion(IN p_id_cotizacion_menu integer)
+    LANGUAGE plpgsql
+    AS $$
 DECLARE
     v_id_cotizacion INTEGER;
 BEGIN

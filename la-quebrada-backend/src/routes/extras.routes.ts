@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
 import type { AuthRequest } from '../middleware/auth.middleware.js';
+import { responderError } from '../utils/errores.js';
 
 const router = Router();
 
@@ -22,7 +23,7 @@ router.post('/servicio', async (req: AuthRequest, res) => {
     );
     res.status(201).json({ id_extras_servicios: result.rows[0].p_id_extras_servicios });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -44,7 +45,7 @@ router.post('/menu', async (req: AuthRequest, res) => {
     );
     res.status(201).json({ id_extras_menu: result.rows[0].p_id_extras_menu });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -63,7 +64,7 @@ router.patch('/:tipo/:idLinea/cancelar', async (req, res) => {
     }
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 

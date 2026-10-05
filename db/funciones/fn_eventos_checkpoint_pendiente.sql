@@ -1,19 +1,6 @@
-CREATE OR REPLACE FUNCTION fn_eventos_checkpoint_pendiente()
-RETURNS TABLE (
-    id_evento           INTEGER,
-    fecha               DATE,
-    dias_para_evento    INTEGER,
-    cliente             TEXT,
-    correo_cliente      VARCHAR,
-    total_a_pagar       DECIMAL,
-    total_pagado        DECIMAL,
-    porcentaje_pagado   DECIMAL,
-    id_tipo_recordatorio INTEGER,
-    tipo_recordatorio   VARCHAR
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_eventos_checkpoint_pendiente() RETURNS TABLE(id_evento integer, fecha date, dias_para_evento integer, cliente text, correo_cliente character varying, total_a_pagar numeric, total_pagado numeric, porcentaje_pagado numeric, id_tipo_recordatorio integer, tipo_recordatorio character varying)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         e.id_evento,
         e.fecha,

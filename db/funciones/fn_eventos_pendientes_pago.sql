@@ -1,15 +1,6 @@
-CREATE OR REPLACE FUNCTION fn_eventos_pendientes_pago()
-RETURNS TABLE (
-    id_evento          INTEGER,
-    fecha              DATE,
-    cliente            TEXT,
-    saldo_pendiente    DECIMAL,
-    total_a_pagar      DECIMAL,
-    porcentaje_pagado  DECIMAL
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_eventos_pendientes_pago() RETURNS TABLE(id_evento integer, fecha date, cliente text, saldo_pendiente numeric, total_a_pagar numeric, porcentaje_pagado numeric)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         e.id_evento, e.fecha,
         p.primer_nombre || ' ' || p.primer_apellido AS cliente,
@@ -18,6 +9,6 @@ AS $$
     JOIN cliente c ON c.id_cliente = e.id_cliente
     JOIN persona p ON p.id_persona = c.id_persona
     JOIN v_evento_saldo vs ON vs.id_evento = e.id_evento
-    WHERE vs.saldo_pendiente > 0 AND e.estado != 'cancelado'
+    WHERE vs.saldo_pendiente > 0 AND e.estado = 'confirmado'
     ORDER BY e.fecha;
 $$;

@@ -1,6 +1,6 @@
-CREATE OR REPLACE PROCEDURE sp_registrar_acceso(p_id_usuario INTEGER)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_registrar_acceso(IN p_id_usuario integer)
+    LANGUAGE plpgsql
+    AS $$
 BEGIN
     UPDATE usuario
     SET fecha_ultimo_acceso = now()

@@ -1,17 +1,6 @@
-CREATE OR REPLACE FUNCTION fn_reporte_degustaciones_detallado(p_fecha_desde DATE, p_fecha_hasta DATE)
-RETURNS TABLE (
-    id_degustacion   INTEGER,
-    fecha_sesion     DATE,
-    hora_inicio      TIME,
-    cliente          TEXT,
-    telefono         VARCHAR,
-    tipo_evento      VARCHAR,
-    fecha_evento     DATE,
-    menus            JSON
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_reporte_degustaciones_detallado(p_fecha_desde date, p_fecha_hasta date) RETURNS TABLE(id_degustacion integer, fecha_sesion date, hora_inicio time without time zone, cliente text, telefono character varying, tipo_evento character varying, fecha_evento date, menus json)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         d.id_degustacion,
         fd.fecha AS fecha_sesion,

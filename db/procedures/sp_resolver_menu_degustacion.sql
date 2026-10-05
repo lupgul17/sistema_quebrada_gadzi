@@ -1,10 +1,6 @@
-CREATE OR REPLACE PROCEDURE sp_resolver_menu_degustacion(
-    p_id_degustacion_menu  INTEGER,
-    p_resultado            VARCHAR,
-    p_notas                TEXT
-)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_resolver_menu_degustacion(IN p_id_degustacion_menu integer, IN p_resultado character varying, IN p_notas text)
+    LANGUAGE plpgsql
+    AS $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM degustacion_menu WHERE id_degustacion_menu = p_id_degustacion_menu) THEN
         RAISE EXCEPTION 'No existe una linea de degustacion_menu con id = %', p_id_degustacion_menu;

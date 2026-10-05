@@ -1,17 +1,6 @@
-CREATE OR REPLACE PROCEDURE sp_registrar_pago(
-    p_id_evento         INTEGER,
-    p_fecha_pago        DATE,
-    p_monto             DECIMAL,
-    p_id_tipo_pago      INTEGER,
-    p_concepto          VARCHAR,
-    p_origen            VARCHAR,
-    p_id_empleado       INTEGER,
-    p_path_comprobante  VARCHAR,
-    p_notas             TEXT,
-    OUT p_id_pago       INTEGER
-)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_registrar_pago(IN p_id_evento integer, IN p_fecha_pago date, IN p_monto numeric, IN p_id_tipo_pago integer, IN p_concepto character varying, IN p_origen character varying, IN p_id_empleado integer, IN p_path_comprobante character varying, IN p_notas text, OUT p_id_pago integer)
+    LANGUAGE plpgsql
+    AS $$
 BEGIN
     INSERT INTO pago (
         id_evento, fecha_pago, monto, id_tipo_pago, concepto,

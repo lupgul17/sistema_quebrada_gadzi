@@ -4,10 +4,21 @@ import jwt from 'jsonwebtoken';
 import { pool } from '../db/pool.js';
 import { requireAuth } from '../middleware/auth.middleware.js';
 import type { AuthRequest } from '../middleware/auth.middleware.js';
+import { responderError } from '../utils/errores.js';
+import { crearLimitador } from '../middleware/limitador.js';
 
 const router = Router();
 
-router.post('/login', async (req, res) => {
+// 10 intentos cada 15 minutos por IP + usuario: frena a quien prueba contraseñas,
+// sin bloquear a otros usuarios que entran desde la misma red del salón.
+const limiteLogin = crearLimitador({
+  ventanaMs: 15 * 60 * 1000,
+  max: 10,
+  mensaje: 'Demasiados intentos de inicio de sesión. Esperá unos minutos e intentá de nuevo.',
+  clave: (req) => `${req.ip}|${String(req.body?.username ?? '').trim().toLowerCase()}`,
+});
+
+router.post('/login', limiteLogin.middleware, async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -46,6 +57,7 @@ router.post('/login', async (req, res) => {
       return;
     }
 
+    limiteLogin.reiniciar(req);
     await pool.query('CALL sp_registrar_acceso($1::integer)', [usuario.id_usuario]);
 
     const token = jwt.sign(
@@ -72,7 +84,7 @@ res.json({
   },
 });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -105,7 +117,7 @@ router.post('/cambiar-password', requireAuth, async (req: AuthRequest, res) => {
     await pool.query('CALL sp_cambiar_password($1::integer, $2::varchar)', [req.usuario!.id_usuario, hash]);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 

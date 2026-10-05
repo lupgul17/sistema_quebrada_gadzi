@@ -10,6 +10,7 @@ import { API_URL } from '../../../core/api-config';
 import { AuthService } from '../../../core/auth.service';
 import { DatePipe } from '@angular/common';
 import { EventoFormDialog } from '../evento-form-dialog/evento-form-dialog';
+import { fechaLocalISO } from '../../../core/fechas';
 
 interface Evento {
   id_evento: number;
@@ -71,7 +72,7 @@ export class EventosList implements OnInit {
   }
 
   private formatearFecha(fecha: Date): string {
-    return fecha.toISOString().split('T')[0];
+    return fechaLocalISO(fecha);
   }
 
   irADetalle(evento: Evento): void {

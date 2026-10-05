@@ -1,19 +1,6 @@
-CREATE OR REPLACE FUNCTION fn_listar_descuentos_servicio(p_id_cotizacion_servicios INTEGER)
-RETURNS TABLE (
-    id_descuento       INTEGER,
-    id_tipo_descuento  INTEGER,
-    tipo_descuento     VARCHAR,
-    porcentaje         DECIMAL,
-    monto_descontado   DECIMAL,
-    motivo             TEXT,
-    estado             VARCHAR,
-    solicito           TEXT,
-    aprobo             TEXT,
-    fecha_creacion     TIMESTAMPTZ
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_listar_descuentos_servicio(p_id_cotizacion_servicios integer) RETURNS TABLE(id_descuento integer, id_tipo_descuento integer, tipo_descuento character varying, porcentaje numeric, monto_descontado numeric, motivo text, estado character varying, solicito text, aprobo text, fecha_creacion timestamp with time zone)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         csd.id_descuento, csd.id_tipo_descuento, td.descripcion AS tipo_descuento,
         csd.porcentaje, csd.monto_descontado, csd.motivo, csd.estado,

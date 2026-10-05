@@ -1,14 +1,6 @@
-CREATE OR REPLACE FUNCTION fn_listar_extras_evento(p_id_evento INTEGER)
-RETURNS TABLE (
-    id_extra    INTEGER,
-    id_evento   INTEGER,
-    total       NUMERIC,
-    id_empleado INTEGER,
-    servicios   JSON,
-    menus       JSON
-)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE FUNCTION fn_listar_extras_evento(p_id_evento integer) RETURNS TABLE(id_extra integer, id_evento integer, total numeric, id_empleado integer, servicios json, menus json)
+    LANGUAGE plpgsql
+    AS $$
 BEGIN
     RETURN QUERY
     SELECT

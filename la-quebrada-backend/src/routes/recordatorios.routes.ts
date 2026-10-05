@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { ejecutarRecordatorios } from '../jobs/recordatorios.job.js';
+import { responderError } from '../utils/errores.js';
 
 const router = Router();
 
@@ -9,7 +10,7 @@ router.post('/ejecutar-ahora', async (_req, res) => {
     const resultado = await ejecutarRecordatorios();
     res.json(resultado);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 

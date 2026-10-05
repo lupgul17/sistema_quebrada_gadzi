@@ -1,17 +1,6 @@
-CREATE OR REPLACE PROCEDURE sp_crear_prospecto(
-    p_nombre           VARCHAR,
-    p_telefono         VARCHAR,
-    p_correo           VARCHAR,
-    p_id_tipo_evento   INTEGER,
-    p_id_salon         INTEGER,
-    p_fecha_tentativa  DATE,
-    p_invitados        INTEGER,
-    p_mensaje          TEXT,
-    p_ip_origen        VARCHAR,
-    OUT p_id_prospecto INTEGER
-)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_crear_prospecto(IN p_nombre character varying, IN p_telefono character varying, IN p_correo character varying, IN p_id_tipo_evento integer, IN p_id_salon integer, IN p_fecha_tentativa date, IN p_invitados integer, IN p_mensaje text, IN p_ip_origen character varying, OUT p_id_prospecto integer)
+    LANGUAGE plpgsql
+    AS $$
 BEGIN
     IF p_nombre IS NULL OR TRIM(p_nombre) = '' THEN
         RAISE EXCEPTION 'Falta el nombre';

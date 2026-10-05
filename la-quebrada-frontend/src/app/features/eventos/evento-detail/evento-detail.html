@@ -42,7 +42,7 @@
       </p-tablist>
       <p-tabpanels>
         <p-tabpanel value="cotizacion">
-          <app-cotizacion-panel [idEvento]="e.id_evento" />
+          <app-cotizacion-panel [idEvento]="e.id_evento" [totalAdultos]="e.total_adultos" [totalMenores]="e.total_menores" />
           @if (!eventoConfirmado() && e.estado === 'cotizacion') {
             <p class="placeholder">Degustación, extras y pagos se habilitan cuando el evento se confirma.</p>
           }

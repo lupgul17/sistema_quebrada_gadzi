@@ -1,18 +1,6 @@
-CREATE OR REPLACE FUNCTION fn_reporte_pendientes_pago()
-RETURNS TABLE (
-    id_evento          INTEGER,
-    fecha              DATE,
-    dias_para_evento   INTEGER,
-    cliente            TEXT,
-    total_a_pagar      DECIMAL,
-    total_pagado       DECIMAL,
-    saldo_pendiente    DECIMAL,
-    porcentaje_pagado  DECIMAL,
-    checkpoint         VARCHAR
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_reporte_pendientes_pago() RETURNS TABLE(id_evento integer, fecha date, dias_para_evento integer, cliente text, total_a_pagar numeric, total_pagado numeric, saldo_pendiente numeric, porcentaje_pagado numeric, checkpoint character varying)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         e.id_evento, e.fecha,
         (e.fecha - CURRENT_DATE) AS dias_para_evento,

@@ -2,17 +2,9 @@
 -- Usa el mismo criterio que fn_validar_disponibilidad_salon (confirmado, en curso,
 -- o reserva temporal vigente). Devuelve SOLO fecha y salón: nunca datos del evento
 -- ni del cliente.
-CREATE OR REPLACE FUNCTION fn_fechas_ocupadas_publico(
-    p_desde DATE,
-    p_hasta DATE
-)
-RETURNS TABLE (
-    fecha     DATE,
-    id_salon  INTEGER
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_fechas_ocupadas_publico(p_desde date, p_hasta date) RETURNS TABLE(fecha date, id_salon integer)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT DISTINCT e.fecha, es.id_salon
     FROM evento e
     JOIN evento_salon es ON es.id_evento = e.id_evento

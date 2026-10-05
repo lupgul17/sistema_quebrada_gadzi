@@ -1,16 +1,13 @@
-CREATE OR REPLACE PROCEDURE sp_agregar_menu_degustacion(
-    p_id_degustacion            INTEGER,
-    p_id_menu                   INTEGER,
-    OUT p_id_degustacion_menu   INTEGER
-)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_agregar_menu_degustacion(IN p_id_degustacion integer, IN p_id_menu integer, OUT p_id_degustacion_menu integer)
+    LANGUAGE plpgsql
+    AS $$
 DECLARE
-    v_cantidad_actual  INTEGER;
-    v_es_adicional     BOOLEAN;
-    v_id_evento        INTEGER;
-    v_id_cotizacion    INTEGER;
-    v_precio_menu      DECIMAL;
+    v_cantidad_actual        INTEGER;
+    v_es_adicional           BOOLEAN;
+    v_id_evento              INTEGER;
+    v_id_cotizacion          INTEGER;
+    v_precio_menu            DECIMAL;
+    v_id_cotizacion_menu     INTEGER;
 BEGIN
     SELECT COUNT(*) INTO v_cantidad_actual FROM degustacion_menu WHERE id_degustacion = p_id_degustacion;
 
@@ -35,8 +32,13 @@ BEGIN
 
         SELECT precio_base INTO v_precio_menu FROM menu WHERE id_menu = p_id_menu;
 
-        INSERT INTO cotizacion_menu (id_cotizacion, id_menu, precio_unitario_congelado, subtotal)
-        VALUES (v_id_cotizacion, p_id_menu, v_precio_menu, v_precio_menu);
+        INSERT INTO cotizacion_menu (id_cotizacion, id_menu, precio_unitario_congelado, cantidad, subtotal)
+        VALUES (v_id_cotizacion, p_id_menu, v_precio_menu, 1, v_precio_menu)
+        RETURNING id_cotizacion_menu INTO v_id_cotizacion_menu;
+
+        UPDATE degustacion_menu
+        SET id_cotizacion_menu = v_id_cotizacion_menu
+        WHERE id_degustacion_menu = p_id_degustacion_menu;
 
         CALL sp_refrescar_totales_cotizacion(v_id_cotizacion);
     END IF;

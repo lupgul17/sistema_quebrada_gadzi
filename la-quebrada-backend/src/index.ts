@@ -1,4 +1,6 @@
 import express from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import multer from 'multer';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { pool } from './db/pool.js';
@@ -23,13 +25,20 @@ import { aplicarPermisos } from './middleware/permisos.js';
 import usuariosRouter from './routes/usuarios.routes.js';
 import publicoRouter from './routes/publico.routes.js';
 import prospectosRouter from './routes/prospectos.routes.js';
+import { responderError } from './utils/errores.js';
+import { cerrarNavegadorPdf } from './utils/pdf.js';
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
 
-app.use(cors());
-app.use(express.json());
+// Orígenes que pueden llamar a la API interna (el sistema). Separados por coma en CORS_ORIGENES.
+const ORIGENES_PERMITIDOS = (process.env.CORS_ORIGENES ?? 'http://localhost:4200')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+app.use(express.json({ limit: '1mb' }));
 
 app.get('/api/health', async (_req, res) => {
   try {
@@ -43,8 +52,9 @@ app.get('/api/health', async (_req, res) => {
     });
   }
 });
-// Rutas públicas de la landing: van ANTES del middleware global de auth
-app.use('/api/publico', publicoRouter);
+// Rutas públicas de la landing: cualquier origen (son públicas) y van ANTES del middleware global de auth
+app.use('/api/publico', cors(), publicoRouter);
+app.use(cors({ origin: ORIGENES_PERMITIDOS }));
 app.use('/api', requireAuth, aplicarPermisos);
 app.use('/api/prospectos', prospectosRouter);
 app.use('/api/usuarios', usuariosRouter);
@@ -63,7 +73,48 @@ app.use('/api/degustaciones', requireAuth, degustacionesRouter);
 app.use('/api/extras', requireAuth, extrasRouter);
 app.use('/api/recordatorios', requireAuth, recordatoriosRouter);
 app.use('/api/reportes', requireAuth, reportesRouter);
-app.listen(PORT, () => {
+// Ruta inexistente dentro de /api: JSON en vez de la página HTML de Express
+app.use('/api', (_req: Request, res: Response) => {
+  res.status(404).json({ error: 'Ruta no encontrada' });
+});
+
+// Errores que no pasan por el try/catch de las rutas: archivo inválido, JSON mal formado, etc.
+app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  if (err instanceof multer.MulterError) {
+    const mensaje = err.code === 'LIMIT_FILE_SIZE' ? 'El archivo supera el tamaño máximo de 5 MB' : 'No se pudo subir el archivo';
+    res.status(400).json({ error: mensaje });
+    return;
+  }
+  const e = err as { status?: number; type?: string; message?: string };
+  if (e.type === 'entity.parse.failed') {
+    res.status(400).json({ error: 'El cuerpo del pedido no es un JSON válido' });
+    return;
+  }
+  if (e.type === 'entity.too.large') {
+    res.status(413).json({ error: 'El pedido es demasiado grande' });
+    return;
+  }
+  if (e.status && e.status >= 400 && e.status < 500) {
+    res.status(e.status).json({ error: e.message });
+    return;
+  }
+  responderError(res, err);
+});
+
+const servidor = app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`CORS permitido para: ${ORIGENES_PERMITIDOS.join(', ')}`);
   iniciarJobRecordatorios();
 });
+
+// Apagado ordenado: cerrar Chrome (PDFs) y las conexiones a la base
+async function apagar(senal: string) {
+  console.log(`
+${senal} recibido, cerrando servidor...`);
+  servidor.close();
+  await cerrarNavegadorPdf();
+  await pool.end().catch(() => undefined);
+  process.exit(0);
+}
+process.on('SIGINT', () => void apagar('SIGINT'));
+process.on('SIGTERM', () => void apagar('SIGTERM'));

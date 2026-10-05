@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import puppeteer from 'puppeteer';
+import { htmlAPdf } from '../utils/pdf.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { pool } from '../db/pool.js';
 import { armarHtmlReporte } from '../templates/reports/reporte.template.js';
 import { armarHtmlDegustaciones } from '../templates/reports/reporte-degustacion.template.js';
+import { responderError } from '../utils/errores.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -18,7 +19,7 @@ router.get('/eventos', async (req, res) => {
     const result = await pool.query('SELECT * FROM fn_listar_eventos(NULL, $1::date, $2::date, NULL)', [fecha_desde ?? null, fecha_hasta ?? null]);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -33,7 +34,7 @@ router.get('/eventos-detallado', async (req, res) => {
     const result = await pool.query('SELECT * FROM fn_reporte_eventos_detallado($1::date, $2::date)', [fecha_desde, fecha_hasta]);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -43,7 +44,7 @@ router.get('/pendientes-pago', async (_req, res) => {
     const result = await pool.query('SELECT * FROM fn_reporte_pendientes_pago()');
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -58,7 +59,7 @@ router.get('/degustaciones', async (req, res) => {
     const result = await pool.query('SELECT * FROM fn_reporte_degustaciones_detallado($1::date, $2::date)', [fecha_desde, fecha_hasta]);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -137,17 +138,13 @@ router.get('/:tipo/pdf', async (req, res) => {
       return;
     }
 
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'domcontentloaded' });
-    const pdfBuffer = await page.pdf({ format: 'Letter', printBackground: true, landscape, margin: { top: '20px', bottom: '20px' } });
-    await browser.close();
+        const pdfBuffer = await htmlAPdf(html, { format: 'Letter', printBackground: true, landscape, margin: { top: '20px', bottom: '20px' } });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="reporte-${tipo}.pdf"`);
     res.send(Buffer.from(pdfBuffer));
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 

@@ -1,20 +1,6 @@
-CREATE OR REPLACE FUNCTION fn_listar_clientes()
-RETURNS TABLE (
-    id_cliente       INTEGER,
-    id_persona       INTEGER,
-    primer_nombre    VARCHAR,
-    segundo_nombre   VARCHAR,
-    primer_apellido  VARCHAR,
-    segundo_apellido VARCHAR,
-    cui              VARCHAR,
-    nit              VARCHAR,
-    telefono         VARCHAR,
-    correo           VARCHAR,
-    fecha_creacion   TIMESTAMPTZ
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_listar_clientes() RETURNS TABLE(id_cliente integer, id_persona integer, primer_nombre character varying, segundo_nombre character varying, primer_apellido character varying, segundo_apellido character varying, cui character varying, nit character varying, telefono character varying, correo character varying, fecha_creacion timestamp with time zone)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         c.id_cliente,
         p.id_persona,

@@ -1,9 +1,6 @@
-CREATE OR REPLACE PROCEDURE sp_cambiar_estado_cotizacion(
-    p_id_cotizacion  INTEGER,
-    p_nuevo_estado   VARCHAR
-)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_cambiar_estado_cotizacion(IN p_id_cotizacion integer, IN p_nuevo_estado character varying)
+    LANGUAGE plpgsql
+    AS $$
 DECLARE
     v_estado_actual VARCHAR;
 BEGIN

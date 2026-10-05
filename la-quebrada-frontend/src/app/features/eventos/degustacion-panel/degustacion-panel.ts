@@ -122,10 +122,10 @@ export class DegustacionPanel implements OnInit {
     const id = this.degustacionSeleccionada();
     if (!id) return;
     this.procesando.set(true);
-    this.http.patch(`${API_URL}/degustaciones/${id}/estado`, { estado: nuevoEstado }).subscribe(() => {
+    this.http.patch(`${API_URL}/degustaciones/${id}/estado`, { estado: nuevoEstado }).subscribe({ next: () => {
       this.procesando.set(false);
       this.cargarDegustaciones();
-    });
+    }, error: () => this.procesando.set(false) });
   }
 
   aprobarDegustacion(): void {
@@ -139,7 +139,6 @@ export class DegustacionPanel implements OnInit {
       },
       error: (err) => {
         this.procesando.set(false);
-        alert(err.error?.error ?? 'Error al aprobar la degustación');
       },
     });
   }
@@ -164,7 +163,6 @@ export class DegustacionPanel implements OnInit {
       },
       error: (err) => {
         this.procesando.set(false);
-        alert(err.error?.error ?? 'Error al rechazar la degustación');
       },
     });
   }
@@ -195,12 +193,12 @@ export class DegustacionPanel implements OnInit {
       id_fecha_degustacion: this.fechaElegida,
       hora_llegada: this.horaLlegada ? this.formatearHora(this.horaLlegada) : null,
       notas: this.notasAgendar || null,
-    }).subscribe(() => {
+    }).subscribe({ next: () => {
       this.procesando.set(false);
       this.dialogoAgendarVisible.set(false);
       this.degustacionSeleccionada.set(null);
       this.cargarDegustaciones();
-    });
+    }, error: () => this.procesando.set(false) });
   }
 
   agregarMenu(): void {
@@ -217,7 +215,6 @@ export class DegustacionPanel implements OnInit {
       },
       error: (err) => {
         this.procesando.set(false);
-        alert(err.error?.error ?? 'Error al agregar el menú');
       },
     });
   }

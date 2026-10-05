@@ -1,34 +1,24 @@
-CREATE OR REPLACE PROCEDURE sp_crear_cliente(
-    p_primer_nombre    VARCHAR,
-    p_segundo_nombre   VARCHAR,
-    p_primer_apellido  VARCHAR,
-    p_segundo_apellido VARCHAR,
-    p_cui              VARCHAR,
-    p_nit              VARCHAR,
-    p_telefono         VARCHAR,
-    p_correo           VARCHAR,
-    OUT p_id_cliente   INTEGER
-)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_crear_cliente(IN p_primer_nombre character varying, IN p_segundo_nombre character varying, IN p_primer_apellido character varying, IN p_segundo_apellido character varying, IN p_cui character varying, IN p_nit character varying, IN p_telefono character varying, IN p_correo character varying, OUT p_id_cliente integer)
+    LANGUAGE plpgsql
+    AS $$
 DECLARE
-    v_id_persona  INTEGER;
-    v_count_cui   INTEGER;
+    v_id_persona    INTEGER;
+    v_count_correo  INTEGER;
 BEGIN
-    -- 1. Buscar por CUI primero (identifica a la persona real, sin ambigüedad si no hay duplicados cargados)
+    -- 1. Buscar por CUI primero (ahora es UNIQUE de verdad, sin ambigüedad posible)
     IF p_cui IS NOT NULL THEN
-        SELECT COUNT(*) INTO v_count_cui FROM persona WHERE cui = p_cui;
-
-        IF v_count_cui > 1 THEN
-            RAISE EXCEPTION 'Hay más de una persona con el CUI %, no se puede determinar automáticamente cuál usar. Revisar manualmente.', p_cui;
-        ELSIF v_count_cui = 1 THEN
-            SELECT id_persona INTO v_id_persona FROM persona WHERE cui = p_cui;
-        END IF;
+        SELECT id_persona INTO v_id_persona FROM persona WHERE cui = p_cui;
     END IF;
 
-    -- 2. Sin CUI o sin match por CUI: correo como respaldo (útil si el cliente no dio CUI todavía)
+    -- 2. Sin CUI o sin match por CUI: correo como respaldo, contando primero por si hay ambigüedad
     IF v_id_persona IS NULL AND p_correo IS NOT NULL THEN
-        SELECT id_persona INTO v_id_persona FROM persona WHERE correo = p_correo;
+        SELECT COUNT(*) INTO v_count_correo FROM persona WHERE correo = p_correo;
+
+        IF v_count_correo > 1 THEN
+            RAISE EXCEPTION 'Hay más de una persona con el correo %, no se puede determinar automáticamente cuál usar. Revisar manualmente.', p_correo;
+        ELSIF v_count_correo = 1 THEN
+            SELECT id_persona INTO v_id_persona FROM persona WHERE correo = p_correo;
+        END IF;
     END IF;
 
     -- 3. Si encontramos una persona existente, solo vincularla (no sobreescribir sus datos)

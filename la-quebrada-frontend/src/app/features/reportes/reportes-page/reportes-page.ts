@@ -7,6 +7,7 @@ import { DatePicker } from 'primeng/datepicker';
 import { Button } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { API_URL } from '../../../core/api-config';
+import { fechaLocalISO } from '../../../core/fechas';
 
 type TipoReporte = 'eventos' | 'eventos-detallado' | 'pendientes-pago' | 'degustaciones';
 
@@ -51,7 +52,7 @@ export class ReportesPage {
   }
 
   private formatearFecha(fecha: Date): string {
-    return fecha.toISOString().split('T')[0];
+    return fechaLocalISO(fecha);
   }
 
   private calcularRango(): { desde: string; hasta: string } | null {
@@ -96,10 +97,10 @@ export class ReportesPage {
     this.cargando.set(true);
 
     if (tipo === 'pendientes-pago') {
-      this.http.get<any[]>(`${API_URL}/reportes/pendientes-pago`).subscribe((data) => {
+      this.http.get<any[]>(`${API_URL}/reportes/pendientes-pago`).subscribe({ next: (data) => {
         this.filas.set(data);
         this.cargando.set(false);
-      });
+      }, error: () => this.cargando.set(false) });
       return;
     }
 
@@ -109,7 +110,7 @@ export class ReportesPage {
       return;
     }
 
-    this.http.get<any[]>(`${API_URL}/reportes/${tipo}?fecha_desde=${rango.desde}&fecha_hasta=${rango.hasta}`).subscribe((data) => {
+    this.http.get<any[]>(`${API_URL}/reportes/${tipo}?fecha_desde=${rango.desde}&fecha_hasta=${rango.hasta}`).subscribe({ next: (data) => {
       this.filas.set(
         tipo === 'degustaciones'
           ? data.map((f) => ({
@@ -119,7 +120,7 @@ export class ReportesPage {
           : data
       );
       this.cargando.set(false);
-    });
+    }, error: () => this.cargando.set(false) });
   }
 
   descargarPdf(): void {
@@ -136,7 +137,7 @@ export class ReportesPage {
       url += `?fecha_desde=${rango.desde}&fecha_hasta=${rango.hasta}`;
     }
 
-    this.http.get(url, { responseType: 'blob' }).subscribe((blob) => {
+    this.http.get(url, { responseType: 'blob' }).subscribe({ next: (blob) => {
       this.descargando.set(false);
       const objectUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -144,6 +145,6 @@ export class ReportesPage {
       a.download = `reporte-${tipo}.pdf`;
       a.click();
       URL.revokeObjectURL(objectUrl);
-    });
+    }, error: () => this.descargando.set(false) });
   }
 }

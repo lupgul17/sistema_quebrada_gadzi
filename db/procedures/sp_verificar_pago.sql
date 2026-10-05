@@ -1,12 +1,6 @@
-
-CREATE OR REPLACE PROCEDURE sp_verificar_pago(
-    p_id_pago         INTEGER,
-    p_nuevo_estado    VARCHAR,
-    p_id_empleado     INTEGER,
-    p_motivo_rechazo  TEXT
-)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_verificar_pago(IN p_id_pago integer, IN p_nuevo_estado character varying, IN p_id_empleado integer, IN p_motivo_rechazo text)
+    LANGUAGE plpgsql
+    AS $$
 DECLARE
     v_estado_actual VARCHAR;
 BEGIN
@@ -35,3 +29,8 @@ BEGIN
     WHERE id_pago = p_id_pago;
 END;
 $$;
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;

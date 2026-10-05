@@ -1,14 +1,6 @@
-CREATE OR REPLACE PROCEDURE sp_crear_descuento_servicio(
-    p_id_cotizacion_servicios  INTEGER,
-    p_id_tipo_descuento        INTEGER,
-    p_porcentaje               DECIMAL,
-    p_monto_descontado         DECIMAL,
-    p_motivo                   TEXT,
-    p_id_empleado_solicito     INTEGER,
-    OUT p_id_descuento         INTEGER
-)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_crear_descuento_servicio(IN p_id_cotizacion_servicios integer, IN p_id_tipo_descuento integer, IN p_porcentaje numeric, IN p_monto_descontado numeric, IN p_motivo text, IN p_id_empleado_solicito integer, OUT p_id_descuento integer)
+    LANGUAGE plpgsql
+    AS $$
 DECLARE
     v_subtotal_linea DECIMAL;
     v_monto_final    DECIMAL;

@@ -1,25 +1,6 @@
-
-
-DROP FUNCTION fn_pagos_verificados();
-
-CREATE OR REPLACE FUNCTION fn_pagos_verificados()
-RETURNS TABLE (
-    id_pago           INTEGER,
-    id_evento         INTEGER,
-    cliente           TEXT,
-    fecha_evento      DATE,
-    fecha_pago        DATE,
-    monto             DECIMAL,
-    tipo_pago         VARCHAR,
-    concepto          VARCHAR,
-    origen            VARCHAR,
-    path_comprobante  VARCHAR,
-    verifico          TEXT,
-    fecha_registro    TIMESTAMPTZ
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_pagos_verificados() RETURNS TABLE(id_pago integer, id_evento integer, cliente text, fecha_evento date, fecha_pago date, monto numeric, tipo_pago character varying, concepto character varying, origen character varying, path_comprobante character varying, verifico text, fecha_registro timestamp with time zone)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         p.id_pago, p.id_evento,
         pc.primer_nombre || ' ' || pc.primer_apellido AS cliente,

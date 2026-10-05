@@ -1,14 +1,6 @@
-CREATE OR REPLACE FUNCTION fn_listar_salones()
-RETURNS TABLE (
-    id_salon    INTEGER,
-    nombre      VARCHAR,
-    capacidad   INTEGER,
-    descripcion TEXT,
-    locacion    VARCHAR
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_listar_salones() RETURNS TABLE(id_salon integer, nombre character varying, capacidad integer, descripcion text, locacion character varying)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         s.id_salon,
         s.nombre,

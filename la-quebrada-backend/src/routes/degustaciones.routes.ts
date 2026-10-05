@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
+import { responderError } from '../utils/errores.js';
 
 const router = Router();
 
@@ -9,7 +10,7 @@ router.get('/fechas', async (_req, res) => {
     const result = await pool.query('SELECT * FROM fn_listar_fechas_degustacion()');
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -27,7 +28,7 @@ router.post('/fechas', async (req, res) => {
     );
     res.status(201).json({ id_fecha_degustacion: result.rows[0].p_id_fecha_degustacion });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -42,7 +43,7 @@ router.patch('/fechas/:id/estado', async (req, res) => {
     await pool.query('CALL sp_cambiar_estado_fecha_degustacion($1::integer, $2::varchar)', [req.params.id, estado]);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -57,7 +58,7 @@ router.patch('/:id/resultado', async (req, res) => {
     await pool.query('CALL sp_resolver_degustacion($1::integer, $2::varchar, $3::text)', [req.params.id, resultado, motivo_rechazo ?? null]);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -75,7 +76,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json({ ...degustacion, menus: menus.rows });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -93,7 +94,7 @@ router.post('/', async (req, res) => {
     );
     res.status(201).json({ id_degustacion: result.rows[0].p_id_degustacion });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -108,7 +109,7 @@ router.patch('/:id/estado', async (req, res) => {
     await pool.query('CALL sp_cambiar_estado_degustacion($1::integer, $2::varchar)', [req.params.id, estado]);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -123,7 +124,7 @@ router.post('/:id/menu', async (req, res) => {
     const result = await pool.query('CALL sp_agregar_menu_degustacion($1::integer, $2::integer, NULL)', [req.params.id, id_menu]);
     res.status(201).json({ id_degustacion_menu: result.rows[0].p_id_degustacion_menu });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -138,7 +139,7 @@ router.patch('/menu/:idLinea', async (req, res) => {
     await pool.query('CALL sp_resolver_menu_degustacion($1::integer, $2::varchar, $3::text)', [req.params.idLinea, resultado, notas ?? null]);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 // GET /api/degustaciones/fechas/:id/agendados
@@ -147,7 +148,7 @@ router.get('/fechas/:id/agendados', async (req, res) => {
     const result = await pool.query('SELECT * FROM fn_listar_degustaciones_por_fecha($1::integer)', [req.params.id]);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 // PATCH /api/degustaciones/menu/:idLinea/quitar
@@ -156,7 +157,7 @@ router.patch('/menu/:idLinea/quitar', async (req, res) => {
     await pool.query('CALL sp_quitar_menu_degustacion($1::integer)', [req.params.idLinea]);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 

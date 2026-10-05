@@ -7,6 +7,7 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { API_URL } from '../../../core/api-config';
+import { ERROR_EN_LINEA } from '../../../core/http-errores';
 
 @Component({
   selector: 'app-cliente-form-dialog',
@@ -73,8 +74,8 @@ export class ClienteFormDialog {
 
     const datos = this.form.getRawValue();
     const peticion = this.esEdicion()
-      ? this.http.put(`${API_URL}/clientes/${this.idCliente}`, datos)
-      : this.http.post(`${API_URL}/clientes`, datos);
+      ? this.http.put(`${API_URL}/clientes/${this.idCliente}`, datos, ERROR_EN_LINEA)
+      : this.http.post(`${API_URL}/clientes`, datos, ERROR_EN_LINEA);
 
     peticion.subscribe({
       next: (res: any) => {

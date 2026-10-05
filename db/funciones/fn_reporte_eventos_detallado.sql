@@ -1,23 +1,6 @@
-CREATE OR REPLACE FUNCTION fn_reporte_eventos_detallado(p_fecha_desde DATE, p_fecha_hasta DATE)
-RETURNS TABLE (
-    id_evento          INTEGER,
-    fecha              DATE,
-    cliente            TEXT,
-    tipo_evento        VARCHAR,
-    salones            TEXT,
-    estado             VARCHAR,
-    total_adultos      INTEGER,
-    total_menores      INTEGER,
-    total_a_pagar      DECIMAL,
-    total_pagado       DECIMAL,
-    saldo_pendiente    DECIMAL,
-    porcentaje_pagado  DECIMAL,
-    tiene_degustacion  BOOLEAN,
-    total_extras       DECIMAL
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_reporte_eventos_detallado(p_fecha_desde date, p_fecha_hasta date) RETURNS TABLE(id_evento integer, fecha date, cliente text, tipo_evento character varying, salones text, estado character varying, total_adultos integer, total_menores integer, total_a_pagar numeric, total_pagado numeric, saldo_pendiente numeric, porcentaje_pagado numeric, tiene_degustacion boolean, total_extras numeric)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         e.id_evento, e.fecha,
         p.primer_nombre || ' ' || p.primer_apellido AS cliente,

@@ -7,7 +7,8 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "bootstrap-admin": "tsx src/scripts/bootstrap-admin.ts"
+    "bootstrap-admin": "tsx src/scripts/bootstrap-admin.ts",
+    "test": "tsx --test \"test/**/*.test.ts\""
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

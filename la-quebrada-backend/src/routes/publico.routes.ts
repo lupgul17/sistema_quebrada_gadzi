@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import type { Request, Response, NextFunction } from 'express';
 import { pool } from '../db/pool.js';
+import { crearLimitador } from '../middleware/limitador.js';
 
 /**
  * Endpoints SIN autenticación que consume la landing page.
@@ -13,33 +13,12 @@ const router = Router();
 const MAX_DIAS_RANGO = 100;
 const FECHA_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
-// Límite simple en memoria por IP para el formulario (suficiente para una sola instancia)
-const VENTANA_MS = 60 * 60 * 1000;
-const MAX_SOLICITUDES_POR_VENTANA = 5;
-const intentosPorIp = new Map<string, number[]>();
-
-function limitarSolicitudes(req: Request, res: Response, next: NextFunction): void {
-  const ip = req.ip ?? 'desconocida';
-  const ahora = Date.now();
-  const recientes = (intentosPorIp.get(ip) ?? []).filter((t) => ahora - t < VENTANA_MS);
-  if (recientes.length >= MAX_SOLICITUDES_POR_VENTANA) {
-    res.status(429).json({ error: 'Recibimos varias solicitudes desde tu conexión. Intentá de nuevo más tarde o escribinos por WhatsApp.' });
-    return;
-  }
-  recientes.push(ahora);
-  intentosPorIp.set(ip, recientes);
-  next();
-}
-
-// Limpieza periódica para que el mapa no crezca indefinidamente
-setInterval(() => {
-  const ahora = Date.now();
-  for (const [ip, tiempos] of intentosPorIp) {
-    const vigentes = tiempos.filter((t) => ahora - t < VENTANA_MS);
-    if (vigentes.length === 0) intentosPorIp.delete(ip);
-    else intentosPorIp.set(ip, vigentes);
-  }
-}, VENTANA_MS).unref();
+// 5 solicitudes por hora por IP para el formulario de la landing
+const limiteSolicitudes = crearLimitador({
+  ventanaMs: 60 * 60 * 1000,
+  max: 5,
+  mensaje: 'Recibimos varias solicitudes desde tu conexión. Intentá de nuevo más tarde o escribinos por WhatsApp.',
+});
 
 function texto(valor: unknown, max: number): string | null {
   if (typeof valor !== 'string') return null;
@@ -96,7 +75,7 @@ router.get('/fechas-ocupadas', async (req, res) => {
 });
 
 // POST /api/publico/solicitudes
-router.post('/solicitudes', limitarSolicitudes, async (req, res) => {
+router.post('/solicitudes', limiteSolicitudes.middleware, async (req, res) => {
   const body = req.body ?? {};
 
   // Honeypot: campo invisible en el formulario. Un humano lo deja vacío; un bot suele llenarlo.

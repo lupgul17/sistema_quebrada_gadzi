@@ -1,18 +1,13 @@
 import { Router } from 'express';
-import type { Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { pool } from '../db/pool.js';
 import type { AuthRequest } from '../middleware/auth.middleware.js';
+import { responderError } from '../utils/errores.js';
 
 const router = Router();
 
 const MIN_PASSWORD = 8;
 
-function responderError(res: Response, err: unknown): void {
-  const e = err as { code?: string; message: string };
-  // P0001 = RAISE EXCEPTION de nuestros procedimientos: error de negocio, no de servidor
-  res.status(e.code === 'P0001' ? 400 : 500).json({ error: e.message });
-}
 
 // GET /api/usuarios
 router.get('/', async (_req, res) => {

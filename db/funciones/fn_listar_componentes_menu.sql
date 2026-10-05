@@ -1,15 +1,6 @@
-CREATE OR REPLACE FUNCTION fn_listar_componentes_menu(p_id_categoria INTEGER DEFAULT NULL)
-RETURNS TABLE (
-    id_componente                   INTEGER,
-    nombre                          VARCHAR,
-    recargo                         DECIMAL,
-    activo                          BOOLEAN,
-    id_categoria_componente_menu   INTEGER,
-    categoria                       VARCHAR
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_listar_componentes_menu(p_id_categoria integer DEFAULT NULL::integer) RETURNS TABLE(id_componente integer, nombre character varying, recargo numeric, activo boolean, id_categoria_componente_menu integer, categoria character varying)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         cm.id_componente,
         cm.nombre,

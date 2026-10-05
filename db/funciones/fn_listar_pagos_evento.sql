@@ -1,23 +1,6 @@
-DROP FUNCTION fn_listar_pagos_evento(integer);
-
-CREATE OR REPLACE FUNCTION fn_listar_pagos_evento(p_id_evento INTEGER)
-RETURNS TABLE (
-    id_pago           INTEGER,
-    fecha_pago        DATE,
-    monto             DECIMAL,
-    tipo_pago         VARCHAR,
-    concepto          VARCHAR,
-    estado            VARCHAR,
-    origen            VARCHAR,
-    empleado          TEXT,
-    path_comprobante  VARCHAR,
-    motivo_rechazo    TEXT,
-    notas             TEXT,
-    fecha_registro    TIMESTAMPTZ
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_listar_pagos_evento(p_id_evento integer) RETURNS TABLE(id_pago integer, fecha_pago date, monto numeric, tipo_pago character varying, concepto character varying, estado character varying, origen character varying, empleado text, path_comprobante character varying, motivo_rechazo text, notas text, fecha_registro timestamp with time zone)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         p.id_pago, p.fecha_pago, p.monto, tp.descripcion AS tipo_pago, p.concepto, p.estado, p.origen,
         pe.primer_nombre || ' ' || pe.primer_apellido AS empleado,

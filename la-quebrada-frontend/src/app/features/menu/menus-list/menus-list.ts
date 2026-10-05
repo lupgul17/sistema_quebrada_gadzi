@@ -14,6 +14,7 @@ import { Message } from 'primeng/message';
 import { API_URL } from '../../../core/api-config';
 import { AuthService } from '../../../core/auth.service';
 import {MultiSelect} from "primeng/multiselect";
+import { ERROR_EN_LINEA } from '../../../core/http-errores';
 
 interface Menu {
   id_menu: number;
@@ -170,8 +171,8 @@ getControl(categoria: string): FormControl<number[]> {
   const id = this.editandoId();
 
   const peticion = id
-    ? this.http.put(`${API_URL}/menus/${id}`, body)
-    : this.http.post(`${API_URL}/menus`, body);
+    ? this.http.put(`${API_URL}/menus/${id}`, body, ERROR_EN_LINEA)
+    : this.http.post(`${API_URL}/menus`, body, ERROR_EN_LINEA);
 
   peticion.subscribe({
     next: () => {

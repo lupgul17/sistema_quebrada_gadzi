@@ -1,18 +1,6 @@
-CREATE OR REPLACE PROCEDURE sp_crear_evento(
-    p_id_cliente        INTEGER,
-    p_id_tipo_evento    INTEGER,
-    p_fecha             DATE,
-    p_hora_inicio       TIME,
-    p_hora_fin          TIME,
-    p_total_adultos     INTEGER,
-    p_total_menores     INTEGER,
-    p_notas             TEXT,
-    p_reserva_temporal  BOOLEAN,
-    p_salones           INTEGER[],
-    OUT p_id_evento     INTEGER
-)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_crear_evento(IN p_id_cliente integer, IN p_id_tipo_evento integer, IN p_fecha date, IN p_hora_inicio time without time zone, IN p_hora_fin time without time zone, IN p_total_adultos integer, IN p_total_menores integer, IN p_notas text, IN p_reserva_temporal boolean, IN p_salones integer[], OUT p_id_evento integer)
+    LANGUAGE plpgsql
+    AS $$
 DECLARE
     v_id_salon INTEGER;
 BEGIN

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, signal, ViewChild, computed, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -14,6 +14,13 @@ import { AuthService } from '../../../core/auth.service';
 import { MenuPersonalizadoDialog } from '../menu-personalizado-dialog/menu-personalizado-dialog';
 import { DegustacionEventoService } from '../../../core/degustacion-evento';
 import { SaldoEventoService } from '../../../core/saldo-evento.service';
+import { InputText } from 'primeng/inputtext';
+
+/**
+ * Tipo de menú que cuenta para niños. Debe coincidir EXACTO con la descripción en tc_tipo_menu
+ * y con sp_agregar_menu_cotizacion (cantidad automática), que usa el mismo texto.
+ */
+const TIPO_MENU_INFANTIL = 'individual_infantil';
 
 interface CotizacionResumen {
   id_cotizacion: number;
@@ -110,7 +117,7 @@ const SIGUIENTE_ESTADO_COTIZACION: Record<string, { estado: string; label: strin
 @Component({
   selector: 'app-cotizacion-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, Select, InputNumber, Checkbox, Textarea, Button, Dialog, ProgressSpinner,MenuPersonalizadoDialog],
+  imports: [CommonModule, FormsModule, Select, InputNumber, Checkbox, Textarea, Button, Dialog, ProgressSpinner,MenuPersonalizadoDialog, InputText],
   templateUrl: './cotizacion-panel.html',
   styleUrl: './cotizacion-panel.scss',
 })
@@ -133,12 +140,36 @@ export class CotizacionPanel implements OnInit {
   readonly lineaDescuentoActual = signal<LineaServicio | null>(null);
   readonly descuentosLinea = signal<DescuentoLinea[]>([]);
   readonly guardandoDescuento = signal(false);
+  /** Invitados del evento. Vienen del detalle del evento, así el cuadre se actualiza al editarlo. */
+  readonly totalAdultos = input<number | null>(null);
+  readonly totalMenores = input<number | null>(null);
+
+  readonly cuadre = computed(() => {
+    const c = this.cotizacion();
+    const adultosEvento = this.totalAdultos();
+    const menoresEvento = this.totalMenores();
+    if (adultosEvento === null || menoresEvento === null || !c || c.menus.length === 0) return null;
+    const t = { adultos: adultosEvento, menores: menoresEvento };
+
+    let adultos = 0;
+    let ninos = 0;
+    for (const m of c.menus) {
+      if (m.es_extra_degustacion) continue; // los platillos de degustación no cuentan
+      if (m.tipo_menu === TIPO_MENU_INFANTIL) ninos += m.cantidad;
+      else adultos += m.cantidad;
+    }
+    return {
+      adultos, ninos,
+      totalAdultos: t.adultos, totalNinos: t.menores,
+      adultosOk: adultos === t.adultos, ninosOk: ninos === t.menores,
+    };
+  });
 
   menuSeleccionado: number | null = null;
   servicioSeleccionado: number | null = null;
   cantidadServicio = 1;
   aplicaDeposito = true;
-
+  cantidadMenu: number | null = null;
   detalleForm = {
     brindis: false,
     cantidad_mesa_principal: null as number | null,
@@ -189,7 +220,7 @@ export class CotizacionPanel implements OnInit {
 
   cargarCotizacionActiva(): void {
     this.cargandoInicial.set(true);
-    this.http.get<CotizacionResumen[]>(`${API_URL}/eventos/${this.idEvento}/cotizaciones`).subscribe((lista) => {
+    this.http.get<CotizacionResumen[]>(`${API_URL}/eventos/${this.idEvento}/cotizaciones`).subscribe({ next: (lista) => {
       this.versiones.set(lista);
       const activa = lista.find((c) => c.activa);
       if (activa) {
@@ -198,7 +229,7 @@ export class CotizacionPanel implements OnInit {
         this.cotizacion.set(null);
         this.cargandoInicial.set(false);
       }
-    });
+    }, error: () => this.cargandoInicial.set(false) });
   }
 
   cargarDetalle(idCotizacion: number): void {
@@ -216,6 +247,7 @@ export class CotizacionPanel implements OnInit {
       };
       this.cargandoInicial.set(false);
       this.procesando.set(false);
+      this.saldoService.actualizar(this.idEvento);
     });
   }
 
@@ -231,16 +263,16 @@ export class CotizacionPanel implements OnInit {
   guardarDetalles(): void {
     if (!this.cotizacion()) return;
     this.guardandoDetalles.set(true);
-    this.http.put(`${API_URL}/cotizaciones/${this.cotizacion()!.id_cotizacion}`, this.detalleForm).subscribe(() => {
+    this.http.put(`${API_URL}/cotizaciones/${this.cotizacion()!.id_cotizacion}`, this.detalleForm).subscribe({ next: () => {
       this.guardandoDetalles.set(false);
       this.cargarDetalle(this.cotizacion()!.id_cotizacion);
-    });
+    }, error: () => this.guardandoDetalles.set(false) });
   }
 
   descargarPdf(): void {
     if (!this.cotizacion()) return;
     this.descargandoPdf.set(true);
-    this.http.get(`${API_URL}/cotizaciones/${this.cotizacion()!.id_cotizacion}/pdf`, { responseType: 'blob' }).subscribe((blob) => {
+    this.http.get(`${API_URL}/cotizaciones/${this.cotizacion()!.id_cotizacion}/pdf`, { responseType: 'blob' }).subscribe({ next: (blob) => {
       this.descargandoPdf.set(false);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -248,7 +280,7 @@ export class CotizacionPanel implements OnInit {
       a.download = `cotizacion-v${this.cotizacion()!.version}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
-    });
+    }, error: () => this.descargandoPdf.set(false) });
   }
 
   private montoDeposito(): number {
@@ -261,21 +293,50 @@ export class CotizacionPanel implements OnInit {
       id_evento: this.idEvento,
       vigencia_dias: 8,
       deposito_garantia: this.montoDeposito(),
-    }).subscribe((res) => {
+    }).subscribe({ next: (res) => {
       this.cargarDetalle(res.id_cotizacion);
       this.cargarVersiones();
-    });
+    }, error: () => this.procesando.set(false) });
   }
 
   agregarMenu(): void {
-    if (!this.menuSeleccionado || !this.cotizacion()) return;
-    this.procesando.set(true);
-    this.http.post(`${API_URL}/cotizaciones/${this.cotizacion()!.id_cotizacion}/menu`, { id_menu: this.menuSeleccionado }).subscribe(() => {
-      this.menuSeleccionado = null;
+  if (!this.menuSeleccionado || !this.cotizacion()) return;
+  this.procesando.set(true);
+  this.http
+    .post(`${API_URL}/cotizaciones/${this.cotizacion()!.id_cotizacion}/menu`, {
+      id_menu: this.menuSeleccionado,
+      cantidad: this.cantidadMenu,
+    })
+    .subscribe({
+      next: () => {
+        this.menuSeleccionado = null;
+        this.cantidadMenu = null;
+        this.cargarDetalle(this.cotizacion()!.id_cotizacion);
+        this.cargarVersiones();
+      },
+      error: (err) => {
+        this.procesando.set(false);
+      },
+    });
+}
+cambiarCantidadMenu(linea: LineaMenu, input: HTMLInputElement): void {
+  const cantidad = Math.floor(Number(input.value));
+  if (!cantidad || cantidad < 1 || cantidad === linea.cantidad) {
+    input.value = String(linea.cantidad);
+    return;
+  }
+  this.procesando.set(true);
+  this.http.patch(`${API_URL}/cotizaciones/menu/${linea.id_cotizacion_menu}/cantidad`, { cantidad }).subscribe({
+    next: () => {
       this.cargarDetalle(this.cotizacion()!.id_cotizacion);
       this.cargarVersiones();
-    });
-  }
+    },
+    error: (err) => {
+      this.procesando.set(false);
+      input.value = String(linea.cantidad);
+    },
+  });
+}
 
   agregarServicio(): void {
     if (!this.servicioSeleccionado || !this.cotizacion()) return;
@@ -283,28 +344,28 @@ export class CotizacionPanel implements OnInit {
     this.http.post(`${API_URL}/cotizaciones/${this.cotizacion()!.id_cotizacion}/servicios`, {
       id_servicio: this.servicioSeleccionado,
       cantidad: this.cantidadServicio,
-    }).subscribe(() => {
+    }).subscribe({ next: () => {
       this.servicioSeleccionado = null;
       this.cantidadServicio = 1;
       this.cargarDetalle(this.cotizacion()!.id_cotizacion);
       this.cargarVersiones();
-    });
+    }, error: () => this.procesando.set(false) });
   }
 
   quitarMenu(idLinea: number): void {
     this.procesando.set(true);
-    this.http.delete(`${API_URL}/cotizaciones/menu/${idLinea}`).subscribe(() => {
+    this.http.delete(`${API_URL}/cotizaciones/menu/${idLinea}`).subscribe({ next: () => {
       this.cargarDetalle(this.cotizacion()!.id_cotizacion);
       this.cargarVersiones();
-    });
+    }, error: () => this.procesando.set(false) });
   }
 
   quitarServicio(idLinea: number): void {
     this.procesando.set(true);
-    this.http.delete(`${API_URL}/cotizaciones/servicios/${idLinea}`).subscribe(() => {
+    this.http.delete(`${API_URL}/cotizaciones/servicios/${idLinea}`).subscribe({ next: () => {
       this.cargarDetalle(this.cotizacion()!.id_cotizacion);
       this.cargarVersiones();
-    });
+    }, error: () => this.procesando.set(false) });
   }
 
   opcionesEstado(): { estado: string; label: string }[] {
@@ -315,10 +376,10 @@ export class CotizacionPanel implements OnInit {
   cambiarEstado(nuevoEstado: string): void {
     if (!this.cotizacion()) return;
     this.procesando.set(true);
-    this.http.patch(`${API_URL}/cotizaciones/${this.cotizacion()!.id_cotizacion}/estado`, { estado: nuevoEstado }).subscribe(() => {
+    this.http.patch(`${API_URL}/cotizaciones/${this.cotizacion()!.id_cotizacion}/estado`, { estado: nuevoEstado }).subscribe({ next: () => {
       this.cargarDetalle(this.cotizacion()!.id_cotizacion);
       this.cargarVersiones();
-    });
+    }, error: () => this.procesando.set(false) });
   }
 
   abrirDescuentos(linea: LineaServicio): void {
@@ -341,11 +402,11 @@ export class CotizacionPanel implements OnInit {
       porcentaje: this.descuentoForm.modo === 'porcentaje' ? this.descuentoForm.porcentaje : null,
       monto_descontado: this.descuentoForm.modo === 'monto' ? this.descuentoForm.monto : null,
       motivo: this.descuentoForm.motivo,
-    }).subscribe(() => {
+    }).subscribe({ next: () => {
       this.guardandoDescuento.set(false);
       this.descuentoForm = { id_tipo_descuento: null, modo: 'porcentaje', porcentaje: null, monto: null, motivo: '' };
       this.cargarDescuentosLinea(linea.id_cotizacion_servicios);
-    });
+    }, error: () => this.guardandoDescuento.set(false) });
   }
 
   resolverDescuento(idDescuento: number, estado: 'aprobado' | 'rechazado'): void {

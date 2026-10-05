@@ -6,6 +6,7 @@ import { Card } from 'primeng/card';
 import { EventosCalendario } from './eventos-calendario/eventos-calendario';
 import { API_URL } from '../../core/api-config';
 import { TemaService } from '../../core/tema.service';
+import { fechaLocalISO } from '../../core/fechas';
 
 interface EventoResumen {
   id_evento: number;
@@ -49,7 +50,7 @@ export class Home implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = fechaLocalISO();
 
     this.http.get<EventoResumen[]>(`${API_URL}/eventos?fecha_desde=${hoy}&estado=confirmado`).subscribe((data) => {
       const ordenados = [...data].sort((a, b) => a.fecha.localeCompare(b.fecha));

@@ -91,7 +91,6 @@ export class EventoDetail implements OnInit {
       },
       error: (err) => {
         this.cambiandoEstado.set(false);
-        alert(err.error?.error ?? 'Error al cambiar el estado');
       },
     });
   }

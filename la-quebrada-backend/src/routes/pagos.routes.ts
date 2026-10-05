@@ -4,6 +4,7 @@ import {AuthRequest} from '../middleware/auth.middleware.js';
 import path from 'path';
 import { UPLOADS_DIR } from '../config/upload.js';
 import {uploadComprobante} from '../config/upload.js';
+import { responderError } from '../utils/errores.js';
 
 const router = Router();
 
@@ -13,7 +14,7 @@ router.get('/pendientes', async (_req, res) => {
     const result = await pool.query('SELECT * FROM fn_pagos_pendientes_verificacion()');
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -37,7 +38,7 @@ router.post('/', uploadComprobante.single('comprobante'), async (req: AuthReques
     );
     res.status(201).json({ id_pago: result.rows[0].p_id_pago });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -61,7 +62,7 @@ router.patch('/:id/verificar', async (req: AuthRequest, res) => {
     await pool.query('CALL sp_verificar_pago($1::integer, $2::varchar, $3::integer, $4::text)', [req.params.id, estado, idEmpleado, motivo_rechazo ?? null]);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -71,7 +72,7 @@ router.get('/verificados', async (_req, res) => {
     const result = await pool.query('SELECT * FROM fn_pagos_verificados()');
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 // GET /api/pagos/comprobante/:filename

@@ -9,6 +9,7 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { API_URL } from '../../../core/api-config';
 import { AuthService } from '../../../core/auth.service';
+import { fechaLocalISO } from '../../../core/fechas';
 
 interface FechaDegustacion {
   id_fecha_degustacion: number;
@@ -71,10 +72,10 @@ export class FechasDegustacionList implements OnInit {
 
   cargarFechas(): void {
     this.cargando.set(true);
-    this.http.get<FechaDegustacion[]>(`${API_URL}/degustaciones/fechas`).subscribe((data) => {
+    this.http.get<FechaDegustacion[]>(`${API_URL}/degustaciones/fechas`).subscribe({ next: (data) => {
       this.fechas.set(data);
       this.cargando.set(false);
-    });
+    }, error: () => this.cargando.set(false) });
   }
 
   abrirNueva(): void {
@@ -85,7 +86,7 @@ export class FechasDegustacionList implements OnInit {
   }
 
   private formatearFecha(fecha: Date): string {
-    return fecha.toISOString().split('T')[0];
+    return fechaLocalISO(fecha);
   }
 
   private formatearHora(fecha: Date): string {
@@ -99,11 +100,11 @@ export class FechasDegustacionList implements OnInit {
       fecha: this.formatearFecha(this.nuevaFecha),
       hora_inicio: this.formatearHora(this.nuevaHoraInicio),
       hora_fin: this.nuevaHoraFin ? this.formatearHora(this.nuevaHoraFin) : null,
-    }).subscribe(() => {
+    }).subscribe({ next: () => {
       this.guardando.set(false);
       this.dialogoVisible.set(false);
       this.cargarFechas();
-    });
+    }, error: () => this.guardando.set(false) });
   }
 
   cambiarEstado(fecha: FechaDegustacion, nuevoEstado: string): void {
@@ -116,10 +117,10 @@ export class FechasDegustacionList implements OnInit {
     this.fechaSeleccionada.set(fecha);
     this.cargandoAgendados.set(true);
     this.dialogoAgendadosVisible.set(true);
-    this.http.get<Agendado[]>(`${API_URL}/degustaciones/fechas/${fecha.id_fecha_degustacion}/agendados`).subscribe((data) => {
+    this.http.get<Agendado[]>(`${API_URL}/degustaciones/fechas/${fecha.id_fecha_degustacion}/agendados`).subscribe({ next: (data) => {
       this.agendados.set(data);
       this.cargandoAgendados.set(false);
-    });
+    }, error: () => this.cargandoAgendados.set(false) });
   }
 
   imprimir(): void {

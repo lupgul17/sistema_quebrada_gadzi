@@ -1,14 +1,6 @@
-CREATE OR REPLACE FUNCTION fn_validar_disponibilidad_salon(
-    p_id_salon INTEGER,
-    p_fecha DATE,
-    p_hora_inicio TIME,
-    p_hora_fin TIME,
-    p_id_evento_excluir INTEGER DEFAULT NULL
-)
-RETURNS BOOLEAN
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_validar_disponibilidad_salon(p_id_salon integer, p_fecha date, p_hora_inicio time without time zone, p_hora_fin time without time zone, p_id_evento_excluir integer DEFAULT NULL::integer) RETURNS boolean
+    LANGUAGE sql STABLE
+    AS $$
     SELECT NOT EXISTS (
         SELECT 1
         FROM evento_salon es

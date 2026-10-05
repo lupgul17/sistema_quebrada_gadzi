@@ -11,6 +11,7 @@ import { API_URL } from '../../../core/api-config';
 import { AuthService } from '../../../core/auth.service';
 import {VisorArchivoService} from "../../../core/visor-archivo.service";
 import { SaldoEventoService } from '../../../core/saldo-evento.service';
+import { fechaLocalISO } from '../../../core/fechas';
 
 
 
@@ -91,14 +92,14 @@ abrirSelectorArchivo(): void {
 cargarTodo(): void {
   this.cargando.set(true);
   this.saldoService.actualizar(this.idEvento);
-  this.http.get<Pago[]>(`${API_URL}/eventos/${this.idEvento}/pagos`).subscribe((data) => {
+  this.http.get<Pago[]>(`${API_URL}/eventos/${this.idEvento}/pagos`).subscribe({ next: (data) => {
     this.pagos.set(data);
     this.cargando.set(false);
-  });
+  }, error: () => this.cargando.set(false) });
 }
 
   private formatearFecha(fecha: Date): string {
-    return fecha.toISOString().split('T')[0];
+    return fechaLocalISO(fecha);
   }
 
   onArchivoSeleccionado(event: Event): void {

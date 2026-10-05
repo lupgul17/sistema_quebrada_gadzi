@@ -1,13 +1,6 @@
-CREATE OR REPLACE FUNCTION sp_agregar_extra_servicio(
-    p_id_evento INTEGER,
-    p_id_tipo_cargo_extra INTEGER,
-    p_id_servicio INTEGER,         -- puede ser NULL
-    p_descripcion TEXT,            -- puede ser NULL
-    p_cantidad INTEGER,
-    p_precio_unitario NUMERIC,
-    p_id_empleado INTEGER,
-    OUT p_id_extras_servicios INTEGER
-) AS $$
+CREATE OR REPLACE FUNCTION sp_agregar_extra_servicio(p_id_evento integer, p_id_tipo_cargo_extra integer, p_id_servicio integer, p_descripcion text, p_cantidad integer, p_precio_unitario numeric, p_id_empleado integer, OUT p_id_extras_servicios integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
 DECLARE
     v_id_extra INTEGER;
     v_subtotal NUMERIC;
@@ -44,4 +37,4 @@ BEGIN
     )
     WHERE id_extra = v_id_extra;
 END;
-$$ LANGUAGE plpgsql;
+$$;

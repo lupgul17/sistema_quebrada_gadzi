@@ -1,6 +1,6 @@
-CREATE OR REPLACE PROCEDURE sp_refrescar_totales_cotizacion(p_id_cotizacion INTEGER)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_refrescar_totales_cotizacion(IN p_id_cotizacion integer)
+    LANGUAGE plpgsql
+    AS $$
 BEGIN
     UPDATE cotizacion c
     SET subtotal_menus = vc.subtotal_menus,

@@ -1,18 +1,6 @@
-CREATE OR REPLACE FUNCTION fn_menu_detalle(p_id_menu INTEGER)
-RETURNS TABLE (
-    id_menu         INTEGER,
-    nombre          VARCHAR,
-    precio_base     DECIMAL,
-    unidad_medida   VARCHAR,
-    descripcion     TEXT,
-    activo          BOOLEAN,
-    id_tipo_menu    INTEGER,
-    tipo_menu       VARCHAR,
-    componentes_ids INTEGER[]
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_menu_detalle(p_id_menu integer) RETURNS TABLE(id_menu integer, nombre character varying, precio_base numeric, unidad_medida character varying, descripcion text, activo boolean, id_tipo_menu integer, tipo_menu character varying, componentes_ids integer[])
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         m.id_menu, m.nombre, m.precio_base, m.unidad_medida, m.descripcion, m.activo,
         tm.id_tipo_menu, tm.descripcion AS tipo_menu,

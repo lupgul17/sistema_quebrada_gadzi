@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
+import { responderError } from '../utils/errores.js';
 
 const router = Router();
 
@@ -13,7 +14,7 @@ router.get('/', async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -32,7 +33,7 @@ router.get('/disponibilidad-salones', async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 // GET /api/eventos/pendientes-pago
@@ -41,7 +42,7 @@ router.get('/pendientes-pago', async (_req, res) => {
     const result = await pool.query('SELECT * FROM fn_eventos_pendientes_pago()');
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -51,7 +52,7 @@ router.get('/:id/extras', async (req, res) => {
     const result = await pool.query('SELECT * FROM fn_listar_extras_evento($1::integer)', [req.params.id]);
     res.json(result.rows[0] ?? { id_extra: null, total: 0, servicios: [], menus: [] });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 // GET /api/eventos/:id
@@ -65,7 +66,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json(evento);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -95,7 +96,7 @@ router.post('/', async (req, res) => {
 
     res.status(201).json({ id_evento: result.rows[0].p_id_evento });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -125,7 +126,7 @@ router.put('/:id', async (req, res) => {
 
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -142,7 +143,7 @@ router.patch('/:id/estado', async (req, res) => {
 
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -152,7 +153,7 @@ router.get('/:id/cotizaciones', async (req, res) => {
     const result = await pool.query('SELECT * FROM fn_listar_cotizaciones_evento($1::integer)', [req.params.id]);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -162,7 +163,7 @@ router.get('/:id/pagos', async (req, res) => {
     const result = await pool.query('SELECT * FROM fn_listar_pagos_evento($1::integer)', [req.params.id]);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -177,7 +178,7 @@ router.get('/:id/saldo', async (req, res) => {
     }
     res.json(saldo);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 // GET /api/eventos/:id/degustaciones
@@ -186,7 +187,7 @@ router.get('/:id/degustaciones', async (req, res) => {
     const result = await pool.query('SELECT * FROM fn_listar_degustaciones_evento($1::integer)', [req.params.id]);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 

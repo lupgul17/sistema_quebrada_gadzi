@@ -138,11 +138,11 @@ export class ExtrasPanel implements OnInit {
     descripcion: f.modo === 'personalizado' ? f.descripcion : null,
     cantidad: f.cantidad,
     precio_unitario: f.precio_unitario,
-  }).subscribe(() => {
+  }).subscribe({ next: () => {
     this.procesandoServicio.set(false);
     this.servicioForm = { id_tipo_cargo_extra: null, modo: 'catalogo', id_servicio: null, descripcion: '', cantidad: 1, precio_unitario: null };
     this.cargarExtras();
-  });
+  }, error: () => this.procesandoServicio.set(false) });
 }
 
   agregarMenu(): void {
@@ -158,11 +158,11 @@ export class ExtrasPanel implements OnInit {
       descripcion: f.modo === 'personalizado' ? f.descripcion : null,
       cantidad: f.cantidad,
       precio_base: f.precio_base,
-    }).subscribe(() => {
+    }).subscribe({ next: () => {
       this.procesandoMenu.set(false);
       this.menuForm = { modo: 'catalogo', id_menu: null, descripcion: '', cantidad: 1, precio_base: null };
       this.cargarExtras();
-    });
+    }, error: () => this.procesandoMenu.set(false) });
   }
 
   cancelarLinea(tipo: 'servicio' | 'menu', idLinea: number): void {

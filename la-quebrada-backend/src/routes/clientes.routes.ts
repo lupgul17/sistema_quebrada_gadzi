@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
+import { responderError } from '../utils/errores.js';
 
 const router = Router();
 
@@ -12,7 +13,7 @@ router.get('/', async (req, res) => {
       : await pool.query('SELECT * FROM fn_listar_clientes()');
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -27,7 +28,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json(cliente);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -57,7 +58,7 @@ router.post('/', async (req, res) => {
 
     res.status(201).json({ id_cliente: result.rows[0].p_id_cliente });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -87,7 +88,7 @@ router.put('/:id', async (req, res) => {
 
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 // GET /api/clientes/:id/pagos
@@ -96,7 +97,7 @@ router.get('/:id/pagos', async (req, res) => {
     const result = await pool.query('SELECT * FROM fn_listar_pagos_cliente($1::integer)', [req.params.id]);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 export default router;

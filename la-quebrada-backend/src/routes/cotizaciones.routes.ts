@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
-import puppeteer from 'puppeteer';
+import { htmlAPdf } from '../utils/pdf.js';
 import { armarHtmlCotizacion } from '../templates/reports/cotizacion.template.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import type { AuthRequest } from '../middleware/auth.middleware.js';
+import { responderError } from '../utils/errores.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -17,7 +19,7 @@ router.get('/por-vencer', async (req, res) => {
     const result = await pool.query('SELECT * FROM fn_cotizaciones_proximas_vencer($1::integer)', [dias]);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -38,40 +40,49 @@ router.get('/:id', async (req, res) => {
 
     res.json({ ...cotizacion, menus: menus.rows, servicios: servicios.rows });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
 // POST /api/cotizaciones - crear nueva versión
-router.post('/', async (req, res) => {
+// POST /api/cotizaciones
+router.post('/', async (req: AuthRequest, res) => {
   try {
-    const { id_evento, vigencia_dias, deposito_garantia, id_empleado } = req.body;
+    const { id_evento, vigencia_dias, deposito_garantia } = req.body;
     if (!id_evento) {
       res.status(400).json({ error: 'Falta id_evento' });
       return;
     }
+
+    // Quién crea la cotización sale de la sesión, nunca del body (si no, se podría falsificar)
+    const empleadoResult = await pool.query('SELECT fn_id_empleado_por_persona($1::integer) AS id_empleado', [req.usuario!.id_persona]);
+    const idEmpleado = empleadoResult.rows[0]?.id_empleado ?? null;
+
     const result = await pool.query(
       'CALL sp_crear_cotizacion($1::integer, $2::integer, $3::decimal, $4::integer, NULL)',
-      [id_evento, vigencia_dias ?? 8, deposito_garantia ?? 0, id_empleado ?? null]
+      [id_evento, vigencia_dias ?? 8, deposito_garantia ?? 0, idEmpleado]
     );
     res.status(201).json({ id_cotizacion: result.rows[0].p_id_cotizacion });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
-// POST /api/cotizaciones/:id/menu - agregar línea de menú
+// POST /api/cotizaciones/:id/menu
 router.post('/:id/menu', async (req, res) => {
   try {
-    const { id_menu } = req.body;
+    const { id_menu, cantidad } = req.body;
     if (!id_menu) {
       res.status(400).json({ error: 'Falta id_menu' });
       return;
     }
-    const result = await pool.query('CALL sp_agregar_menu_cotizacion($1::integer, $2::integer, NULL)', [req.params.id, id_menu]);
+    const result = await pool.query(
+      'CALL sp_agregar_menu_cotizacion($1::integer, $2::integer, $3::integer, NULL)',
+      [req.params.id, id_menu, cantidad ?? null]
+    );
     res.status(201).json({ id_cotizacion_menu: result.rows[0].p_id_cotizacion_menu });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -89,7 +100,7 @@ router.post('/:id/servicios', async (req, res) => {
     );
     res.status(201).json({ id_cotizacion_servicios: result.rows[0].p_id_cotizacion_servicios });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -99,7 +110,7 @@ router.delete('/menu/:idLinea', async (req, res) => {
     await pool.query('CALL sp_quitar_menu_cotizacion($1::integer)', [req.params.idLinea]);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -109,7 +120,7 @@ router.delete('/servicios/:idLinea', async (req, res) => {
     await pool.query('CALL sp_quitar_servicio_cotizacion($1::integer)', [req.params.idLinea]);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -124,7 +135,7 @@ router.patch('/:id/estado', async (req, res) => {
     await pool.query('CALL sp_cambiar_estado_cotizacion($1::integer, $2::varchar)', [req.params.id, estado]);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 // PUT /api/cotizaciones/:id - editar detalles (no toca totales)
@@ -143,7 +154,7 @@ router.put('/:id', async (req, res) => {
     );
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 // GET /api/cotizaciones/servicios/:idLinea/descuentos
@@ -152,7 +163,7 @@ router.get('/servicios/:idLinea/descuentos', async (req, res) => {
     const result = await pool.query('SELECT * FROM fn_listar_descuentos_servicio($1::integer)', [req.params.idLinea]);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -170,7 +181,7 @@ router.post('/servicios/:idLinea/descuentos', async (req, res) => {
     );
     res.status(201).json({ id_descuento: result.rows[0].p_id_descuento });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -185,7 +196,7 @@ router.patch('/descuentos/:idDescuento', async (req, res) => {
     await pool.query('CALL sp_resolver_descuento_servicio($1::integer, $2::varchar, $3::integer)', [req.params.idDescuento, estado, id_empleado ?? null]);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
@@ -291,24 +302,20 @@ router.get('/:id/pdf', async (req, res) => {
       saldoPendiente: saldo ? Number(saldo.saldo_pendiente) : Number(cot.total),
     });
 
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'domcontentloaded' });
-    const pdfBuffer = await page.pdf({ format: 'Letter', printBackground: true, margin: { top: '20px', bottom: '20px' } });
-    await browser.close();
+        const pdfBuffer = await htmlAPdf(html, { format: 'Letter', printBackground: true, margin: { top: '20px', bottom: '20px' } });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="cotizacion-v${cot.version}.pdf"`);
     res.send(Buffer.from(pdfBuffer));
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    responderError(res, err);
   }
 });
 
 // POST /api/cotizaciones/:id/menu-personalizado
 router.post('/:id/menu-personalizado', async (req, res) => {
   try {
-    const { nombre, id_tipo_menu, precio, descripcion, componentes } = req.body;
+    const { nombre, id_tipo_menu, precio, descripcion, componentes,cantidad } = req.body;
     const nombreLimpio = typeof nombre === 'string' ? nombre.trim() : '';
     const precioNum = Number(precio);
     const esEnteroPositivo = (v: unknown) => Number.isInteger(v) && (v as number) > 0;
@@ -332,14 +339,26 @@ router.post('/:id/menu-personalizado', async (req, res) => {
     const componentesUnicos = [...new Set(componentes as number[])];
 
     const result = await pool.query(
-      'CALL sp_crear_menu_personalizado($1::integer, $2::varchar, $3::integer, $4::numeric, $5::text, $6::integer[], NULL, NULL)',
-      [req.params.id, nombreLimpio, Number(id_tipo_menu), precioNum, descripcion ?? null, componentesUnicos]
+      'CALL sp_crear_menu_personalizado($1::integer, $2::varchar, $3::integer, $4::numeric, $5::text, $6::integer[], $7::integer, NULL, NULL)',
+      [req.params.id, nombreLimpio, Number(id_tipo_menu), precioNum, descripcion ?? null, componentesUnicos, cantidad ?? null]
     );
     res.status(201).json({ id_menu: result.rows[0].p_id_menu, id_cotizacion_menu: result.rows[0].p_id_cotizacion_menu });
   } catch (err) {
-    const e = err as { code?: string; message: string };
-    // P0001 = RAISE EXCEPTION de nuestros procedimientos: error de negocio, no de servidor
-    res.status(e.code === 'P0001' ? 400 : 500).json({ error: e.message });
+    responderError(res, err);
+  }
+});
+// PATCH /api/cotizaciones/menu/:idLinea/cantidad
+router.patch('/menu/:idLinea/cantidad', async (req, res) => {
+  try {
+    const { cantidad } = req.body;
+    if (!cantidad) {
+      res.status(400).json({ error: 'Falta cantidad' });
+      return;
+    }
+    await pool.query('CALL sp_editar_cantidad_menu_cotizacion($1::integer, $2::integer)', [req.params.idLinea, cantidad]);
+    res.json({ ok: true });
+  } catch (err) {
+    responderError(res, err);
   }
 });
 export default router;

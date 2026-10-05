@@ -1,16 +1,6 @@
-CREATE OR REPLACE FUNCTION fn_listar_servicios(p_id_categoria_servicio INTEGER DEFAULT NULL)
-RETURNS TABLE (
-    id_servicio             INTEGER,
-    nombre                  VARCHAR,
-    precio_base             DECIMAL,
-    unidad_medida           VARCHAR,
-    activo                  BOOLEAN,
-    id_categoria_servicio   INTEGER,
-    categoria               VARCHAR
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_listar_servicios(p_id_categoria_servicio integer DEFAULT NULL::integer) RETURNS TABLE(id_servicio integer, nombre character varying, precio_base numeric, unidad_medida character varying, activo boolean, id_categoria_servicio integer, categoria character varying)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         s.id_servicio,
         s.nombre,

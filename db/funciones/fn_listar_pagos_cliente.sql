@@ -1,17 +1,6 @@
-CREATE OR REPLACE FUNCTION fn_listar_pagos_cliente(p_id_cliente INTEGER)
-RETURNS TABLE (
-    id_pago       INTEGER,
-    id_evento     INTEGER,
-    fecha_evento  DATE,
-    fecha_pago    DATE,
-    monto         DECIMAL,
-    tipo_pago     VARCHAR,
-    concepto      VARCHAR,
-    estado        VARCHAR
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_listar_pagos_cliente(p_id_cliente integer) RETURNS TABLE(id_pago integer, id_evento integer, fecha_evento date, fecha_pago date, monto numeric, tipo_pago character varying, concepto character varying, estado character varying)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         p.id_pago, p.id_evento, e.fecha AS fecha_evento, p.fecha_pago, p.monto, tp.descripcion AS tipo_pago, p.concepto, p.estado
     FROM pago p

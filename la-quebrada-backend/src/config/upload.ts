@@ -26,7 +26,7 @@ export const uploadComprobante = multer({
     if (TIPOS_PERMITIDOS.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Solo se permiten imágenes (jpg, png, webp) o PDF'));
+      cb(Object.assign(new Error('Solo se permiten imágenes (jpg, png, webp) o PDF'), { status: 400 }));
     }
   },
 });

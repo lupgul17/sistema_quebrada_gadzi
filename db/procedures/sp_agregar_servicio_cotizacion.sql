@@ -1,11 +1,6 @@
-CREATE OR REPLACE PROCEDURE sp_agregar_servicio_cotizacion(
-    p_id_cotizacion               INTEGER,
-    p_id_servicio                 INTEGER,
-    p_cantidad                    INTEGER,
-    OUT p_id_cotizacion_servicios INTEGER
-)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_agregar_servicio_cotizacion(IN p_id_cotizacion integer, IN p_id_servicio integer, IN p_cantidad integer, OUT p_id_cotizacion_servicios integer)
+    LANGUAGE plpgsql
+    AS $$
 DECLARE
     v_precio_base DECIMAL;
 BEGIN

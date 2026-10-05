@@ -1,8 +1,6 @@
-CREATE OR REPLACE FUNCTION sp_cancelar_extra(
-    p_tipo VARCHAR,           -- 'servicio' o 'menu'
-    p_id_linea INTEGER,       -- id_extras_servicios o id_extras_menu según el tipo
-    OUT p_ok BOOLEAN
-) AS $$
+CREATE OR REPLACE FUNCTION sp_cancelar_extra(p_tipo character varying, p_id_linea integer, OUT p_ok boolean) RETURNS boolean
+    LANGUAGE plpgsql
+    AS $$
 DECLARE
     v_id_extra INTEGER;
 BEGIN
@@ -39,4 +37,4 @@ BEGIN
 
     p_ok := TRUE;
 END;
-$$ LANGUAGE plpgsql;
+$$;

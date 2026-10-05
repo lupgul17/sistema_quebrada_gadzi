@@ -1,35 +1,6 @@
-DROP FUNCTION fn_cotizacion_detalle(integer);
-
-CREATE OR REPLACE FUNCTION fn_cotizacion_detalle(p_id_cotizacion INTEGER)
-RETURNS TABLE (
-    id_cotizacion            INTEGER,
-    id_evento                INTEGER,
-    version                  INTEGER,
-    fecha_cotizacion         DATE,
-    vigencia_dias            INTEGER,
-    deposito_garantia        DECIMAL,
-    activa                   BOOLEAN,
-    id_estado_cotizacion     INTEGER,
-    estado                   VARCHAR,
-    id_empleado              INTEGER,
-    vendedor                 TEXT,
-    subtotal_menus           DECIMAL,
-    subtotal_servicios       DECIMAL,
-    total_descuento          DECIMAL,
-    total                    DECIMAL,
-    brindis                  BOOLEAN,
-    cantidad_mesa_principal  INTEGER,
-    cantidad_mesas_reservadas INTEGER,
-    id_color_mantel          INTEGER,
-    color_mantel             VARCHAR,
-    id_color_cubremanteles   INTEGER,
-    color_cubremanteles      VARCHAR,
-    observaciones            TEXT,
-    boquitas                 TEXT
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_cotizacion_detalle(p_id_cotizacion integer) RETURNS TABLE(id_cotizacion integer, id_evento integer, version integer, fecha_cotizacion date, vigencia_dias integer, deposito_garantia numeric, activa boolean, id_estado_cotizacion integer, estado character varying, id_empleado integer, vendedor text, subtotal_menus numeric, subtotal_servicios numeric, total_descuento numeric, total numeric, brindis boolean, cantidad_mesa_principal integer, cantidad_mesas_reservadas integer, id_color_mantel integer, color_mantel character varying, id_color_cubremanteles integer, color_cubremanteles character varying, observaciones text, boquitas text)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         c.id_cotizacion, c.id_evento, c.version, c.fecha_cotizacion, c.vigencia_dias,
         c.deposito_garantia, c.activa, c.id_estado_cotizacion, ec.descripcion AS estado,

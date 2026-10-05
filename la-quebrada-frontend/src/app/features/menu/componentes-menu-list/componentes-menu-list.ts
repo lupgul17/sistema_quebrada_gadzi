@@ -12,6 +12,7 @@ import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { API_URL } from '../../../core/api-config';
 import { AuthService } from '../../../core/auth.service';
+import { ERROR_EN_LINEA } from '../../../core/http-errores';
 
 interface ComponenteMenu {
   id_componente: number;
@@ -108,8 +109,8 @@ export class ComponentesMenuList implements OnInit {
     const id = this.editandoId();
 
     const peticion = id
-      ? this.http.put(`${API_URL}/componentes-menu/${id}`, body)
-      : this.http.post(`${API_URL}/componentes-menu`, body);
+      ? this.http.put(`${API_URL}/componentes-menu/${id}`, body, ERROR_EN_LINEA)
+      : this.http.post(`${API_URL}/componentes-menu`, body, ERROR_EN_LINEA);
 
     peticion.subscribe({
       next: () => {

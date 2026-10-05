@@ -1,10 +1,6 @@
-REATE OR REPLACE PROCEDURE sp_resolver_descuento_servicio(
-    p_id_descuento         INTEGER,
-    p_nuevo_estado         VARCHAR,
-    p_id_empleado_aprobo   INTEGER
-)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_resolver_descuento_servicio(IN p_id_descuento integer, IN p_nuevo_estado character varying, IN p_id_empleado_aprobo integer)
+    LANGUAGE plpgsql
+    AS $$
 DECLARE
     v_id_cotizacion_servicios INTEGER;
     v_id_cotizacion           INTEGER;

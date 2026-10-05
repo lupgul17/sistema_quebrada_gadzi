@@ -11,6 +11,7 @@ import { Checkbox } from 'primeng/checkbox';
 import { Message } from 'primeng/message';
 import { AuthService } from '../../../core/auth.service';
 import { API_URL } from '../../../core/api-config';
+import { ERROR_EN_LINEA } from '../../../core/http-errores';
 
 interface UsuarioFila {
   id_usuario: number;
@@ -116,7 +117,7 @@ export class UsuariosPage implements OnInit {
 
     this.guardando.set(true);
     this.error.set(null);
-    this.http.post(`${API_URL}/usuarios`, n).subscribe({
+    this.http.post(`${API_URL}/usuarios`, n, ERROR_EN_LINEA).subscribe({
       next: () => {
         this.guardando.set(false);
         this.dialogoNuevoVisible.set(false);
@@ -142,7 +143,7 @@ export class UsuariosPage implements OnInit {
     if (!this.editando || !this.editRol) return;
     this.guardando.set(true);
     this.error.set(null);
-    this.http.patch(`${API_URL}/usuarios/${this.editando.id_usuario}`, { id_rol_acceso: this.editRol, activo: this.editActivo }).subscribe({
+    this.http.patch(`${API_URL}/usuarios/${this.editando.id_usuario}`, { id_rol_acceso: this.editRol, activo: this.editActivo }, ERROR_EN_LINEA).subscribe({
       next: () => {
         this.guardando.set(false);
         this.dialogoEditarVisible.set(false);
@@ -171,7 +172,7 @@ export class UsuariosPage implements OnInit {
     }
     this.guardando.set(true);
     this.error.set(null);
-    this.http.patch(`${API_URL}/usuarios/${this.editando.id_usuario}/password`, { password: this.passwordNueva }).subscribe({
+    this.http.patch(`${API_URL}/usuarios/${this.editando.id_usuario}/password`, { password: this.passwordNueva }, ERROR_EN_LINEA).subscribe({
       next: () => {
         this.guardando.set(false);
         this.dialogoPasswordVisible.set(false);

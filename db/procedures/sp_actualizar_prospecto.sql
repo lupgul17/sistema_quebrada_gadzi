@@ -1,14 +1,8 @@
 -- Cambia el estado / notas de un prospecto. Al pasar a 'convertido' exige el
 -- cliente creado (el evento es opcional: puede que todavía no haya fecha).
-CREATE OR REPLACE PROCEDURE sp_actualizar_prospecto(
-    p_id_prospecto    INTEGER,
-    p_estado          VARCHAR,
-    p_notas_internas  TEXT,
-    p_id_cliente      INTEGER,
-    p_id_evento       INTEGER
-)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_actualizar_prospecto(IN p_id_prospecto integer, IN p_estado character varying, IN p_notas_internas text, IN p_id_cliente integer, IN p_id_evento integer)
+    LANGUAGE plpgsql
+    AS $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM prospecto WHERE id_prospecto = p_id_prospecto) THEN
         RAISE EXCEPTION 'No existe un prospecto con id = %', p_id_prospecto;

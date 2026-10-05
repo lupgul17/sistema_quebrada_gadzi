@@ -16,10 +16,10 @@ export class VisorArchivoService {
     this.esPdf.set(urlBackend.toLowerCase().endsWith('.pdf'));
     this.visible.set(true);
     this.cargando.set(true);
-    this.http.get(urlBackend, { responseType: 'blob' }).subscribe((blob) => {
+    this.http.get(urlBackend, { responseType: 'blob' }).subscribe({ next: (blob) => {
       this.url.set(URL.createObjectURL(blob));
       this.cargando.set(false);
-    });
+    }, error: () => this.cargando.set(false) });
   }
 
   cerrar(): void {

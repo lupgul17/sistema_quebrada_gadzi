@@ -1,6 +1,6 @@
-CREATE OR REPLACE PROCEDURE sp_quitar_servicio_cotizacion(p_id_cotizacion_servicios INTEGER)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE PROCEDURE sp_quitar_servicio_cotizacion(IN p_id_cotizacion_servicios integer)
+    LANGUAGE plpgsql
+    AS $$
 DECLARE
     v_id_cotizacion INTEGER;
 BEGIN

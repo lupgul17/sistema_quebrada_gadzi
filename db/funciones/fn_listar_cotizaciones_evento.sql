@@ -1,17 +1,6 @@
-CREATE OR REPLACE FUNCTION fn_listar_cotizaciones_evento(p_id_evento INTEGER)
-RETURNS TABLE (
-    id_cotizacion    INTEGER,
-    version          INTEGER,
-    fecha_cotizacion DATE,
-    vigencia_dias    INTEGER,
-    activa           BOOLEAN,
-    estado           VARCHAR,
-    total            DECIMAL,
-    vendedor         TEXT
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_listar_cotizaciones_evento(p_id_evento integer) RETURNS TABLE(id_cotizacion integer, version integer, fecha_cotizacion date, vigencia_dias integer, activa boolean, estado character varying, total numeric, vendedor text)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         c.id_cotizacion, c.version, c.fecha_cotizacion, c.vigencia_dias, c.activa,
         ec.descripcion AS estado,

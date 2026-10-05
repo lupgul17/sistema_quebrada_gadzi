@@ -1,26 +1,6 @@
-CREATE OR REPLACE FUNCTION fn_evento_detalle(p_id_evento INTEGER)
-RETURNS TABLE (
-    id_evento         INTEGER,
-    fecha             DATE,
-    hora_inicio       TIME,
-    hora_fin          TIME,
-    estado            VARCHAR,
-    reserva_temporal  BOOLEAN,
-    total_adultos     INTEGER,
-    total_menores     INTEGER,
-    notas             TEXT,
-    id_cliente        INTEGER,
-    cliente           TEXT,
-    telefono_cliente  VARCHAR,
-    id_tipo_evento    INTEGER,
-    tipo_evento       VARCHAR,
-    salones           TEXT,
-    salones_ids       INTEGER[],
-    fecha_creacion    TIMESTAMPTZ
-)
-LANGUAGE sql
-STABLE
-AS $$
+CREATE OR REPLACE FUNCTION fn_evento_detalle(p_id_evento integer) RETURNS TABLE(id_evento integer, fecha date, hora_inicio time without time zone, hora_fin time without time zone, estado character varying, reserva_temporal boolean, total_adultos integer, total_menores integer, notas text, id_cliente integer, cliente text, telefono_cliente character varying, id_tipo_evento integer, tipo_evento character varying, salones text, salones_ids integer[], fecha_creacion timestamp with time zone)
+    LANGUAGE sql STABLE
+    AS $$
     SELECT
         e.id_evento,
         e.fecha,
