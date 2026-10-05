@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
 import { responderError } from '../utils/errores.js';
+import { htmlAPdf } from '../utils/pdf.js';
+import { logoDataUri } from '../utils/logo.js';
+import { armarHtmlDegustaciones, agruparSesionesDegustacion } from '../templates/reports/reporte-degustacion.template.js';
 
 const router = Router();
 
@@ -142,6 +145,47 @@ router.patch('/menu/:idLinea', async (req, res) => {
     responderError(res, err);
   }
 });
+// GET /api/degustaciones/fechas/:id/pdf
+// Reporte de degustación (mismo template que Reportes) solo para esta sesión.
+// Vive acá y no en /reportes porque quien maneja las fechas (Secretaria) no tiene acceso a Reportes.
+router.get('/fechas/:id/pdf', async (req, res) => {
+  try {
+    const idFecha = Number(req.params.id);
+    if (!Number.isInteger(idFecha) || idFecha <= 0) {
+      res.status(400).json({ error: 'Fecha de degustación inválida' });
+      return;
+    }
+
+    const sesion = await pool.query(
+      `SELECT to_char(fecha, 'YYYY-MM-DD') AS fecha, hora_inicio FROM fechas_degustacion WHERE id_fecha_degustacion = $1`,
+      [idFecha]
+    );
+    if (!sesion.rows[0]) {
+      res.status(404).json({ error: 'Fecha de degustación no encontrada' });
+      return;
+    }
+    const { fecha, hora_inicio } = sesion.rows[0];
+
+    // El reporte trae todo el día: se deja solo la sesión de esta hora
+    const result = await pool.query('SELECT * FROM fn_reporte_degustaciones_detallado($1::date, $1::date)', [fecha]);
+    const filas = result.rows.filter((r) => r.hora_inicio === hora_inicio);
+
+    const fechaLarga = new Date(`${fecha}T00:00:00`).toLocaleDateString('es-GT', { day: 'numeric', month: 'long', year: 'numeric' });
+    const html = armarHtmlDegustaciones({
+      logoUrl: logoDataUri(),
+      subtitulo: `${fechaLarga}, ${String(hora_inicio).substring(0, 5)}`,
+      sesiones: agruparSesionesDegustacion(filas),
+    });
+
+    const pdf = await htmlAPdf(html, { format: 'Letter', printBackground: true, margin: { top: '20px', bottom: '20px' } });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="degustacion-${fecha}.pdf"`);
+    res.send(pdf);
+  } catch (err) {
+    responderError(res, err);
+  }
+});
+
 // GET /api/degustaciones/fechas/:id/agendados
 router.get('/fechas/:id/agendados', async (req, res) => {
   try {

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es" class="app-dark">
+<html lang="es">
 <head>
   <meta charset="utf-8">
   <title>La Quebrada</title>
@@ -7,8 +7,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <script>
-    // Aplica el tema guardado antes de que Angular cargue (evita parpadeo)
-    try { if (localStorage.getItem('lq-tema') === 'claro') document.documentElement.classList.remove('app-dark'); } catch (e) {}
+    // Claro por defecto (imagen de marca); oscuro solo si el usuario lo eligió. Se aplica antes de que Angular cargue (sin parpadeo)
+    try { if (localStorage.getItem('lq-tema') === 'oscuro') document.documentElement.classList.add('app-dark'); } catch (e) {}
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

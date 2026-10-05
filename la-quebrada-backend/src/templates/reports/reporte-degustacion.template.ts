@@ -27,6 +27,37 @@ interface DatosDegustaciones {
   sesiones: SesionDegustacion[];
 }
 
+/** Fila de fn_reporte_degustaciones_detallado. */
+export interface FilaReporteDegustacion {
+  fecha_sesion: string | Date;
+  hora_inicio: string;
+  cliente: string;
+  tipo_evento: string | null;
+  fecha_evento: string | Date;
+  menus: MenuDegustacion[];
+}
+
+/** Agrupa las filas por sesión (fecha + hora) con el título que lleva cada bloque del PDF. */
+export function agruparSesionesDegustacion(filas: FilaReporteDegustacion[]): SesionDegustacion[] {
+  const sesiones = new Map<string, SesionDegustacion>();
+  for (const r of filas) {
+    const clave = `${new Date(r.fecha_sesion).getTime()}-${r.hora_inicio}`;
+    if (!sesiones.has(clave)) {
+      const fechaLarga = new Date(r.fecha_sesion).toLocaleDateString('es-GT', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+      });
+      sesiones.set(clave, { titulo: `Degustación — ${fechaLarga}, ${r.hora_inicio.substring(0, 5)}`, cards: [] });
+    }
+    sesiones.get(clave)!.cards.push({
+      cliente: r.cliente,
+      tipoEvento: r.tipo_evento,
+      fechaEvento: new Date(r.fecha_evento).toLocaleDateString('es-GT'),
+      menus: r.menus,
+    });
+  }
+  return Array.from(sesiones.values());
+}
+
 function agruparPorCategoria(componentes: ComponenteMenu[]): [string, string[]][] {
   const mapa = new Map<string, string[]>();
   for (const c of componentes) {

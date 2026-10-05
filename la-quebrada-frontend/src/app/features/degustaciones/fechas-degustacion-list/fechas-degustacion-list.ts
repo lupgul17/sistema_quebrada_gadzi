@@ -38,6 +38,35 @@ const ESTADOS = [
   { label: 'Cancelada', value: 'cancelada' },
 ];
 
+/**
+ * Pantalla que se ve en la pestaña nueva mientras se genera el PDF (con los colores y el logo
+ * del tema actual). Las rutas van absolutas porque la pestaña nace en blanco, sin dirección propia.
+ */
+function paginaCargando(oscuro: boolean): string {
+  const fondo = oscuro ? '#0f0d0d' : '#fbfaf7';
+  const texto = oscuro ? '#c9c6c2' : '#5f5d5b';
+  const acento = oscuro ? '#84a56c' : '#547043';
+  const pista = oscuro ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+  const logo = `${location.origin}/brand/${oscuro ? 'logo-claro' : 'logo'}.png`;
+  return `<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Generando reporte de degustación…</title>
+<style>
+  html, body { height: 100%; margin: 0; }
+  body { background: ${fondo}; color: ${texto}; font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+         display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; }
+  img { width: 200px; height: auto; }
+  .spinner { width: 42px; height: 42px; border-radius: 50%; border: 3px solid ${pista}; border-top-color: ${acento};
+             animation: girar 0.9s linear infinite; }
+  p { margin: 0; font-size: 0.95rem; letter-spacing: 0.01em; }
+  @keyframes girar { to { transform: rotate(360deg); } }
+</style></head>
+<body>
+  <img src="${logo}" alt="La Quebrada">
+  <div class="spinner" role="status" aria-label="Cargando"></div>
+  <p>Generando reporte de degustación…</p>
+</body></html>`;
+}
+
 @Component({
   selector: 'app-fechas-degustacion-list',
   standalone: true,
@@ -54,6 +83,7 @@ export class FechasDegustacionList implements OnInit {
 
   readonly dialogoAgendadosVisible = signal(false);
   readonly fechaSeleccionada = signal<FechaDegustacion | null>(null);
+  readonly imprimiendo = signal(false);
   readonly agendados = signal<Agendado[]>([]);
   readonly cargandoAgendados = signal(false);
 
@@ -123,7 +153,31 @@ export class FechasDegustacionList implements OnInit {
     }, error: () => this.cargandoAgendados.set(false) });
   }
 
+  /** Abre el reporte de degustación (el mismo de Reportes) de esta sesión, listo para imprimir. */
   imprimir(): void {
-    window.print();
+    const fecha = this.fechaSeleccionada();
+    if (!fecha) return;
+
+    // La pestaña se abre ya, dentro del clic: si se abre al llegar el PDF, el navegador la bloquea
+    const ventana = window.open('', '_blank');
+    if (ventana) {
+      ventana.document.write(paginaCargando(document.documentElement.classList.contains('app-dark')));
+      ventana.document.close();
+    }
+    this.imprimiendo.set(true);
+
+    this.http.get(`${API_URL}/degustaciones/fechas/${fecha.id_fecha_degustacion}/pdf`, { responseType: 'blob' }).subscribe({
+      next: (pdf) => {
+        const url = URL.createObjectURL(pdf);
+        if (ventana) ventana.location.href = url;
+        else window.open(url, '_blank');
+        setTimeout(() => URL.revokeObjectURL(url), 60_000);
+        this.imprimiendo.set(false);
+      },
+      error: () => {
+        ventana?.close();
+        this.imprimiendo.set(false);
+      },
+    });
   }
 }

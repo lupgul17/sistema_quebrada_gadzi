@@ -34,6 +34,7 @@ export class InactividadService {
       document.removeEventListener(evento, this.onActividad);
     });
     this.limpiarTimers();
+    this.mostrandoAviso.set(false);
   }
 
   private onActividad = (): void => {

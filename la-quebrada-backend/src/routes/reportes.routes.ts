@@ -1,14 +1,10 @@
 import { Router } from 'express';
 import { htmlAPdf } from '../utils/pdf.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { pool } from '../db/pool.js';
 import { armarHtmlReporte } from '../templates/reports/reporte.template.js';
-import { armarHtmlDegustaciones } from '../templates/reports/reporte-degustacion.template.js';
+import { armarHtmlDegustaciones, agruparSesionesDegustacion } from '../templates/reports/reporte-degustacion.template.js';
+import { logoDataUri } from '../utils/logo.js';
 import { responderError } from '../utils/errores.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const router = Router();
 
@@ -69,8 +65,7 @@ router.get('/:tipo/pdf', async (req, res) => {
     const { tipo } = req.params;
     const { fecha_desde, fecha_hasta } = req.query;
 
-    const logoPath = path.join(__dirname, '..', '..', 'assets', 'logo-quebrada.png');
-    const logoUrl = `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}`;
+    const logoUrl = logoDataUri();
 
     const tabla = (titulo: string, subtitulo: string, columnas: string[], filas: (string | number)[][]) =>
       armarHtmlReporte({ titulo, subtitulo, columnas, filas, logoUrl });
@@ -112,25 +107,10 @@ router.get('/:tipo/pdf', async (req, res) => {
     } else if (tipo === 'degustaciones') {
       const result = await pool.query('SELECT * FROM fn_reporte_degustaciones_detallado($1::date, $2::date)', [fecha_desde, fecha_hasta]);
 
-      const sesiones = new Map<string, { titulo: string; cards: any[] }>();
-      for (const r of result.rows) {
-        const clave = `${new Date(r.fecha_sesion).getTime()}-${r.hora_inicio}`;
-        if (!sesiones.has(clave)) {
-          const fechaLarga = new Date(r.fecha_sesion).toLocaleDateString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-          sesiones.set(clave, { titulo: `Degustación — ${fechaLarga}, ${r.hora_inicio.substring(0, 5)}`, cards: [] });
-        }
-        sesiones.get(clave)!.cards.push({
-          cliente: r.cliente,
-          tipoEvento: r.tipo_evento,
-          fechaEvento: new Date(r.fecha_evento).toLocaleDateString('es-GT'),
-          menus: r.menus,
-        });
-      }
-
       html = armarHtmlDegustaciones({
         logoUrl,
         subtitulo: `${fecha_desde} al ${fecha_hasta}`,
-        sesiones: Array.from(sesiones.values()),
+        sesiones: agruparSesionesDegustacion(result.rows),
       });
       landscape = false;
     } else {
@@ -138,7 +118,7 @@ router.get('/:tipo/pdf', async (req, res) => {
       return;
     }
 
-        const pdfBuffer = await htmlAPdf(html, { format: 'Letter', printBackground: true, landscape, margin: { top: '20px', bottom: '20px' } });
+    const pdfBuffer = await htmlAPdf(html, { format: 'Letter', printBackground: true, landscape, margin: { top: '20px', bottom: '20px' } });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="reporte-${tipo}.pdf"`);

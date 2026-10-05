@@ -1,4 +1,4 @@
-import { Component, computed,signal } from '@angular/core';
+import { Component, OnDestroy, computed, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
@@ -23,7 +23,7 @@ import { CambiarPasswordDialog } from '../cambiar-password-dialog/cambiar-passwo
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })
-export class Shell {
+export class Shell implements OnDestroy {
   readonly usuario;
   private readonly rutaActual;
   readonly tituloPagina;
@@ -75,6 +75,12 @@ export class Shell {
 abrirCambiarPassword(): void {
   this.cambiarPasswordDialog.abrir();
 }
+  // El shell se destruye al salir del sistema por cualquier motivo (botón, inactividad o token vencido).
+  // Sin esto, el temporizador seguía corriendo en el login y al volver a entrar no se reiniciaba.
+  ngOnDestroy(): void {
+    this.inactividadService.detener();
+  }
+
   logout(): void {
     this.authService.logout();
   }

@@ -24,11 +24,12 @@ export class TemaService {
     this.oscuro.update((v) => !v);
   }
 
+  /** Claro por defecto (imagen de marca); oscuro solo si el usuario lo eligió. */
   private leerPreferencia(): boolean {
     try {
-      return localStorage.getItem(CLAVE_TEMA) !== 'claro';
+      return localStorage.getItem(CLAVE_TEMA) === 'oscuro';
     } catch {
-      return true;
+      return false;
     }
   }
 }

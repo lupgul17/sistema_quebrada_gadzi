@@ -99,7 +99,14 @@
       }
     </div>
     <div class="dialog-acciones no-imprimir">
-      <p-button label="Imprimir" icon="pi pi-print" severity="secondary" (onClick)="imprimir()" />
+      <p-button
+        label="Imprimir reporte"
+        icon="pi pi-print"
+        severity="secondary"
+        [loading]="imprimiendo()"
+        [disabled]="cargandoAgendados() || agendados().length === 0"
+        (onClick)="imprimir()"
+      />
     </div>
   </p-dialog>
 </div>

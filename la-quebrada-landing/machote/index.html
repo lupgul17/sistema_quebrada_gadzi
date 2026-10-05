@@ -6,11 +6,11 @@
   <title>La Quebrada — Eventos campestres en Quetzaltenango</title>
   <meta name="description" content="Bodas, XV años, graduaciones y eventos infantiles en un entorno campestre en La Esperanza, Quetzaltenango. Consultá disponibilidad y cotizá tu evento." />
   <script>
-    // Tema: lo que eligió el visitante o, si nunca eligió, el modo de su dispositivo
+    // Tema: claro por defecto (imagen de marca); oscuro solo si el visitante lo eligió
     (function () {
       var guardado = null;
       try { guardado = localStorage.getItem('lq-landing-tema'); } catch (e) {}
-      var claro = guardado ? guardado === 'claro' : window.matchMedia('(prefers-color-scheme: light)').matches;
+      var claro = guardado !== 'oscuro';
       document.documentElement.setAttribute('data-tema', claro ? 'claro' : 'oscuro');
     })();
   </script>
@@ -447,7 +447,7 @@
     <div class="contenedor">
       <div class="cifra"><strong>8</strong><span>espacios para celebrar</span></div>
       <div class="cifra"><strong>600</strong><span>invitados en la Nave Principal</span></div>
-      <div class="cifra"><strong>Banquete</strong><span>propio, con degustación previa</span></div>
+      <div class="cifra"><strong>Banquete</strong><span>propio, con menús a tu elección</span></div>
       <div class="cifra"><strong>Todo</strong><span>incluido: mobiliario, mantelería y meseros</span></div>
     </div>
   </div>
@@ -542,7 +542,7 @@
     <div class="contenedor">
       <span class="eyebrow">Qué incluye</span>
       <h2>Tu evento, resuelto de principio a fin</h2>
-      <p class="lead">Cada paquete se arma a la medida de tus invitados. Antes del evento hacés una degustación para elegir el menú.</p>
+      <p class="lead">Cada paquete se arma a la medida de tus invitados. Una vez reservada la fecha, hacés una degustación para elegir tu menú.</p>
 
       <div class="paquete">
         <div class="panel" style="background: var(--panel-alt)">
@@ -562,8 +562,8 @@
           <h3 style="margin-top: 2rem">Cómo reservar</h3>
           <ol class="pasos">
             <li><strong>Cotizá</strong><span>Elegí fecha y espacio; te enviamos la cotización.</span></li>
-            <li><strong>Degustá</strong><span>Probás los menús y elegís el de tu evento.</span></li>
             <li><strong>Confirmá</strong><span>Con el anticipo, la fecha queda reservada para vos.</span></li>
+            <li><strong>Degustá</strong><span>Con tu fecha asegurada, probás los menús y elegís el de tu evento.</span></li>
           </ol>
         </div>
         <div class="panel" style="background: var(--panel-alt)">
