@@ -12,6 +12,7 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { API_URL } from '../../../core/api-config';
+import { AuthService } from '../../../core/auth.service';
 import {MultiSelect} from "primeng/multiselect";
 
 interface Menu {
@@ -64,7 +65,8 @@ export class MenusList implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient
+    private http: HttpClient,
+    public auth: AuthService
   ) {
     this.form = this.fb.group({
       nombre: ['', Validators.required],

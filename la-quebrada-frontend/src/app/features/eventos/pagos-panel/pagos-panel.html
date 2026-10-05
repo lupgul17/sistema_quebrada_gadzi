@@ -52,43 +52,45 @@
       }
     </div>
 
-    <div class="seccion-lineas">
-      <h4>Registrar pago</h4>
-      <div class="registrar-form">
-        <div class="field">
-          <label>Fecha</label>
-          <p-datepicker [(ngModel)]="pagoForm.fecha_pago" dateFormat="dd/mm/yy" fluid />
+    @if (auth.puede('pagosRegistrar')) {
+      <div class="seccion-lineas">
+        <h4>Registrar pago</h4>
+        <div class="registrar-form">
+          <div class="field">
+            <label>Fecha</label>
+            <p-datepicker [(ngModel)]="pagoForm.fecha_pago" dateFormat="dd/mm/yy" fluid />
+          </div>
+          <div class="field">
+            <label>Monto (Q)</label>
+            <p-inputnumber [(ngModel)]="pagoForm.monto" mode="decimal" [minFractionDigits]="2" [min]="0" fluid />
+          </div>
+          <div class="field">
+            <label>Tipo de pago</label>
+            <p-select [options]="tiposPago()" optionLabel="descripcion" optionValue="id_tipo_pago" [(ngModel)]="pagoForm.id_tipo_pago" placeholder="Elegir..." fluid />
+          </div>
+          <div class="field">
+            <label>Concepto</label>
+            <p-select [options]="conceptos" optionLabel="label" optionValue="value" [(ngModel)]="pagoForm.concepto" fluid />
+          </div>
+          <div class="field">
+            <label>Comprobante (opcional)</label>
+            <input #inputArchivo type="file" accept="image/*,.pdf" (change)="onArchivoSeleccionado($event)" class="input-archivo-oculto" />
+            <p-button
+              [label]="archivoComprobante ? archivoComprobante.name : 'Seleccionar archivo'"
+              icon="pi pi-paperclip"
+              severity="secondary"
+              size="small"
+              type="button"
+              (onClick)="abrirSelectorArchivo()"
+            />
+          </div>
+          <div class="field field-full">
+            <label>Notas</label>
+            <textarea pTextarea [(ngModel)]="pagoForm.notas" rows="2" fluid placeholder="Referencia, número de transferencia..."></textarea>
+          </div>
+          <p-button label="Registrar pago" [loading]="registrando()" [disabled]="!pagoForm.monto || !pagoForm.id_tipo_pago" (onClick)="registrarPago()" />
         </div>
-        <div class="field">
-          <label>Monto (Q)</label>
-          <p-inputnumber [(ngModel)]="pagoForm.monto" mode="decimal" [minFractionDigits]="2" [min]="0" fluid />
-        </div>
-        <div class="field">
-          <label>Tipo de pago</label>
-          <p-select [options]="tiposPago()" optionLabel="descripcion" optionValue="id_tipo_pago" [(ngModel)]="pagoForm.id_tipo_pago" placeholder="Elegir..." fluid />
-        </div>
-        <div class="field">
-          <label>Concepto</label>
-          <p-select [options]="conceptos" optionLabel="label" optionValue="value" [(ngModel)]="pagoForm.concepto" fluid />
-        </div>
-        <div class="field">
-          <label>Comprobante (opcional)</label>
-          <input #inputArchivo type="file" accept="image/*,.pdf" (change)="onArchivoSeleccionado($event)" class="input-archivo-oculto" />
-          <p-button
-            [label]="archivoComprobante ? archivoComprobante.name : 'Seleccionar archivo'"
-            icon="pi pi-paperclip"
-            severity="secondary"
-            size="small"
-            type="button"
-            (onClick)="abrirSelectorArchivo()"
-          />
-        </div>
-        <div class="field field-full">
-          <label>Notas</label>
-          <textarea pTextarea [(ngModel)]="pagoForm.notas" rows="2" fluid placeholder="Referencia, número de transferencia..."></textarea>
-        </div>
-        <p-button label="Registrar pago" [loading]="registrando()" [disabled]="!pagoForm.monto || !pagoForm.id_tipo_pago" (onClick)="registrarPago()" />
       </div>
-    </div>
+    }
   </div>
 }

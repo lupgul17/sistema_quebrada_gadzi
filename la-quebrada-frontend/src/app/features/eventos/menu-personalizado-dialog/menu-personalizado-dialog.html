@@ -1,0 +1,93 @@
+<p-dialog
+  header="Armar menú a medida"
+  [(visible)]="visible"
+  [modal]="true"
+  [style]="{ width: '760px' }"
+  appendTo="body"
+>
+  <p class="hint">
+    Podés partir de un menú existente y cambiarle componentes, o armarlo desde cero. Queda guardado solo para este evento y no aparece en el catálogo.
+  </p>
+
+  <div class="grid-2">
+    <div class="field">
+      <label>Partir de un menú existente (opcional)</label>
+      <p-select
+        [options]="menusBase()"
+        optionLabel="nombre"
+        optionValue="id_menu"
+        [(ngModel)]="baseSeleccionada"
+        (ngModelChange)="alElegirBase($event)"
+        placeholder="Empezar desde cero"
+        [showClear]="true"
+        appendTo="body"
+        fluid
+      />
+    </div>
+    <div class="field">
+      <label>Tipo *</label>
+      <p-select [options]="tipos()" optionLabel="descripcion" optionValue="id_tipo_menu" [(ngModel)]="idTipoMenu" placeholder="Elegir..." appendTo="body" fluid />
+    </div>
+    <div class="field">
+      <label>Nombre *</label>
+      <input pInputText [(ngModel)]="nombre" fluid />
+    </div>
+    <div class="field">
+      <label>Precio por persona (Q) *</label>
+      <p-inputnumber [ngModel]="precio" (ngModelChange)="alEditarPrecio($event)" mode="decimal" [minFractionDigits]="2" [min]="0" fluid />
+      @if (precioSugerido() !== null) {
+        <small class="precio-sugerido">
+          Sugerido: Q{{ precioSugerido() | number: '1.2-2' }} (base + recargos agregados)
+          @if (precio !== precioSugerido()) {
+            <a (click)="usarPrecioSugerido()">Usar sugerido</a>
+          }
+        </small>
+      }
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Notas (opcional)</label>
+    <textarea pTextarea [(ngModel)]="descripcion" rows="2" fluid placeholder="Detalles de la combinación..."></textarea>
+  </div>
+
+  <div class="field">
+    <label>Componentes * <span class="contador">({{ elegidosVisibles().length }} elegidos)</span></label>
+    @for (g of grupos(); track g.categoria) {
+      <div class="categoria-select">
+        <span class="categoria-label">{{ g.categoria }}</span>
+        <p-multiselect
+          [options]="g.items"
+          optionLabel="nombre"
+          optionValue="id_componente"
+          [ngModel]="seleccionPorGrupo()[g.categoria]"
+          (ngModelChange)="cambiarGrupo(g.items, $event)"
+          display="chip"
+          [filter]="g.items.length > 8"
+          filterPlaceholder="Buscar..."
+          placeholder="Elegir..."
+          appendTo="body"
+          fluid
+        >
+          <ng-template #item let-c>
+            <div class="opcion-componente">
+              <span>{{ c.nombre }}</span>
+              @if (c.recargo > 0) {
+                <span class="recargo">+Q{{ c.recargo | number: '1.2-2' }}</span>
+              }
+            </div>
+          </ng-template>
+        </p-multiselect>
+      </div>
+    }
+  </div>
+
+  @if (error()) {
+    <p-message severity="error" [text]="error()!" />
+  }
+
+  <div class="acciones">
+    <p-button label="Cancelar" severity="secondary" (onClick)="cancelar()" />
+    <p-button label="Guardar y agregar a la cotización" [loading]="guardando()" (onClick)="guardar()" />
+  </div>
+</p-dialog>

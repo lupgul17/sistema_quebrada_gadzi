@@ -45,6 +45,8 @@ interface SalonDisponibilidad {
 })
 export class EventoFormDialog {
   @Output() guardado = new EventEmitter<void>();
+  /** Solo al crear: emite el id del evento nuevo (lo usa la conversión de prospectos). */
+  @Output() creado = new EventEmitter<number>();
 
   readonly visible = signal(false);
   readonly cargando = signal(false);
@@ -83,11 +85,13 @@ export class EventoFormDialog {
     this.http.get<TipoEventoOpcion[]>(`${API_URL}/tipos-evento`).subscribe((data) => this.tiposEvento.set(data));
   }
 
-  abrirNuevo(): void {
+  abrirNuevo(
+    datosIniciales?: Partial<{ id_cliente: number; id_tipo_evento: number | null; fecha: Date | null; total_adultos: number; notas: string }>
+  ): void {
     this.idEvento = null;
     this.esEdicion.set(false);
     this.error.set(null);
-    this.form.reset({ total_adultos: 0, total_menores: 0, reserva_temporal: false, salones: [] });
+    this.form.reset({ total_adultos: 0, total_menores: 0, reserva_temporal: false, salones: [], ...(datosIniciales ?? {}) });
     this.salones.set([]);
     this.cargarCatalogos();
     this.visible.set(true);
@@ -177,10 +181,11 @@ export class EventoFormDialog {
       : this.http.post(`${API_URL}/eventos`, body);
 
     peticion.subscribe({
-      next: () => {
+      next: (res: any) => {
         this.cargando.set(false);
         this.visible.set(false);
         this.guardado.emit();
+        if (!this.esEdicion() && res?.id_evento) this.creado.emit(res.id_evento);
       },
       error: (err) => {
         this.cargando.set(false);

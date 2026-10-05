@@ -4,6 +4,9 @@
   } @else if (pagos().length === 0) {
     <p class="hint">No hay pagos pendientes de verificar. 🎉</p>
   } @else {
+    @if (!auth.puede('pagosVerificar')) {
+      <p class="hint">Solo lectura: los pagos los verifican el Revisor y los Administradores.</p>
+    }
     <div class="table-container">
       <table class="tabla-pendientes">
         <thead>
@@ -35,12 +38,14 @@
                   —
                 }
               </td>
-              <td class="col-acciones">
-                <div class="acciones-wrapper">
-                  <p-button icon="pi pi-check" severity="success" size="small" [loading]="procesandoId() === p.id_pago" (onClick)="resolver(p.id_pago, 'verificado')" />
-                  <p-button icon="pi pi-times" severity="danger" size="small" [loading]="procesandoId() === p.id_pago" (onClick)="resolver(p.id_pago, 'rechazado')" />
-                </div>
-              </td>
+              @if (auth.puede('pagosVerificar')) {
+                <td class="col-acciones">
+                  <div class="acciones-wrapper">
+                    <p-button icon="pi pi-check" severity="success" size="small" [loading]="procesandoId() === p.id_pago" (onClick)="resolver(p.id_pago, 'verificado')" />
+                    <p-button icon="pi pi-times" severity="danger" size="small" [loading]="procesandoId() === p.id_pago" (onClick)="resolver(p.id_pago, 'rechazado')" />
+                  </div>
+                </td>
+              }
             </tr>
           }
         </tbody>

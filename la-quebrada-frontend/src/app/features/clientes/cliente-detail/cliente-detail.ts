@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { API_URL } from '../../../core/api-config';
+import { AuthService } from '../../../core/auth.service';
 import { ClienteFormDialog } from '../cliente-form-dialog/cliente-form-dialog';
 
 interface Cliente {
@@ -53,7 +54,8 @@ export class ClienteDetail implements OnInit {
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    public auth: AuthService
   ) {}
 
   ngOnInit(): void {

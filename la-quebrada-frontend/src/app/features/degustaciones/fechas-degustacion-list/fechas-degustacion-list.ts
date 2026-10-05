@@ -8,6 +8,7 @@ import { Select } from 'primeng/select';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { API_URL } from '../../../core/api-config';
+import { AuthService } from '../../../core/auth.service';
 
 interface FechaDegustacion {
   id_fecha_degustacion: number;
@@ -59,7 +60,10 @@ export class FechasDegustacionList implements OnInit {
   nuevaHoraInicio: Date | null = null;
   nuevaHoraFin: Date | null = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    public auth: AuthService
+  ) {}
 
   ngOnInit(): void {
     this.cargarFechas();

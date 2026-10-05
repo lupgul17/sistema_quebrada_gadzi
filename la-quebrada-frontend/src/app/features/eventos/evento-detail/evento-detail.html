@@ -3,10 +3,12 @@
     <div class="detail-header">
       <p-button label="← Volver" severity="secondary" size="small" (onClick)="volver()" />
       <div class="header-acciones">
-        @for (opcion of opcionesEstado(); track opcion.estado) {
-          <p-button [label]="opcion.label" severity="secondary" size="small" [loading]="cambiandoEstado()" (onClick)="cambiarEstado(opcion.estado)" />
+        @if (auth.puede('eventos')) {
+          @for (opcion of opcionesEstado(); track opcion.estado) {
+            <p-button [label]="opcion.label" severity="secondary" size="small" [loading]="cambiandoEstado()" (onClick)="cambiarEstado(opcion.estado)" />
+          }
+          <p-button label="Editar" (onClick)="abrirEditar()" />
         }
-        <p-button label="Editar" (onClick)="abrirEditar()" />
       </div>
     </div>
 

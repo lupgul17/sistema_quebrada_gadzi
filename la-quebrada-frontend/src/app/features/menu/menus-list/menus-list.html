@@ -10,7 +10,9 @@
       [showClear]="true"
     />
     <span class="spacer"></span>
-    <p-button label="+ Nuevo menú" (onClick)="abrirNuevo()" />
+    @if (auth.puede('menus')) {
+      <p-button label="+ Nuevo menú" (onClick)="abrirNuevo()" />
+    }
   </div>
 
   <div class="table-container">
@@ -34,7 +36,9 @@
           <td>{{ menu.activo ? 'Sí' : 'No' }}</td>
           <td class="col-acciones">
             <div class="acciones-wrapper">
-              <p-button icon="pi pi-pencil" severity="secondary" size="small" (onClick)="abrirEditar(menu)" />
+              @if (auth.puede('menus')) {
+                <p-button icon="pi pi-pencil" severity="secondary" size="small" (onClick)="abrirEditar(menu)" />
+              }
             </div>
           </td>
         </tr>
@@ -50,7 +54,6 @@
   [(visible)]="dialogoVisible"
   [modal]="true"
   [style]="{ width: '650px', maxHeight: '85vh' }"
-  [contentStyle]="{ overflow: 'visible' }"
 >
     <form [formGroup]="form" (ngSubmit)="guardar()">
       <div class="grid-2">
@@ -60,7 +63,7 @@
         </div>
         <div class="field">
           <label for="tipo">Tipo *</label>
-          <p-select id="tipo" formControlName="id_tipo_menu" [options]="tiposMenu()" optionLabel="descripcion" optionValue="id_tipo_menu" fluid />
+          <p-select appendTo="body" id="tipo" formControlName="id_tipo_menu" [options]="tiposMenu()" optionLabel="descripcion" optionValue="id_tipo_menu" fluid />
         </div>
         <div class="field">
           <label for="precio_base">Precio (Q) *</label>
@@ -87,7 +90,7 @@
   @for (grupo of grupos(); track grupo.categoria) {
     <div class="categoria-select">
       <span class="categoria-label">{{ grupo.categoria }}</span>
-      <p-multiselect
+      <p-multiselect appendTo="body"
         [formControl]="getControl(grupo.categoria)"
         [options]="grupo.componentes"
         optionLabel="nombre"

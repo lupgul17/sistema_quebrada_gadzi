@@ -8,7 +8,9 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { DatePicker } from 'primeng/datepicker';
 import { API_URL } from '../../../core/api-config';
+import { AuthService } from '../../../core/auth.service';
 import { SaldoEventoService } from '../../../core/saldo-evento.service';
+import { DegustacionEventoService } from '../../../core/degustacion-evento';
 
 interface DegustacionResumen {
   id_degustacion: number;
@@ -82,7 +84,7 @@ export class DegustacionPanel implements OnInit {
   menuParaAgregar: number | null = null;
   motivoRechazo = '';
 
-  constructor(private http: HttpClient,private saldoService: SaldoEventoService) {}
+  constructor(private http: HttpClient, private saldoService: SaldoEventoService, public auth: AuthService, private degustacionEventoService: DegustacionEventoService,) {}
 
   ngOnInit(): void {
     this.http.get<MenuOpcion[]>(`${API_URL}/menus`).subscribe((data) => this.menusDisponibles.set(data));
@@ -92,6 +94,7 @@ export class DegustacionPanel implements OnInit {
   cargarDegustaciones(): void {
     this.http.get<DegustacionResumen[]>(`${API_URL}/eventos/${this.idEvento}/degustaciones`).subscribe((data) => {
       this.degustaciones.set(data);
+      this.degustacionEventoService.fijar(this.idEvento, DegustacionEventoService.hayAprobada(data));
       this.cargando.set(false);
       if (data.length > 0 && !this.degustacionSeleccionada()) {
         this.seleccionar(data[0].id_degustacion);

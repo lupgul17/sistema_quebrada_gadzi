@@ -1,0 +1,91 @@
+.usuarios-page {
+  padding: 1.5rem;
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    .spacer { flex: 1; }
+  }
+
+  .table-container {
+    border: 1px solid var(--p-content-border-color, #c2c8d0);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .sub {
+    color: var(--p-text-muted-color);
+    font-size: 0.78rem;
+  }
+
+  .hint {
+    color: var(--p-text-muted-color);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .col-acciones { width: 7rem; }
+
+  .acciones-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  .rol-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: var(--p-surface-200);
+    color: var(--p-text-color);
+  }
+
+  .estado-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: capitalize;
+
+    &.estado-activo { background: #d4edda; color: #155724; }
+    &.estado-inactivo { background: #f8d7da; color: #721c24; }
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+
+    label {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+  }
+
+  .grid-2 .field { margin-bottom: 0; }
+
+  .field-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .acciones {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+  }
+}

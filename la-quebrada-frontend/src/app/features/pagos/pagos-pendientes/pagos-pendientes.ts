@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Button } from 'primeng/button';
 import { API_URL } from '../../../core/api-config';
+import { AuthService } from '../../../core/auth.service';
 import {VisorArchivoService} from "../../../core/visor-archivo.service";
 import { Dialog } from 'primeng/dialog';
 import { Textarea } from 'primeng/textarea';
@@ -43,7 +44,8 @@ export class PagosPendientes implements OnInit {
     private http: HttpClient,
     private router: Router,
     private visor: VisorArchivoService,
-    private pagosPendientesService: PagosPendientesService
+    private pagosPendientesService: PagosPendientesService,
+    public auth: AuthService
   ) {}
 
   ngOnInit(): void {

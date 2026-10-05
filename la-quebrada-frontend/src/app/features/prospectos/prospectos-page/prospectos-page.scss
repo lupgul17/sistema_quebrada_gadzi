@@ -1,0 +1,138 @@
+.prospectos-page {
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 1.5rem;
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .table-container {
+    border: 1px solid var(--lq-borde);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+}
+
+.spacer {
+  flex: 1;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filtro-pill {
+  border: 1px solid var(--lq-borde-fuerte);
+  background: transparent;
+  color: var(--lq-fog);
+  border-radius: var(--lq-radius-pill);
+  padding: 0.35rem 0.9rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+
+  .filtro-count {
+    margin-left: 0.3rem;
+    opacity: 0.7;
+  }
+
+  &.seleccionado {
+    border-color: var(--lq-verde-claro);
+    background: var(--lq-verde-tinte);
+    color: var(--lq-verde-claro);
+    font-weight: 500;
+  }
+}
+
+.fila-clickeable {
+  cursor: pointer;
+}
+
+.fila-nueva td {
+  font-weight: 500;
+}
+
+.hint {
+  color: var(--p-text-muted-color);
+}
+
+.estado-badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  text-transform: capitalize;
+
+  &.estado-nuevo { background: var(--lq-info-bg); color: var(--lq-info-fg); }
+  &.estado-contactado { background: var(--lq-warn-bg); color: var(--lq-warn-fg); }
+  &.estado-convertido { background: var(--lq-ok-bg); color: var(--lq-ok-fg); }
+  &.estado-descartado { background: var(--lq-neutral-bg); color: var(--p-text-muted-color); }
+}
+
+.detalle {
+  .detalle-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.9rem 1rem;
+    margin-bottom: 1rem;
+
+    div {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      align-items: flex-start;
+    }
+  }
+
+  .label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--p-text-muted-color);
+  }
+
+  .link-wa {
+    margin-left: 0.5rem;
+    color: var(--lq-verde-claro);
+    font-size: 0.85rem;
+    text-decoration: none;
+  }
+
+  .mensaje {
+    margin-bottom: 1rem;
+
+    p {
+      margin: 0.25rem 0 0;
+      white-space: pre-wrap;
+    }
+  }
+
+  .enlaces {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+
+    label {
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+  }
+
+  .dialog-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+}

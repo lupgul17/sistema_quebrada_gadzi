@@ -17,6 +17,8 @@ import { API_URL } from '../../../core/api-config';
 })
 export class ClienteFormDialog {
   @Output() guardado = new EventEmitter<void>();
+  /** Solo al crear: emite el id del cliente nuevo (lo usa la conversión de prospectos). */
+  @Output() creado = new EventEmitter<number>();
 
   readonly visible = signal(false);
   readonly cargando = signal(false);
@@ -42,10 +44,10 @@ export class ClienteFormDialog {
     });
   }
 
-  abrirNuevo(): void {
+  abrirNuevo(datosIniciales?: Partial<{ primer_nombre: string; primer_apellido: string; telefono: string; correo: string }>): void {
     this.idCliente = null;
     this.esEdicion.set(false);
-    this.form.reset();
+    this.form.reset(datosIniciales ?? {});
     this.error.set(null);
     this.visible.set(true);
   }
@@ -75,10 +77,11 @@ export class ClienteFormDialog {
       : this.http.post(`${API_URL}/clientes`, datos);
 
     peticion.subscribe({
-      next: () => {
+      next: (res: any) => {
         this.cargando.set(false);
         this.visible.set(false);
         this.guardado.emit();
+        if (!this.esEdicion() && res?.id_cliente) this.creado.emit(res.id_cliente);
       },
       error: (err) => {
         this.cargando.set(false);

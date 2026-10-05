@@ -5,18 +5,30 @@
     </div>
     <nav class="sidebar-nav">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
+      <a routerLink="/prospectos" routerLinkActive="active" class="nav-item-con-badge">
+        Solicitudes web
+        @if (prospectosPendientesService.count() > 0 && authService.puede('prospectos')) {
+          <span class="badge-pendiente">{{ prospectosPendientesService.count() }}</span>
+        }
+      </a>
       <a routerLink="/clientes" routerLinkActive="active">Clientes</a>
       <a routerLink="/eventos" routerLinkActive="active">Eventos</a>
       <a routerLink="/pagos" routerLinkActive="active" class="nav-item-con-badge">
         Pagos
-        @if (pagosPendientesService.count() > 0) {
+        @if (pagosPendientesService.count() > 0 && authService.puede('pagosVerificar')) {
           <span class="badge-pendiente">{{ pagosPendientesService.count() }}</span>
         }
       </a>
       <a routerLink="/servicios" routerLinkActive="active">Servicios</a>
       <a routerLink="/menu" routerLinkActive="active">Menú</a>
       <a routerLink="/degustaciones" routerLinkActive="active">Degustaciones</a>
-      <a routerLink="/reportes" routerLinkActive="active">Reportes</a>
+    
+      @if (authService.puede('reportes')) {
+        <a routerLink="/reportes" routerLinkActive="active">Reportes</a>
+      }
+      @if (authService.puede('usuarios')) {
+        <a routerLink="/usuarios" routerLinkActive="active">Usuarios</a>
+      }
     </nav>
   </aside>
 
@@ -35,6 +47,8 @@
           tooltipPosition="bottom"
           (onClick)="temaService.alternar()"
         />
+    
+        <p-button icon="pi pi-key" label="Cambiar contraseña" severity="secondary" size="small" [text]="true" (onClick)="abrirCambiarPassword()" />
         <p-button label="Cerrar sesión" severity="secondary" size="small" [outlined]="true" (onClick)="logout()" />
       </div>
     </header>
@@ -45,4 +59,6 @@
   </div>
   <app-visor-archivo-dialog />
   <app-inactividad-dialog />
+  
+  <app-cambiar-password-dialog #cambiarPasswordDialog />
 </div>

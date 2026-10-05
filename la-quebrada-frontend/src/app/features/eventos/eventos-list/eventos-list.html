@@ -4,7 +4,9 @@
     <p-datepicker [(ngModel)]="fechaDesde" (onSelect)="cargarEventos()" placeholder="Desde" dateFormat="dd/mm/yy" />
     <p-datepicker [(ngModel)]="fechaHasta" (onSelect)="cargarEventos()" placeholder="Hasta" dateFormat="dd/mm/yy" />
     <span class="spacer"></span>
-    <p-button label="+ Nuevo evento" (onClick)="abrirNuevo()" />
+    @if (auth.puede('eventos')) {
+      <p-button label="+ Nuevo evento" (onClick)="abrirNuevo()" />
+    }
   </div>
 
   <div class="table-container">

@@ -10,7 +10,9 @@
       [showClear]="true"
     />
     <span class="spacer"></span>
-    <p-button label="+ Nuevo componente" (onClick)="abrirNuevo()" />
+    @if (auth.puede('catalogos')) {
+      <p-button label="+ Nuevo componente" (onClick)="abrirNuevo()" />
+    }
   </div>
 
   <div class="table-container">
@@ -32,7 +34,9 @@
           <td>{{ componente.activo ? 'Sí' : 'No' }}</td>
           <td class="col-acciones">
             <div class="acciones-wrapper">
-              <p-button icon="pi pi-pencil" severity="secondary" size="small" (onClick)="abrirEditar(componente)" />
+              @if (auth.puede('catalogos')) {
+                <p-button icon="pi pi-pencil" severity="secondary" size="small" (onClick)="abrirEditar(componente)" />
+              }
             </div>
           </td>
         </tr>
@@ -47,7 +51,7 @@
     <form [formGroup]="form" (ngSubmit)="guardar()">
       <div class="field">
         <label for="categoria">Categoría *</label>
-        <p-select id="categoria" formControlName="id_categoria_componente_menu" [options]="categorias()" optionLabel="descripcion" optionValue="id_categoria_componente_menu" fluid />
+        <p-select appendTo="body" id="categoria" formControlName="id_categoria_componente_menu" [options]="categorias()" optionLabel="descripcion" optionValue="id_categoria_componente_menu" fluid />
       </div>
       <div class="field">
         <label for="nombre">Nombre *</label>

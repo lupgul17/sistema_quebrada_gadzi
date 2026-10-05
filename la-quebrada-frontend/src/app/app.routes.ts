@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { Login } from './features/login/login';
 import { Shell } from './core/shell/shell';
 import { authGuard } from './core/auth.guard';
+import { permisoGuard } from './core/permisos.guard';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -48,7 +49,17 @@ export const routes: Routes = [
       },
       {
         path: 'reportes',
+        canActivate: [permisoGuard('reportes')],
         loadComponent: () => import('./features/reportes/reportes-page/reportes-page').then((m) => m.ReportesPage),
+      },
+      {
+        path: 'prospectos',
+        loadComponent: () => import('./features/prospectos/prospectos-page/prospectos-page').then((m) => m.ProspectosPage),
+      },
+      {
+        path: 'usuarios',
+        canActivate: [permisoGuard('usuarios')],
+        loadComponent: () => import('./features/usuarios/usuarios-page/usuarios-page').then((m) => m.UsuariosPage),
       },
             
     ],

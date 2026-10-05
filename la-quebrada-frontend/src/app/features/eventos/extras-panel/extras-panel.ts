@@ -7,6 +7,7 @@ import { InputNumber } from 'primeng/inputnumber';
 import { InputText } from 'primeng/inputtext';
 import { Button } from 'primeng/button';
 import { API_URL } from '../../../core/api-config';
+import { AuthService } from '../../../core/auth.service';
 import { SaldoEventoService } from '../../../core/saldo-evento.service';
 
 interface ExtraServicio {
@@ -94,7 +95,8 @@ export class ExtrasPanel implements OnInit {
 
   constructor(
   private http: HttpClient,
-  private saldoService: SaldoEventoService
+  private saldoService: SaldoEventoService,
+  public auth: AuthService
 ) {}
 
   ngOnInit(): void {

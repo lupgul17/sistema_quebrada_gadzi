@@ -304,4 +304,42 @@ router.get('/:id/pdf', async (req, res) => {
     res.status(500).json({ error: (err as Error).message });
   }
 });
+
+// POST /api/cotizaciones/:id/menu-personalizado
+router.post('/:id/menu-personalizado', async (req, res) => {
+  try {
+    const { nombre, id_tipo_menu, precio, descripcion, componentes } = req.body;
+    const nombreLimpio = typeof nombre === 'string' ? nombre.trim() : '';
+    const precioNum = Number(precio);
+    const esEnteroPositivo = (v: unknown) => Number.isInteger(v) && (v as number) > 0;
+
+    if (!nombreLimpio || !esEnteroPositivo(Number(id_tipo_menu))) {
+      res.status(400).json({ error: 'Falta el nombre o el tipo de menú' });
+      return;
+    }
+    if (nombreLimpio.length > 150) {
+      res.status(400).json({ error: 'El nombre no puede pasar de 150 caracteres' });
+      return;
+    }
+    if (!Number.isFinite(precioNum) || precioNum <= 0) {
+      res.status(400).json({ error: 'El precio debe ser mayor a 0' });
+      return;
+    }
+    if (!Array.isArray(componentes) || componentes.length === 0 || !componentes.every(esEnteroPositivo)) {
+      res.status(400).json({ error: 'Elegí al menos un componente válido' });
+      return;
+    }
+    const componentesUnicos = [...new Set(componentes as number[])];
+
+    const result = await pool.query(
+      'CALL sp_crear_menu_personalizado($1::integer, $2::varchar, $3::integer, $4::numeric, $5::text, $6::integer[], NULL, NULL)',
+      [req.params.id, nombreLimpio, Number(id_tipo_menu), precioNum, descripcion ?? null, componentesUnicos]
+    );
+    res.status(201).json({ id_menu: result.rows[0].p_id_menu, id_cotizacion_menu: result.rows[0].p_id_cotizacion_menu });
+  } catch (err) {
+    const e = err as { code?: string; message: string };
+    // P0001 = RAISE EXCEPTION de nuestros procedimientos: error de negocio, no de servidor
+    res.status(e.code === 'P0001' ? 400 : 500).json({ error: e.message });
+  }
+});
 export default router;

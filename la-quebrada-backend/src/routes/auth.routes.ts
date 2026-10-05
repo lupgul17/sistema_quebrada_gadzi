@@ -2,6 +2,8 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { pool } from '../db/pool.js';
+import { requireAuth } from '../middleware/auth.middleware.js';
+import type { AuthRequest } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
@@ -12,7 +14,7 @@ router.post('/login', async (req, res) => {
     res.status(400).json({ error: 'Falta username o password' });
     return;
   }
-
+  
   try {
     const busqueda = await pool.query('SELECT * FROM fn_buscar_usuario_login($1)', [username]);
     const usuario = busqueda.rows[0];
@@ -22,6 +24,7 @@ router.post('/login', async (req, res) => {
       return;
     }
 
+
     const passwordValida = await bcrypt.compare(password, usuario.password_hash);
     if (!passwordValida) {
       res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
@@ -30,6 +33,16 @@ router.post('/login', async (req, res) => {
 
     if (!usuario.confirmacion) {
       res.status(403).json({ error: 'Cuenta no confirmada' });
+      return;
+    }
+
+        if (!usuario.activo) {
+      res.status(403).json({ error: 'Cuenta desactivada. Contactá al administrador.' });
+      return;
+    }
+
+    if (!usuario.id_rol_acceso) {
+      res.status(403).json({ error: 'Tu cuenta no tiene un rol asignado. Contactá al administrador.' });
       return;
     }
 
@@ -63,4 +76,41 @@ res.json({
   }
 });
 
+// POST /api/auth/cambiar-password
+router.post('/cambiar-password', requireAuth, async (req: AuthRequest, res) => {
+  try {
+    const { password_actual, password_nueva } = req.body;
+    if (!password_actual || !password_nueva) {
+      res.status(400).json({ error: 'Falta la contraseña actual o la nueva' });
+      return;
+    }
+    if (String(password_nueva).length < 8) {
+      res.status(400).json({ error: 'La contraseña nueva debe tener al menos 8 caracteres' });
+      return;
+    }
+    if (password_actual === password_nueva) {
+      res.status(400).json({ error: 'La contraseña nueva debe ser distinta a la actual' });
+      return;
+    }
+
+    const busqueda = await pool.query('SELECT * FROM fn_buscar_usuario_login($1)', [req.usuario!.username]);
+    const usuario = busqueda.rows[0];
+    const coincide = usuario && (await bcrypt.compare(password_actual, usuario.password_hash));
+    if (!coincide) {
+      res.status(400).json({ error: 'La contraseña actual no es correcta' });
+      return;
+    }
+
+    const hash = await bcrypt.hash(password_nueva, 10);
+    await pool.query('CALL sp_cambiar_password($1::integer, $2::varchar)', [req.usuario!.id_usuario, hash]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+// GET /api/auth/me
+router.get('/me', requireAuth, (req: AuthRequest, res) => {
+  res.json({ username: req.usuario!.username, rol_acceso: req.usuario!.rol_acceso });
+});
 export default router;

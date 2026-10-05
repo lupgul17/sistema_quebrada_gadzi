@@ -8,6 +8,7 @@ import { DatePicker } from 'primeng/datepicker';
 import { Textarea } from 'primeng/textarea';
 import { Button } from 'primeng/button';
 import { API_URL } from '../../../core/api-config';
+import { AuthService } from '../../../core/auth.service';
 import {VisorArchivoService} from "../../../core/visor-archivo.service";
 import { SaldoEventoService } from '../../../core/saldo-evento.service';
 
@@ -75,7 +76,7 @@ export class PagosPanel implements OnInit {
     notas: '',
   };
 
-  constructor(private http: HttpClient, public visor: VisorArchivoService,public saldoService: SaldoEventoService) {}
+  constructor(private http: HttpClient, public visor: VisorArchivoService,public saldoService: SaldoEventoService, public auth: AuthService) {}
 
   ngOnInit(): void {
     this.http.get<TipoPagoOpcion[]>(`${API_URL}/catalogos/tipos-pago`).subscribe((data) => this.tiposPago.set(data));

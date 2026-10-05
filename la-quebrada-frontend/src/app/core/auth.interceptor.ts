@@ -18,6 +18,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       if (error.status === 401) {
         authService.logout();
       }
+      // Red de seguridad: con los botones escondidos esto casi no debería verse.
+      // El login queda afuera porque ya muestra su propio mensaje.
+      if (error.status === 403 && !req.url.includes('/auth/login')) {
+        alert(error.error?.error ?? 'No tenés permiso para esta acción.');
+      }
       return throwError(() => error);
     })
   );

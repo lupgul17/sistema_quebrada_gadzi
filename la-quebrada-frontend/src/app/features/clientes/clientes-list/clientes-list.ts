@@ -7,6 +7,7 @@ import { Table, TableModule } from 'primeng/table';
 import { InputText } from 'primeng/inputtext';
 import { Button } from 'primeng/button';
 import { API_URL } from '../../../core/api-config';
+import { AuthService } from '../../../core/auth.service';
 import { ClienteFormDialog } from '../cliente-form-dialog/cliente-form-dialog';
 
 interface Cliente {
@@ -66,7 +67,8 @@ export class ClientesList implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    public auth: AuthService
   ) {
     this.busquedaSubject.pipe(debounceTime(350), distinctUntilChanged()).subscribe((texto) => {
       this.cargarClientes(texto);

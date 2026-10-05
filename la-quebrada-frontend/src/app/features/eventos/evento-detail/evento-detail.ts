@@ -5,6 +5,7 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tabs, TabList, Tab, TabPanels, TabPanel } from 'primeng/tabs';
 import { API_URL } from '../../../core/api-config';
+import { AuthService } from '../../../core/auth.service';
 import { DatePipe } from '@angular/common';
 import { CotizacionPanel } from '../cotizacion-panel/cotizacion-panel';
 import { PagosPanel } from '../pagos-panel/pagos-panel';
@@ -64,6 +65,7 @@ export class EventoDetail implements OnInit {
     private http: HttpClient,
     private route: ActivatedRoute,
     private router: Router,
+    public auth: AuthService,
   ) {}
 
   ngOnInit(): void {

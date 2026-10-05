@@ -1,7 +1,9 @@
 <div class="fechas-list">
   <div class="toolbar">
     <span class="spacer"></span>
-    <p-button label="+ Nueva fecha" (onClick)="abrirNueva()" />
+    @if (auth.puede('fechasDegustacion')) {
+      <p-button label="+ Nueva fecha" (onClick)="abrirNueva()" />
+    }
   </div>
 
   <div class="table-container">
@@ -20,15 +22,19 @@
           <td>{{ f.hora_inicio.substring(0,5) }}@if (f.hora_fin) { – {{ f.hora_fin.substring(0,5) }} }</td>
           <td>{{ f.eventos_agendados }}</td>
           <td class="col-estado" (click)="$event.stopPropagation()">
-            <p-select
-              [options]="estados"
-              optionLabel="label"
-              optionValue="value"
-              [ngModel]="f.estado"
-              (ngModelChange)="cambiarEstado(f, $event)"
-              [ngModelOptions]="{ standalone: true }"
-              appendTo="body"
-            />
+            @if (auth.puede('fechasDegustacion')) {
+              <p-select
+                [options]="estados"
+                optionLabel="label"
+                optionValue="value"
+                [ngModel]="f.estado"
+                (ngModelChange)="cambiarEstado(f, $event)"
+                [ngModelOptions]="{ standalone: true }"
+                appendTo="body"
+              />
+            } @else {
+              <span class="estado-badge" [class]="'estado-' + f.estado">{{ f.estado }}</span>
+            }
           </td>
         </tr>
       </ng-template>
@@ -43,19 +49,18 @@
     [(visible)]="dialogoVisible"
     [modal]="true"
     [style]="{ width: '380px', maxHeight: '85vh' }"
-    [contentStyle]="{ overflow: 'visible' }"
   >
     <div class="field">
       <label>Fecha</label>
-      <p-datepicker [(ngModel)]="nuevaFecha" dateFormat="dd/mm/yy" fluid />
+      <p-datepicker appendTo="body" [(ngModel)]="nuevaFecha" dateFormat="dd/mm/yy" fluid />
     </div>
     <div class="field">
       <label>Hora inicio</label>
-      <p-datepicker [(ngModel)]="nuevaHoraInicio" [timeOnly]="true" fluid />
+      <p-datepicker appendTo="body" [(ngModel)]="nuevaHoraInicio" [timeOnly]="true" fluid />
     </div>
     <div class="field">
       <label>Hora fin</label>
-      <p-datepicker [(ngModel)]="nuevaHoraFin" [timeOnly]="true" fluid />
+      <p-datepicker appendTo="body" [(ngModel)]="nuevaHoraFin" [timeOnly]="true" fluid />
     </div>
     <div class="dialog-acciones">
       <p-button label="Cancelar" severity="secondary" (onClick)="dialogoVisible.set(false)" />

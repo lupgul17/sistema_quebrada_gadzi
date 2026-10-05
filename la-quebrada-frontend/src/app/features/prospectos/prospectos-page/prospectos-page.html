@@ -1,0 +1,130 @@
+<div class="prospectos-page">
+  <div class="toolbar">
+    <div class="filtros">
+      @for (f of filtros; track f.valor) {
+        <button type="button" class="filtro-pill" [class.seleccionado]="filtro() === f.valor" (click)="filtro.set(f.valor)">
+          {{ f.label }} <span class="filtro-count">{{ contar(f.valor) }}</span>
+        </button>
+      }
+    </div>
+    <span class="spacer"></span>
+    <p-button icon="pi pi-refresh" severity="secondary" [text]="true" [rounded]="true" ariaLabel="Recargar" (onClick)="cargar()" />
+  </div>
+
+  @if (cargando()) {
+    <p class="hint">Cargando...</p>
+  } @else {
+    <div class="table-container">
+      <p-table [value]="visibles()" [paginator]="visibles().length > 15" [rows]="15" styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Recibida</th>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Evento</th>
+            <th>Fecha tentativa</th>
+            <th>Salón</th>
+            <th>Invitados</th>
+            <th>Estado</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-p>
+          <tr class="fila-clickeable" [class.fila-nueva]="p.estado === 'nuevo'" (click)="abrirDetalle(p)">
+            <td>{{ p.fecha_creacion | date: 'dd/MM HH:mm' }}</td>
+            <td>{{ p.nombre }}</td>
+            <td>{{ p.telefono }}</td>
+            <td>{{ p.tipo_evento || '—' }}</td>
+            <td>{{ p.fecha_tentativa ? (p.fecha_tentativa | date: 'dd/MM/yyyy') : '—' }}</td>
+            <td>{{ p.salon || '—' }}</td>
+            <td>{{ p.invitados || '—' }}</td>
+            <td><span class="estado-badge" [class]="'estado-' + p.estado">{{ p.estado }}</span></td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr><td colspan="8" class="hint">No hay solicitudes en este filtro.</td></tr>
+        </ng-template>
+      </p-table>
+    </div>
+  }
+</div>
+
+<p-dialog
+  [header]="seleccionado()?.nombre ?? ''"
+  [visible]="!!seleccionado()"
+  (visibleChange)="!$event && cerrarDetalle()"
+  [modal]="true"
+  [style]="{ width: '540px' }"
+  appendTo="body"
+>
+  @if (seleccionado(); as p) {
+    <div class="detalle">
+      <div class="detalle-grid">
+        <div><span class="label">Estado</span><span class="estado-badge" [class]="'estado-' + p.estado">{{ p.estado }}</span></div>
+        <div><span class="label">Recibida</span><span>{{ p.fecha_creacion | date: 'dd/MM/yyyy HH:mm' }}</span></div>
+        <div>
+          <span class="label">Teléfono</span>
+          <span>
+            {{ p.telefono }}
+            <a class="link-wa" [href]="linkWhatsapp(p.telefono)" target="_blank" rel="noopener"><i class="pi pi-whatsapp"></i> WhatsApp</a>
+          </span>
+        </div>
+        <div><span class="label">Correo</span><span>{{ p.correo || '—' }}</span></div>
+        <div><span class="label">Tipo de evento</span><span>{{ p.tipo_evento || '—' }}</span></div>
+        <div><span class="label">Invitados</span><span>{{ p.invitados || '—' }}</span></div>
+        <div><span class="label">Fecha tentativa</span><span>{{ p.fecha_tentativa ? (p.fecha_tentativa | date: 'dd/MM/yyyy') : '—' }}</span></div>
+        <div><span class="label">Salón</span><span>{{ p.salon ? p.salon + ' (' + p.locacion + ')' : '—' }}</span></div>
+      </div>
+
+      @if (p.mensaje) {
+        <div class="mensaje">
+          <span class="label">Mensaje</span>
+          <p>{{ p.mensaje }}</p>
+        </div>
+      }
+
+      @if (p.id_cliente || p.id_evento) {
+        <div class="enlaces">
+          @if (p.id_cliente) {
+            <p-button label="Ver cliente" icon="pi pi-user" severity="secondary" size="small" [text]="true" (onClick)="irACliente(p.id_cliente)" />
+          }
+          @if (p.id_evento) {
+            <p-button label="Ver evento" icon="pi pi-calendar" severity="secondary" size="small" [text]="true" (onClick)="irAEvento(p.id_evento)" />
+          }
+        </div>
+      }
+
+      <div class="field">
+        <label for="notas">Notas internas</label>
+        <textarea
+          pTextarea
+          id="notas"
+          [(ngModel)]="notasEdicion"
+          rows="3"
+          fluid
+          placeholder="Qué se habló, cuándo volver a llamar..."
+          [disabled]="!auth.puede('prospectos')"
+        ></textarea>
+      </div>
+
+      @if (auth.puede('prospectos')) {
+        <div class="dialog-acciones">
+          <p-button label="Guardar notas" severity="secondary" size="small" [loading]="procesando()" (onClick)="guardarNotas()" />
+          <span class="spacer"></span>
+          @if (p.estado === 'nuevo') {
+            <p-button label="Marcar contactado" severity="secondary" size="small" [loading]="procesando()" (onClick)="cambiarEstado('contactado')" />
+          }
+          @if (p.estado === 'nuevo' || p.estado === 'contactado') {
+            <p-button label="Descartar" severity="danger" size="small" [outlined]="true" [loading]="procesando()" (onClick)="cambiarEstado('descartado')" />
+            <p-button label="Convertir en cliente" icon="pi pi-arrow-right" size="small" (onClick)="convertir()" />
+          }
+          @if (p.estado === 'descartado') {
+            <p-button label="Reabrir" severity="secondary" size="small" [loading]="procesando()" (onClick)="cambiarEstado('contactado')" />
+          }
+        </div>
+      }
+    </div>
+  }
+</p-dialog>
+
+<app-cliente-form-dialog #clienteFormDialog (creado)="onClienteCreado($event)" />
+<app-evento-form-dialog #eventoFormDialog (creado)="onEventoCreado($event)" />

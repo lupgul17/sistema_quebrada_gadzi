@@ -11,6 +11,7 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { API_URL } from '../../../core/api-config';
+import { AuthService } from '../../../core/auth.service';
 
 interface Servicio {
   id_servicio: number;
@@ -50,7 +51,8 @@ export class ServiciosList implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient
+    private http: HttpClient,
+    public auth: AuthService
   ) {
     this.form = this.fb.group({
       id_categoria_servicio: this.fb.control<number | null>(null, Validators.required),

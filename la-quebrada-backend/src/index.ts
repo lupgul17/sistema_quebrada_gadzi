@@ -19,7 +19,10 @@ import recordatoriosRouter from './routes/recordatorios.routes.js';
 import reportesRouter from './routes/reportes.routes.js';
 import { iniciarJobRecordatorios } from './jobs/recordatorios.job.js';
 import { requireAuth } from './middleware/auth.middleware.js';
-
+import { aplicarPermisos } from './middleware/permisos.js';
+import usuariosRouter from './routes/usuarios.routes.js';
+import publicoRouter from './routes/publico.routes.js';
+import prospectosRouter from './routes/prospectos.routes.js';
 dotenv.config();
 
 const app = express();
@@ -40,7 +43,11 @@ app.get('/api/health', async (_req, res) => {
     });
   }
 });
-
+// Rutas públicas de la landing: van ANTES del middleware global de auth
+app.use('/api/publico', publicoRouter);
+app.use('/api', requireAuth, aplicarPermisos);
+app.use('/api/prospectos', prospectosRouter);
+app.use('/api/usuarios', usuariosRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/salones', requireAuth, salonesRouter);
 app.use('/api/clientes',requireAuth, clientesRouter);

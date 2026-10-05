@@ -79,3 +79,15 @@
     width: 100%;
   }
 }
+
+.estado-badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-transform: capitalize;
+
+  &.estado-disponible { background: var(--lq-ok-bg); color: var(--lq-ok-fg); }
+  &.estado-llena { background: var(--lq-warn-bg); color: var(--lq-warn-fg); }
+  &.estado-cancelada { background: var(--lq-danger-bg); color: var(--lq-danger-fg); }
+}

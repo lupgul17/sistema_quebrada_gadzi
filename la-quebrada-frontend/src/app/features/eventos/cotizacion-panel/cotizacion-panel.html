@@ -3,11 +3,13 @@
 } @else if (!cotizacion()) {
   <div class="sin-cotizacion">
     <p class="hint">Este evento todavía no tiene ninguna cotización.</p>
-    <div class="crear-form">
-      <p-checkbox [(ngModel)]="aplicaDeposito" [binary]="true" inputId="deposito1" />
-      <label for="deposito1">Aplica depósito de garantía (Q1,000)</label>
-      <p-button label="Crear cotización" [loading]="procesando()" (onClick)="crearCotizacion()" />
-    </div>
+    @if (auth.puede('cotizaciones')) {
+      <div class="crear-form">
+        <p-checkbox [(ngModel)]="aplicaDeposito" [binary]="true" inputId="deposito1" />
+        <label for="deposito1">Aplica depósito de garantía (Q1,000)</label>
+        <p-button label="Crear cotización" [loading]="procesando()" (onClick)="crearCotizacion()" />
+      </div>
+    }
   </div>
 } @else {
   <div class="cotizacion-panel">
@@ -46,11 +48,13 @@
         <span class="estado-badge" [class]="'estado-' + cotizacion()!.estado">{{ cotizacion()!.estado }}</span>
       </div>
       <div class="header-acciones">
-        @for (opcion of opcionesEstado(); track opcion.estado) {
-          <p-button [label]="opcion.label" severity="secondary" size="small" [loading]="procesando()" (onClick)="cambiarEstado(opcion.estado)" />
+        @if (auth.puede('cotizaciones')) {
+          @for (opcion of opcionesEstado(); track opcion.estado) {
+            <p-button [label]="opcion.label" severity="secondary" size="small" [loading]="procesando()" (onClick)="cambiarEstado(opcion.estado)" />
+          }
         }
         <p-button label="Descargar PDF" icon="pi pi-file-pdf" severity="secondary" size="small" [loading]="descargandoPdf()" (onClick)="descargarPdf()" />
-        @if (cotizacion()!.activa) {
+        @if (editable) {
           <p-button label="Nueva versión" severity="secondary" size="small" [loading]="procesando()" (onClick)="crearCotizacion()" />
         }
       </div>
@@ -71,13 +75,12 @@
       } @else {
         <table class="tabla-lineas">
           <thead>
-            <tr><th>Menú</th><th>Tipo</th><th>Precio</th><th>Cantidad</th><th>Subtotal</th>@if (cotizacion()!.activa) {<th></th>}</tr>
+            <tr><th>Menú</th><th>Tipo</th><th>Cant.</th><th>Precio</th><th>Subtotal</th>@if (editable) {<th></th>}</tr>
           </thead>
           <tbody>
             @for (linea of cotizacion()!.menus; track linea.id_cotizacion_menu) {
               <tr>
                 <td>{{ linea.menu }}</td>
-                <td>{{ linea.tipo_menu }}</td>
                 <td>
                   {{ linea.tipo_menu }}
                   @if (linea.es_extra_degustacion) {
@@ -87,7 +90,7 @@
                 <td>{{ linea.cantidad }}</td>
                 <td>Q{{ linea.precio_unitario_congelado }}</td>
                 <td>Q{{ linea.subtotal }}</td>
-                @if (cotizacion()!.activa) {
+                @if (editable) {
                   <td><p-button icon="pi pi-trash" severity="danger" size="large" [text]="true" (onClick)="quitarMenu(linea.id_cotizacion_menu)" /></td>
                 }
               </tr>
@@ -95,10 +98,14 @@
           </tbody>
         </table>
       }
-      @if (cotizacion()!.activa) {
+      @if (editable) {
         <div class="agregar-linea">
           <p-select [options]="menusDisponibles()" optionLabel="nombre" optionValue="id_menu" [(ngModel)]="menuSeleccionado" placeholder="Elegir menú..." appendTo="body" fluid />
           <p-button label="Agregar" size="small" [disabled]="!menuSeleccionado" [loading]="procesando()" (onClick)="agregarMenu()" />
+          <!-- Armar menú a medida: solo con una degustación realizada y aprobada -->
+          @if (degustacionEventoService.esAprobada(idEvento)) {
+            <p-button label="Armar menú" icon="pi pi-plus-circle" severity="secondary" size="small" (onClick)="abrirArmarMenu()" />
+          }
         </div>
       }
     </div>
@@ -110,7 +117,7 @@
       } @else {
         <table class="tabla-lineas">
           <thead>
-            <tr><th>Servicio</th><th>Categoría</th><th>Cant.</th><th>Precio</th><th>Subtotal</th><th></th>@if (cotizacion()!.activa) {<th></th>}</tr>
+            <tr><th>Servicio</th><th>Categoría</th><th>Cant.</th><th>Precio</th><th>Subtotal</th><th></th>@if (editable) {<th></th>}</tr>
           </thead>
           <tbody>
             @for (linea of cotizacion()!.servicios; track linea.id_cotizacion_servicios) {
@@ -123,12 +130,12 @@
                 <td>
                   <span class="boton-con-badge">
                     <p-button icon="pi pi-percentage" severity="info" size="large" [text]="true" (onClick)="abrirDescuentos(linea)" />
-                    @if (linea.tiene_descuento_pendiente) {
+                    @if (linea.tiene_descuento_pendiente && auth.puede('descuentos')) {
                       <span class="badge-pendiente"></span>
                     }
                   </span>
                 </td>
-                @if (cotizacion()!.activa) {
+                @if (editable) {
                   <td><p-button icon="pi pi-trash" severity="danger" size="large" [text]="true" (onClick)="quitarServicio(linea.id_cotizacion_servicios)" /></td>
                 }
               </tr>
@@ -136,7 +143,7 @@
           </tbody>
         </table>
       }
-      @if (cotizacion()!.activa) {
+      @if (editable) {
         <div class="agregar-linea">
           <p-select [options]="serviciosDisponibles()" optionLabel="nombre" optionValue="id_servicio" [(ngModel)]="servicioSeleccionado" placeholder="Elegir servicio..." appendTo="body" fluid />
           <p-inputnumber [(ngModel)]="cantidadServicio" [min]="1" />
@@ -145,7 +152,7 @@
       }
     </div>
 
-    @if (cotizacion()!.activa) {
+    @if (editable) {
       <div class="seccion-lineas">
         <h4>Depósito de garantía</h4>
         <div class="deposito-check">
@@ -233,7 +240,7 @@
               @if (d.porcentaje) { <span class="descuento-pct">({{ d.porcentaje }}%)</span> }
             </div>
             <span class="estado-badge" [class]="'estado-descuento-' + d.estado">{{ d.estado }}</span>
-            @if (d.estado === 'pendiente' && cotizacion()?.activa) {
+            @if (d.estado === 'pendiente' && auth.puede('descuentos') && cotizacion()?.activa) {
               <div class="descuento-acciones">
                 <p-button icon="pi pi-check" severity="success" size="small" [text]="true" (onClick)="resolverDescuento(d.id_descuento, 'aprobado')" />
                 <p-button icon="pi pi-times" severity="danger" size="small" [text]="true" (onClick)="resolverDescuento(d.id_descuento, 'rechazado')" />
@@ -244,7 +251,7 @@
       </div>
     }
 
-    @if (cotizacion()?.activa) {
+    @if (editable) {
       <div class="nuevo-descuento">
         <h5>Agregar descuento</h5>
         <div class="field">
@@ -279,3 +286,6 @@
     <p-button label="Cerrar" severity="secondary" (onClick)="cerrarDialogoDescuento()" />
   </div>
 </p-dialog>
+
+<!-- CAMBIO 2: el modal de menú a medida, montado una vez -->
+<app-menu-personalizado-dialog #menuPersonalizadoDialog (guardado)="alAgregarMenuPersonalizado()" />

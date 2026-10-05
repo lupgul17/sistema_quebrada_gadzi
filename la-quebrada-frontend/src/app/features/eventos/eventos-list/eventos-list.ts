@@ -7,6 +7,7 @@ import { Select } from 'primeng/select';
 import { DatePicker } from 'primeng/datepicker';
 import { Button } from 'primeng/button';
 import { API_URL } from '../../../core/api-config';
+import { AuthService } from '../../../core/auth.service';
 import { DatePipe } from '@angular/common';
 import { EventoFormDialog } from '../evento-form-dialog/evento-form-dialog';
 
@@ -51,7 +52,8 @@ export class EventosList implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    public auth: AuthService
   ) {}
 
   ngOnInit(): void {

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, signal } from '@angular/core';
+import { Component, Input, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -10,6 +10,10 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { API_URL } from '../../../core/api-config';
+import { AuthService } from '../../../core/auth.service';
+import { MenuPersonalizadoDialog } from '../menu-personalizado-dialog/menu-personalizado-dialog';
+import { DegustacionEventoService } from '../../../core/degustacion-evento';
+import { SaldoEventoService } from '../../../core/saldo-evento.service';
 
 interface CotizacionResumen {
   id_cotizacion: number;
@@ -106,12 +110,13 @@ const SIGUIENTE_ESTADO_COTIZACION: Record<string, { estado: string; label: strin
 @Component({
   selector: 'app-cotizacion-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, Select, InputNumber, Checkbox, Textarea, Button, Dialog, ProgressSpinner],
+  imports: [CommonModule, FormsModule, Select, InputNumber, Checkbox, Textarea, Button, Dialog, ProgressSpinner,MenuPersonalizadoDialog],
   templateUrl: './cotizacion-panel.html',
   styleUrl: './cotizacion-panel.scss',
 })
 export class CotizacionPanel implements OnInit {
   @Input({ required: true }) idEvento!: number;
+  @ViewChild('menuPersonalizadoDialog') menuPersonalizadoDialog!: MenuPersonalizadoDialog;
 
   readonly cotizacion = signal<CotizacionDetalle | null>(null);
   readonly versiones = signal<CotizacionResumen[]>([]);
@@ -152,7 +157,17 @@ export class CotizacionPanel implements OnInit {
     motivo: '',
   };
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    public auth: AuthService,
+    public degustacionEventoService: DegustacionEventoService,
+    private saldoService: SaldoEventoService
+  ) {}
+
+  // Getter (no campo) para que lea this.auth después de que el constructor lo asigne
+  get editable(): boolean {
+    return !!this.cotizacion()?.activa && this.auth.puede('cotizaciones');
+  }
 
   ngOnInit(): void {
     this.http.get<MenuOpcion[]>(`${API_URL}/menus`).subscribe((data) => this.menusDisponibles.set(data));
@@ -165,6 +180,7 @@ export class CotizacionPanel implements OnInit {
     );
     this.http.get<TipoDescuentoOpcion[]>(`${API_URL}/catalogos/tipos-descuento`).subscribe((data) => this.tiposDescuento.set(data));
     this.cargarCotizacionActiva();
+    this.degustacionEventoService.actualizar(this.idEvento);
   }
 
   cargarVersiones(): void {
@@ -345,4 +361,17 @@ export class CotizacionPanel implements OnInit {
   cerrarDialogoDescuento(): void {
     this.dialogoDescuentoVisible.set(false);
   }
+  abrirArmarMenu(): void {
+  const c = this.cotizacion();
+  if (!c) return;
+  this.menuPersonalizadoDialog.abrir(c.id_cotizacion);
+}
+
+alAgregarMenuPersonalizado(): void {
+  const c = this.cotizacion();
+  if (!c) return;
+  this.cargarDetalle(c.id_cotizacion);
+  this.cargarVersiones();
+  this.saldoService.actualizar(this.idEvento);
+}
 }

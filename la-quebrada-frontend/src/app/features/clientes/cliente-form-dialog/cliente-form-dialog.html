@@ -1,4 +1,4 @@
-<p-dialog [header]="esEdicion() ? 'Editar cliente' : 'Nuevo cliente'" [(visible)]="visible" [modal]="true" [style]="{ width: '600px' }" [contentStyle]="{ overflow: 'visible' }">
+<p-dialog [header]="esEdicion() ? 'Editar cliente' : 'Nuevo cliente'" [(visible)]="visible" [modal]="true" [style]="{ width: '600px' }">
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="grid-2">
       <div class="field">
