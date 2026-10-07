@@ -7,13 +7,16 @@ if (!process.env.DATABASE_URL) {
   throw new Error('Falta DATABASE_URL en el archivo .env');
 }
 
+// Una base local (pruebas o desarrollo) no tiene SSL; Neon sí lo exige.
+const esLocal = /@(localhost|127\.0\.0\.1)[:/]/.test(process.env.DATABASE_URL);
+
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   // Neon requiere SSL. rejectUnauthorized:false evita problemas de
   // verificación de certificado con el endpoint pooler de Neon.
   // Es una configuración normal para este caso, no un riesgo real
   // en una base de desarrollo.
-  ssl: { rejectUnauthorized: false },
+  ssl: esLocal ? false : { rejectUnauthorized: false },
 });
 
 pool.on('error', (err) => {

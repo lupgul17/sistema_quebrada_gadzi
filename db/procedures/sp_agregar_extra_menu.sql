@@ -5,6 +5,11 @@ DECLARE
     v_id_extra INTEGER;
     v_subtotal NUMERIC;
 BEGIN
+    -- p_id_menu es NULL en los extras personalizados (solo descripción): no hay área que validar
+    IF p_id_menu IS NOT NULL AND NOT fn_menu_disponible_evento(p_id_menu, p_id_evento) THEN
+        RAISE EXCEPTION 'Este menu no se ofrece en los salones de este evento';
+    END IF;
+
     INSERT INTO extras (id_evento, id_empleado)
     VALUES (p_id_evento, p_id_empleado)
     ON CONFLICT (id_evento) DO NOTHING;

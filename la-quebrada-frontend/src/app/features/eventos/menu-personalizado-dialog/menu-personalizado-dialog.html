@@ -14,7 +14,7 @@
       <label>Partir de un menú existente (opcional)</label>
       <p-select
         [options]="menusBase()"
-        optionLabel="nombre"
+        optionLabel="etiqueta"
         optionValue="id_menu"
         [(ngModel)]="baseSeleccionada"
         (ngModelChange)="alElegirBase($event)"
@@ -33,17 +33,24 @@
       <input pInputText [(ngModel)]="nombre" fluid />
     </div>
     <div class="field">
-      <label>Precio por persona (Q) *</label>
+      <label>Precio base por plato (sin recargos) *</label>
       <p-inputnumber [ngModel]="precio" (ngModelChange)="alEditarPrecio($event)" mode="decimal" [minFractionDigits]="2" [min]="0" fluid />
-      @if (precioSugerido() !== null) {
+      @if (precioBase() !== null && precio !== precioBase()) {
         <small class="precio-sugerido">
-          Sugerido: Q{{ precioSugerido() | number: '1.2-2' }} (base + recargos agregados)
-          @if (precio !== precioSugerido()) {
-            <a (click)="usarPrecioSugerido()">Usar sugerido</a>
-          }
+          El menú base cuesta Q{{ precioBase() | number: '1.2-2' }}
+          <a (click)="usarPrecioBase()">Volver al precio del menú base</a>
         </small>
       }
     </div>
+  </div>
+
+  <!-- Desglose: el recargo lo suma la base de datos al guardar; esto es la vista previa -->
+  <div class="resumen-precio">
+    <div><span>Precio base</span><span>Q{{ (precio ?? 0) | number: '1.2-2' }}</span></div>
+    @for (r of recargosAplicados(); track r.id_componente) {
+      <div class="recargo-linea"><span>+ {{ r.nombre }}</span><span>+Q{{ r.recargo | number: '1.2-2' }}</span></div>
+    }
+    <div class="final"><span>Precio final por plato</span><span>Q{{ precioFinal | number: '1.2-2' }}</span></div>
   </div>
 
   <div class="field">

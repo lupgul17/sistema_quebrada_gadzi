@@ -315,7 +315,7 @@ router.get('/:id/pdf', async (req, res) => {
 // POST /api/cotizaciones/:id/menu-personalizado
 router.post('/:id/menu-personalizado', async (req, res) => {
   try {
-    const { nombre, id_tipo_menu, precio, descripcion, componentes,cantidad } = req.body;
+    const { nombre, id_tipo_menu, precio, descripcion, componentes, cantidad, id_menu_base } = req.body;
     const nombreLimpio = typeof nombre === 'string' ? nombre.trim() : '';
     const precioNum = Number(precio);
     const esEnteroPositivo = (v: unknown) => Number.isInteger(v) && (v as number) > 0;
@@ -329,18 +329,25 @@ router.post('/:id/menu-personalizado', async (req, res) => {
       return;
     }
     if (!Number.isFinite(precioNum) || precioNum <= 0) {
-      res.status(400).json({ error: 'El precio debe ser mayor a 0' });
+      res.status(400).json({ error: 'El precio base debe ser mayor a 0' });
       return;
     }
     if (!Array.isArray(componentes) || componentes.length === 0 || !componentes.every(esEnteroPositivo)) {
       res.status(400).json({ error: 'Elegí al menos un componente válido' });
       return;
     }
+    if (id_menu_base != null && !esEnteroPositivo(Number(id_menu_base))) {
+      res.status(400).json({ error: 'Menú base inválido' });
+      return;
+    }
     const componentesUnicos = [...new Set(componentes as number[])];
 
+    // precio = precio base por plato SIN recargos: el SP suma el recargo de cada componente
+    // elegido que no venía en el menú base (sin menú base, todos)
+
     const result = await pool.query(
-      'CALL sp_crear_menu_personalizado($1::integer, $2::varchar, $3::integer, $4::numeric, $5::text, $6::integer[], $7::integer, NULL, NULL)',
-      [req.params.id, nombreLimpio, Number(id_tipo_menu), precioNum, descripcion ?? null, componentesUnicos, cantidad ?? null]
+      'CALL sp_crear_menu_personalizado($1::integer, $2::varchar, $3::integer, $4::numeric, $5::text, $6::integer[], $7::integer, $8::integer, NULL, NULL)',
+      [req.params.id, nombreLimpio, Number(id_tipo_menu), precioNum, descripcion ?? null, componentesUnicos, cantidad ?? null, id_menu_base ?? null]
     );
     res.status(201).json({ id_menu: result.rows[0].p_id_menu, id_cotizacion_menu: result.rows[0].p_id_cotizacion_menu });
   } catch (err) {

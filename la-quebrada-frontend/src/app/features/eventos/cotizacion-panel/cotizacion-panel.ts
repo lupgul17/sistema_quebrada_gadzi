@@ -10,6 +10,7 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { API_URL } from '../../../core/api-config';
+import { conEtiqueta } from '../../../core/menus';
 import { AuthService } from '../../../core/auth.service';
 import { MenuPersonalizadoDialog } from '../menu-personalizado-dialog/menu-personalizado-dialog';
 import { DegustacionEventoService } from '../../../core/degustacion-evento';
@@ -80,6 +81,7 @@ interface CotizacionDetalle {
 interface MenuOpcion {
   id_menu: number;
   nombre: string;
+  etiqueta: string;
 }
 
 interface ServicioOpcion {
@@ -201,7 +203,8 @@ export class CotizacionPanel implements OnInit {
   }
 
   ngOnInit(): void {
-    this.http.get<MenuOpcion[]>(`${API_URL}/menus`).subscribe((data) => this.menusDisponibles.set(data));
+    // Solo los menús que se pueden usar en este evento (según sus salones)
+    this.http.get<any[]>(`${API_URL}/menus?id_evento=${this.idEvento}`).subscribe((data) => this.menusDisponibles.set(conEtiqueta(data)));
     this.http.get<ServicioOpcion[]>(`${API_URL}/servicios`).subscribe((data) => this.serviciosDisponibles.set(data));
     this.http.get<any[]>(`${API_URL}/catalogos/colores-mantel`).subscribe((data) =>
       this.coloresMantel.set(data.map((c) => ({ id: c.id_color_mantel, descripcion: c.descripcion })))
@@ -425,7 +428,7 @@ cambiarCantidadMenu(linea: LineaMenu, input: HTMLInputElement): void {
   abrirArmarMenu(): void {
   const c = this.cotizacion();
   if (!c) return;
-  this.menuPersonalizadoDialog.abrir(c.id_cotizacion);
+  this.menuPersonalizadoDialog.abrir(c.id_cotizacion, this.idEvento);
 }
 
 alAgregarMenuPersonalizado(): void {

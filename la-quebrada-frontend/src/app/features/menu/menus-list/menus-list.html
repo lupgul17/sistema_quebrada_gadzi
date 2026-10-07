@@ -9,6 +9,17 @@
       placeholder="Todos los tipos"
       [showClear]="true"
     />
+    <p-select
+      [options]="opcionesFiltroArea()"
+      [group]="true"
+      optionLabel="label"
+      optionValue="value"
+      [(ngModel)]="areaFiltro"
+      (onChange)="cargarMenus()"
+      placeholder="Todas las áreas"
+      [showClear]="true"
+      appendTo="body"
+    />
     <span class="spacer"></span>
     @if (auth.puede('menus')) {
       <p-button label="+ Nuevo menú" (onClick)="abrirNuevo()" />
@@ -22,6 +33,7 @@
           <th>Tipo</th>
           <th>Nombre</th>
           <th>Precio</th>
+          <th>Disponible en</th>
           <th>Componentes</th>
           <th>Activo</th>
           <th></th>
@@ -32,29 +44,39 @@
           <td>{{ menu.tipo_menu }}</td>
           <td>{{ menu.nombre }}</td>
           <td>Q{{ menu.precio_base }}</td>
+          <td class="col-areas">
+            @if (menu.disponibilidad?.length) {
+              @for (a of menu.disponibilidad; track a.tipo + a.id) {
+                <span class="area-chip" [class.locacion]="a.tipo === 'locacion'">{{ a.nombre }}</span>
+              }
+            } @else {
+              <span class="area-chip todos">Todos lados</span>
+            }
+          </td>
           <td class="col-componentes">{{ menu.componentes || '—' }}</td>
           <td>{{ menu.activo ? 'Sí' : 'No' }}</td>
           <td class="col-acciones">
             <div class="acciones-wrapper">
               @if (auth.puede('menus')) {
-                <p-button icon="pi pi-pencil" severity="secondary" size="small" (onClick)="abrirEditar(menu)" />
+                <p-button icon="pi pi-pencil" severity="secondary" size="small" (onClick)="abrirEditar(menu)" pTooltip="Editar" tooltipPosition="left" />
+                <p-button icon="pi pi-copy" severity="secondary" size="small" [text]="true" (onClick)="abrirDuplicar(menu)" pTooltip="Duplicar para otra área o precio" tooltipPosition="left" />
               }
             </div>
           </td>
         </tr>
       </ng-template>
       <ng-template pTemplate="emptymessage">
-        <tr><td colspan="6">No hay menús armados todavía.</td></tr>
+        <tr><td colspan="7">No hay menús para este filtro.</td></tr>
       </ng-template>
     </p-table>
   </div>
 
   <p-dialog
-  [header]="editandoId() ? 'Editar menú' : 'Nuevo menú'"
-  [(visible)]="dialogoVisible"
-  [modal]="true"
-  [style]="{ width: '650px', maxHeight: '85vh' }"
->
+    [header]="editandoId() ? 'Editar menú' : 'Nuevo menú'"
+    [(visible)]="dialogoVisible"
+    [modal]="true"
+    [style]="{ width: '650px', maxHeight: '85vh' }"
+  >
     <form [formGroup]="form" (ngSubmit)="guardar()">
       <div class="grid-2">
         <div class="field">
@@ -80,28 +102,48 @@
         <textarea pTextarea id="descripcion" formControlName="descripcion" rows="2" fluid></textarea>
       </div>
 
+      <div class="field">
+        <label>Disponible en</label>
+        <p-selectbutton [options]="modosDisponibilidad" optionLabel="label" optionValue="value" formControlName="modo_disponibilidad" [allowEmpty]="false" />
+        @if (form.controls.modo_disponibilidad.value === 'restringido') {
+          <p-multiselect
+            appendTo="body"
+            formControlName="areas"
+            [options]="opcionesAreas()"
+            [group]="true"
+            optionLabel="label"
+            optionValue="value"
+            display="chip"
+            placeholder="Elegí locaciones o salones..."
+            fluid
+          />
+          <small class="hint">"Toda La Quebrada" incluye todos sus salones. Para otro precio en otra área, guardá y usá Duplicar.</small>
+        }
+      </div>
+
       <div class="field field-checkbox">
         <p-checkbox formControlName="activo" [binary]="true" inputId="activo" />
         <label for="activo">Activo</label>
       </div>
 
-     <div class="field">
-  <label>Componentes</label>
-  @for (grupo of grupos(); track grupo.categoria) {
-    <div class="categoria-select">
-      <span class="categoria-label">{{ grupo.categoria }}</span>
-      <p-multiselect appendTo="body"
-        [formControl]="getControl(grupo.categoria)"
-        [options]="grupo.componentes"
-        optionLabel="nombre"
-        optionValue="id_componente"
-        display="chip"
-        placeholder="Elegir..."
-        fluid
-      />
-    </div>
-  }
-</div>
+      <div class="field">
+        <label>Componentes</label>
+        @for (grupo of grupos(); track grupo.categoria) {
+          <div class="categoria-select">
+            <span class="categoria-label">{{ grupo.categoria }}</span>
+            <p-multiselect
+              appendTo="body"
+              [formControl]="getControl(grupo.categoria)"
+              [options]="grupo.componentes"
+              optionLabel="nombre"
+              optionValue="id_componente"
+              display="chip"
+              placeholder="Elegir..."
+              fluid
+            />
+          </div>
+        }
+      </div>
 
       @if (error()) {
         <p-message severity="error" [text]="error()!" styleClass="w-full mb-3" />
@@ -112,5 +154,54 @@
         <p-button label="Guardar" type="submit" [loading]="guardando()" [disabled]="guardando()" />
       </div>
     </form>
+  </p-dialog>
+
+  <p-dialog
+    [header]="'Duplicar — ' + (menuADuplicar()?.nombre ?? '')"
+    [(visible)]="dialogoDuplicarVisible"
+    [modal]="true"
+    [style]="{ width: '520px' }"
+    appendTo="body"
+  >
+    @if (menuADuplicar(); as original) {
+      <p class="hint">
+        Se copian el tipo, la unidad, la descripción y los componentes. Hoy se ofrece en:
+        <strong>{{ textoDisponibilidad(original.disponibilidad) }}</strong> a Q{{ original.precio_base }}.
+      </p>
+      <div class="grid-2">
+        <div class="field">
+          <label for="dup-nombre">Nombre *</label>
+          <input pInputText id="dup-nombre" [(ngModel)]="duplicarForm.nombre" fluid />
+        </div>
+        <div class="field">
+          <label for="dup-precio">Precio (Q) *</label>
+          <p-inputnumber inputId="dup-precio" [(ngModel)]="duplicarForm.precio_base" mode="decimal" [minFractionDigits]="2" [min]="0" fluid />
+        </div>
+      </div>
+      <div class="field">
+        <label>Disponible en</label>
+        <p-selectbutton [options]="modosDisponibilidad" optionLabel="label" optionValue="value" [(ngModel)]="duplicarForm.modo" [allowEmpty]="false" />
+        @if (duplicarForm.modo === 'restringido') {
+          <p-multiselect
+            appendTo="body"
+            [(ngModel)]="duplicarForm.areas"
+            [options]="opcionesAreas()"
+            [group]="true"
+            optionLabel="label"
+            optionValue="value"
+            display="chip"
+            placeholder="Elegí locaciones o salones..."
+            fluid
+          />
+        }
+      </div>
+      @if (errorDuplicar()) {
+        <p-message severity="error" [text]="errorDuplicar()!" styleClass="w-full mb-3" />
+      }
+      <div class="dialog-acciones">
+        <p-button label="Cancelar" severity="secondary" (onClick)="dialogoDuplicarVisible.set(false)" />
+        <p-button label="Duplicar" icon="pi pi-copy" [loading]="duplicando()" (onClick)="confirmarDuplicar()" />
+      </div>
+    }
   </p-dialog>
 </div>

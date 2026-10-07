@@ -103,7 +103,7 @@
         @if (menusDegustados().length < 4) {
           @if (auth.puede('degustaciones')) {
             <div class="agregar-linea">
-              <p-select [options]="menusDisponibles()" optionLabel="nombre" optionValue="id_menu" [(ngModel)]="menuParaAgregar" placeholder="Elegir menú a probar..." appendTo="body" fluid />
+              <p-select [options]="menusDisponibles()" optionLabel="etiqueta" optionValue="id_menu" [filter]="true" filterBy="etiqueta" [(ngModel)]="menuParaAgregar" placeholder="Elegir menú a probar..." appendTo="body" fluid />
               <p-button label="Agregar" size="small" [disabled]="!menuParaAgregar" [loading]="procesando()" (onClick)="agregarMenu()" />
             </div>
           }

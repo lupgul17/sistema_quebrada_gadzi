@@ -14,4 +14,14 @@ router.get('/', async (_req, res) => {
   }
 });
 
+// GET /api/salones/areas - locaciones con sus salones (para elegir dónde se ofrece un menú)
+router.get('/areas', async (_req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM fn_listar_areas_menu()');
+    res.json(result.rows);
+  } catch (err) {
+    responderError(res, err);
+  }
+});
+
 export default router;

@@ -92,7 +92,7 @@
           </div>
           <div class="fila-campos">
             @if (menuForm.modo === 'catalogo') {
-              <p-select [options]="menusDisponibles()" optionLabel="nombre" optionValue="id_menu" [(ngModel)]="menuForm.id_menu" (ngModelChange)="onMenuSeleccionado($event)" placeholder="Elegir menú..." appendTo="body" fluid />
+              <p-select [options]="menusDisponibles()" optionLabel="etiqueta" optionValue="id_menu" [filter]="true" filterBy="etiqueta" [(ngModel)]="menuForm.id_menu" (ngModelChange)="onMenuSeleccionado($event)" placeholder="Elegir menú..." appendTo="body" fluid />
             } @else {
               <input pInputText [(ngModel)]="menuForm.descripcion" placeholder="Descripción del menú..." fluid />
             }

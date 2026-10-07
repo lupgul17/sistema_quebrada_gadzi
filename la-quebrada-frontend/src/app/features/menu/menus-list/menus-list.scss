@@ -24,9 +24,46 @@
   }
 
   .col-acciones {
-    width: 3rem;
+    width: 6rem;
     text-align: center;
   }
+
+  .acciones-wrapper {
+    display: flex;
+    gap: 0.25rem;
+    justify-content: center;
+  }
+
+  .col-areas {
+    max-width: 220px;
+  }
+}
+
+/* Etiquetas de "Disponible en" */
+.area-chip {
+  display: inline-block;
+  padding: 0.12rem 0.55rem;
+  margin: 0.1rem 0.25rem 0.1rem 0;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  border: 1px solid var(--lq-borde-fuerte);
+  color: var(--p-text-muted-color);
+  white-space: nowrap;
+
+  &.locacion {
+    border-color: var(--lq-dorado);
+    color: var(--lq-dorado);
+  }
+
+  &.todos {
+    border-color: transparent;
+    background: var(--lq-neutral-bg);
+  }
+}
+
+.hint {
+  color: var(--p-text-muted-color);
+  font-size: 0.8rem;
 }
 
 .field {

@@ -9,6 +9,15 @@ DECLARE
     v_precio_menu            DECIMAL;
     v_id_cotizacion_menu     INTEGER;
 BEGIN
+    SELECT id_evento INTO v_id_evento FROM degustacion WHERE id_degustacion = p_id_degustacion;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'No existe la degustacion con id = %', p_id_degustacion;
+    END IF;
+
+    IF NOT fn_menu_disponible_evento(p_id_menu, v_id_evento) THEN
+        RAISE EXCEPTION 'Este menu no se ofrece en los salones de este evento';
+    END IF;
+
     SELECT COUNT(*) INTO v_cantidad_actual FROM degustacion_menu WHERE id_degustacion = p_id_degustacion;
 
     IF v_cantidad_actual >= 4 THEN
@@ -22,8 +31,6 @@ BEGIN
     RETURNING id_degustacion_menu INTO p_id_degustacion_menu;
 
     IF v_es_adicional THEN
-        SELECT id_evento INTO v_id_evento FROM degustacion WHERE id_degustacion = p_id_degustacion;
-
         SELECT id_cotizacion INTO v_id_cotizacion FROM cotizacion WHERE id_evento = v_id_evento AND activa = true;
 
         IF v_id_cotizacion IS NULL THEN

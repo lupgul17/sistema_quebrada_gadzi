@@ -7,6 +7,7 @@ import { InputNumber } from 'primeng/inputnumber';
 import { InputText } from 'primeng/inputtext';
 import { Button } from 'primeng/button';
 import { API_URL } from '../../../core/api-config';
+import { conEtiqueta } from '../../../core/menus';
 import { AuthService } from '../../../core/auth.service';
 import { SaldoEventoService } from '../../../core/saldo-evento.service';
 
@@ -51,6 +52,7 @@ interface MenuOpcion {
   id_menu: number;
   nombre: string;
   precio_base: number;
+  etiqueta: string;
 }
 
 interface TipoCargoOpcion {
@@ -101,7 +103,8 @@ export class ExtrasPanel implements OnInit {
 
   ngOnInit(): void {
     this.http.get<ServicioOpcion[]>(`${API_URL}/servicios`).subscribe((data) => this.serviciosDisponibles.set(data));
-    this.http.get<MenuOpcion[]>(`${API_URL}/menus`).subscribe((data) => this.menusDisponibles.set(data));
+    // Solo los menús que se pueden usar en este evento (según sus salones)
+    this.http.get<any[]>(`${API_URL}/menus?id_evento=${this.idEvento}`).subscribe((data) => this.menusDisponibles.set(conEtiqueta(data)));
     this.http.get<TipoCargoOpcion[]>(`${API_URL}/catalogos/tipos-cargo-extra`).subscribe((data) => this.tiposCargo.set(data));
     this.cargarExtras();
   }

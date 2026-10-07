@@ -114,7 +114,7 @@
     }
       @if (editable) {
         <div class="agregar-linea">
-          <p-select [options]="menusDisponibles()" optionLabel="nombre" optionValue="id_menu" [(ngModel)]="menuSeleccionado" placeholder="Elegir menú..." appendTo="body" fluid />
+          <p-select [options]="menusDisponibles()" optionLabel="etiqueta" optionValue="id_menu" [filter]="true" filterBy="etiqueta" [(ngModel)]="menuSeleccionado" placeholder="Elegir menú..." appendTo="body" fluid />
           <p-inputnumber [(ngModel)]="cantidadMenu" [min]="1" [useGrouping]="false" placeholder="Auto" />
           <p-button label="Agregar" size="small" [disabled]="!menuSeleccionado" [loading]="procesando()" (onClick)="agregarMenu()" />
           <!-- Armar menú a medida: solo con una degustación realizada y aprobada -->

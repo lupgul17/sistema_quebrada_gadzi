@@ -23,6 +23,10 @@ BEGIN
         RAISE EXCEPTION 'No existe el menu con id = %', p_id_menu;
     END IF;
 
+    IF NOT fn_menu_disponible_evento(p_id_menu, v_id_evento) THEN
+        RAISE EXCEPTION 'Este menu no se ofrece en los salones de este evento';
+    END IF;
+
     IF v_cantidad IS NULL THEN
         SELECT CASE WHEN v_tipo_menu = 'individual_infantil' THEN total_menores ELSE total_adultos END
         INTO v_cantidad FROM evento WHERE id_evento = v_id_evento;

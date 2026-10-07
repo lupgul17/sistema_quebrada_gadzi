@@ -11,6 +11,7 @@ import { Textarea } from 'primeng/textarea';
 import { MultiSelect } from 'primeng/multiselect';
 import { Message } from 'primeng/message';
 import { API_URL } from '../../../core/api-config';
+import { conEtiqueta } from '../../../core/menus';
 import { ERROR_EN_LINEA } from '../../../core/http-errores';
 
 interface Componente {
@@ -32,6 +33,7 @@ interface MenuBase {
   precio_base: number;
   id_tipo_menu: number;
   activo: boolean;
+  etiqueta: string;
 }
 
 @Component({
@@ -52,9 +54,9 @@ export class MenuPersonalizadoDialog {
   readonly menusBase = signal<MenuBase[]>([]);
   readonly seleccionados = signal<number[]>([]);
 
-  /** Componentes y precio del menú base elegido (para calcular el precio sugerido). */
+  /** Componentes y precio del menú base elegido. */
   private readonly idsBase = signal<number[]>([]);
-  private readonly precioBase = signal<number | null>(null);
+  readonly precioBase = signal<number | null>(null);
 
   readonly grupos = computed(() => {
     const mapa = new Map<string, Componente[]>();
@@ -86,26 +88,36 @@ export class MenuPersonalizadoDialog {
     return this.seleccionados().filter((id) => activos.has(id));
   });
 
-  /** Precio del menú base + recargo de cada componente agregado que no estaba en la base. */
-  readonly precioSugerido = computed(() => {
-    const base = this.precioBase();
-    if (base === null) return null;
+  /**
+   * Componentes con recargo que se suman al precio: los elegidos que no vienen incluidos en el
+   * menú base (sin menú base, todos). Es la misma regla que aplica sp_crear_menu_personalizado
+   * al guardar; acá solo sirve para mostrar el desglose.
+   */
+  readonly recargosAplicados = computed(() => {
     const enBase = new Set(this.idsBase());
-    const recargos = this.componentes()
-      .filter((c) => this.elegidosVisibles().includes(c.id_componente) && !enBase.has(c.id_componente))
-      .reduce((acc, c) => acc + Number(c.recargo || 0), 0);
-    return base + recargos;
+    const elegidos = new Set(this.elegidosVisibles());
+    return this.componentes().filter(
+      (c) => elegidos.has(c.id_componente) && !enBase.has(c.id_componente) && Number(c.recargo || 0) > 0
+    );
   });
+
+  readonly recargoTotal = computed(() => this.recargosAplicados().reduce((acc, c) => acc + Number(c.recargo || 0), 0));
+
+  /** Lo que va a costar cada plato: el precio base escrito + los recargos. */
+  get precioFinal(): number {
+    return (this.precio ?? 0) + this.recargoTotal();
+  }
 
   private idCotizacion: number | null = null;
   baseSeleccionada: number | null = null;
   nombre = '';
   idTipoMenu: number | null = null;
+  /** Precio base por plato, SIN recargos (los recargos se suman siempre aparte, en la base de datos). */
   precio: number | null = null;
   descripcion = '';
   cantidad: number | null = null; // vacío = cantidad automática (niños o adultos del evento)
 
-  /** Si el usuario tocó el precio, deja de recalcularse solo. */
+  /** Si el usuario tocó el precio, deja de reponerse solo con el del menú base. */
   private precioEditadoAMano = false;
   /** Últimos valores puestos automáticamente: solo se reemplazan si el usuario no los cambió. */
   private nombreAuto = '';
@@ -113,7 +125,7 @@ export class MenuPersonalizadoDialog {
 
   constructor(private http: HttpClient) {}
 
-  abrir(idCotizacion: number): void {
+  abrir(idCotizacion: number, idEvento: number): void {
     this.idCotizacion = idCotizacion;
     this.baseSeleccionada = null;
     this.nombre = '';
@@ -131,7 +143,8 @@ export class MenuPersonalizadoDialog {
 
     this.http.get<Componente[]>(`${API_URL}/componentes-menu`).subscribe((data) => this.componentes.set(data.filter((c) => c.activo)));
     this.http.get<TipoMenu[]>(`${API_URL}/catalogos/tipos-menu`).subscribe((data) => this.tipos.set(data));
-    this.http.get<MenuBase[]>(`${API_URL}/menus`).subscribe((data) => this.menusBase.set(data.filter((m) => m.activo)));
+    // Como base, solo los menús que se pueden usar en este evento (el filtro ya deja solo los activos)
+    this.http.get<any[]>(`${API_URL}/menus?id_evento=${idEvento}`).subscribe((data) => this.menusBase.set(conEtiqueta(data)));
     this.visible.set(true);
   }
 
@@ -161,6 +174,7 @@ export class MenuPersonalizadoDialog {
     if (this.idTipoMenu === null || this.idTipoMenu === this.tipoAuto) this.idTipoMenu = base.id_tipo_menu;
     this.tipoAuto = base.id_tipo_menu;
     this.precioBase.set(Number(base.precio_base));
+    this.aplicarPrecioBase();
 
     this.http.get<any>(`${API_URL}/menus/${idMenu}`).subscribe({
       next: (res) => {
@@ -171,10 +185,12 @@ export class MenuPersonalizadoDialog {
         const ids: number[] = (detalle?.componentes_ids ?? []).filter((id: number) => activos.has(id));
         this.idsBase.set(ids);
         this.seleccionados.set(ids);
-        this.aplicarPrecioSugerido();
       },
       error: () => {
         if (this.baseSeleccionada !== idMenu) return;
+        // Sin saber qué trae la base no se puede descontar nada: se trabaja como "desde cero",
+        // así la vista previa coincide con lo que va a calcular la base de datos.
+        this.baseSeleccionada = null;
         this.error.set('No se pudieron cargar los componentes de ese menú. Elegilos a mano.');
       },
     });
@@ -185,14 +201,15 @@ export class MenuPersonalizadoDialog {
     this.precioEditadoAMano = true;
   }
 
-  usarPrecioSugerido(): void {
+  /** Vuelve al precio del menú base elegido. */
+  usarPrecioBase(): void {
     this.precioEditadoAMano = false;
-    this.aplicarPrecioSugerido();
+    this.aplicarPrecioBase();
   }
 
-  private aplicarPrecioSugerido(): void {
-    const sugerido = this.precioSugerido();
-    if (!this.precioEditadoAMano && sugerido !== null) this.precio = sugerido;
+  private aplicarPrecioBase(): void {
+    const base = this.precioBase();
+    if (!this.precioEditadoAMano && base !== null) this.precio = base;
   }
 
   cambiarGrupo(items: Componente[], elegidos: number[]): void {
@@ -202,13 +219,12 @@ export class MenuPersonalizadoDialog {
     // Si el multiselect re-emite lo mismo, no tocar el signal (evita un ciclo de re-render)
     if (actuales.length === nuevos.length && actuales.every((id) => nuevos.includes(id))) return;
     this.seleccionados.update((lista) => [...lista.filter((id) => !idsGrupo.has(id)), ...nuevos]);
-    this.aplicarPrecioSugerido();
   }
 
   guardar(): void {
     if (!this.idCotizacion) return;
     if (!this.nombre.trim() || !this.idTipoMenu || !this.precio || this.precio <= 0) {
-      this.error.set('Completá nombre, tipo y precio.');
+      this.error.set('Completá nombre, tipo y precio base.');
       return;
     }
     const componentes = this.elegidosVisibles();
@@ -220,14 +236,19 @@ export class MenuPersonalizadoDialog {
     this.guardando.set(true);
     this.error.set(null);
     this.http
-      .post(`${API_URL}/cotizaciones/${this.idCotizacion}/menu-personalizado`, {
-        nombre: this.nombre.trim(),
-        id_tipo_menu: this.idTipoMenu,
-        precio: this.precio,
-        descripcion: this.descripcion || null,
-        componentes,
-        cantidad: this.cantidad,
-      }, ERROR_EN_LINEA)
+      .post(
+        `${API_URL}/cotizaciones/${this.idCotizacion}/menu-personalizado`,
+        {
+          nombre: this.nombre.trim(),
+          id_tipo_menu: this.idTipoMenu,
+          precio: this.precio,
+          descripcion: this.descripcion || null,
+          componentes,
+          cantidad: this.cantidad,
+          id_menu_base: this.baseSeleccionada,
+        },
+        ERROR_EN_LINEA
+      )
       .subscribe({
         next: () => {
           this.guardando.set(false);

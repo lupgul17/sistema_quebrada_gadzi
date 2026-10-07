@@ -8,6 +8,7 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { DatePicker } from 'primeng/datepicker';
 import { API_URL } from '../../../core/api-config';
+import { conEtiqueta } from '../../../core/menus';
 import { AuthService } from '../../../core/auth.service';
 import { SaldoEventoService } from '../../../core/saldo-evento.service';
 import { DegustacionEventoService } from '../../../core/degustacion-evento';
@@ -47,6 +48,7 @@ interface MenuDegustado {
 interface MenuOpcion {
   id_menu: number;
   nombre: string;
+  etiqueta: string;
 }
 
 const SIGUIENTE_ESTADO_DEGUSTACION: Record<string, { estado: string; label: string }[]> = {
@@ -87,7 +89,8 @@ export class DegustacionPanel implements OnInit {
   constructor(private http: HttpClient, private saldoService: SaldoEventoService, public auth: AuthService, private degustacionEventoService: DegustacionEventoService,) {}
 
   ngOnInit(): void {
-    this.http.get<MenuOpcion[]>(`${API_URL}/menus`).subscribe((data) => this.menusDisponibles.set(data));
+    // Solo los menús que se pueden usar en este evento (según sus salones)
+    this.http.get<any[]>(`${API_URL}/menus?id_evento=${this.idEvento}`).subscribe((data) => this.menusDisponibles.set(conEtiqueta(data)));
     this.cargarDegustaciones();
   }
 
