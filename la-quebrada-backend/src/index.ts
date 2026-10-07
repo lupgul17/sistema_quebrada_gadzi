@@ -30,6 +30,8 @@ import { cerrarNavegadorPdf } from './utils/pdf.js';
 dotenv.config();
 
 const app = express();
+// Detrás de un proxy (Railway): sin esto, el límite de intentos vería la IP del proxy y no la del usuario
+if (process.env.TRUST_PROXY) app.set('trust proxy', Number(process.env.TRUST_PROXY) || 1);
 const PORT = process.env.PORT ?? 3000;
 
 // Orígenes que pueden llamar a la API interna (el sistema). Separados por coma en CORS_ORIGENES.

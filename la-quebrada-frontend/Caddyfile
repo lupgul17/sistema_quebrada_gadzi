@@ -1,0 +1,33 @@
+{
+	# Railway pone HTTPS delante: Caddy solo atiende HTTP dentro del contenedor
+	auto_https off
+	admin off
+	servers {
+		# Todo lo que llega a este contenedor pasa por el proxy de Railway: se confía en su
+		# X-Forwarded-For para que el backend vea la IP real del usuario (límite de intentos)
+		trusted_proxies static 0.0.0.0/0 ::/0
+	}
+}
+
+:{$PORT:8080} {
+	encode zstd gzip
+
+	# API: al backend por la red privada de Railway (ej. http://backend.railway.internal:3000)
+	handle /api/* {
+		reverse_proxy {$BACKEND_URL}
+	}
+
+	# Angular: archivos estáticos y, si la ruta no existe (ej. /eventos/12), index.html
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+
+		# Los .js/.css llevan hash en el nombre: se pueden cachear un año
+		@conHash path_regexp \.(js|css|woff2?)$
+		header @conHash Cache-Control "public, max-age=31536000, immutable"
+		# Lo demás (index.html, imágenes sin hash) se revalida
+		@sinHash not path_regexp \.(js|css|woff2?)$
+		header @sinHash Cache-Control "no-cache"
+	}
+}

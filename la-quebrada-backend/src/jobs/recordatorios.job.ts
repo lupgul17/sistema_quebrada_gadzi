@@ -75,8 +75,9 @@ export async function ejecutarRecordatorios(): Promise<{ enviados: number }> {
 
 export function iniciarJobRecordatorios(): void {
   // Corre todos los días a las 8:00 AM
+  // Zona fija: en Railway el servidor corre en UTC (sin esto saldrían a las 2 AM de Guatemala)
   cron.schedule('0 8 * * *', () => {
     console.log('Ejecutando job de recordatorios...');
     ejecutarRecordatorios().then((r) => console.log(`Recordatorios enviados: ${r.enviados}`));
-  });
+  }, { timezone: 'America/Guatemala' });
 }

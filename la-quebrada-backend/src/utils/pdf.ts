@@ -9,7 +9,11 @@ let navegador: Promise<Browser> | null = null;
 function obtenerNavegador(): Promise<Browser> {
   if (!navegador) {
     navegador = puppeteer
-      .launch()
+      .launch({
+        // Dentro de un contenedor Chrome no puede usar su sandbox ni un /dev/shm grande.
+        // PUPPETEER_EXECUTABLE_PATH (si existe) apunta al Chromium del sistema; puppeteer lo lee solo.
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+      })
       .then((browser) => {
         browser.on('disconnected', () => {
           navegador = null;
