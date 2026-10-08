@@ -11,5 +11,6 @@ CREATE OR REPLACE FUNCTION fn_buscar_usuario_login(p_username character varying)
     JOIN persona p ON p.id_persona = u.id_persona
     JOIN tc_tipo_usuario tu ON tu.id_tipo_usuario = u.id_tipo_usuario
     LEFT JOIN tc_rol_acceso tra ON tra.id_rol_acceso = u.id_rol_acceso
-    WHERE u.username = p_username;
+    -- Sin distinguir mayúsculas: los usuarios se escriben en minúsculas, pero pueden existir guardados con alguna
+    WHERE LOWER(u.username) = LOWER(TRIM(p_username));
 $$;

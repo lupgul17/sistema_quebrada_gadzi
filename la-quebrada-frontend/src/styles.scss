@@ -134,3 +134,123 @@ h2 {
   font-weight: 400;
   letter-spacing: -0.01em;
 }
+
+/* =========================================================================
+   Responsive: tablet y celular
+   Los estilos de cada pantalla están encapsulados por Angular (más específicos),
+   por eso estas reglas para pantallas chicas usan !important: solo aplican en
+   esos tamaños y no cambian nada en computadora.
+   ========================================================================= */
+
+/* Los modales nunca más anchos que la pantalla (tienen anchos fijos de 380 a 760px) */
+.p-dialog {
+  max-width: calc(100vw - 1.5rem) !important;
+}
+
+/* Pestañas: si no caben, se deslizan en vez de amontonarse */
+.p-tablist-tab-list {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+@media (max-width: 900px) {
+  /* Grids de 3 o 4 columnas → 2 */
+  .datos-grid,
+  .grid-3,
+  .detalles-grid,
+  .registrar-form {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Todo a una columna */
+  .dashboard-grid,
+  .datos-grid,
+  .grid-2,
+  .grid-3,
+  .detalles-grid,
+  .salones-grid,
+  .registrar-form,
+  .detalle-grid,
+  .form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Márgenes de las pantallas: de 1.5rem a 1rem */
+  .dashboard-grid,
+  .cliente-detail,
+  .clientes-list,
+  .fechas-list,
+  .evento-detail,
+  .eventos-list,
+  .componentes-list,
+  .menus-list,
+  .pagos-pendientes,
+  .pagos-verificados,
+  .prospectos-page,
+  .reportes-page,
+  .servicios-list,
+  .usuarios-page {
+    padding: 1rem !important;
+  }
+
+  .evento-detail,
+  .cliente-detail {
+    width: calc(100% - 1rem) !important;
+    margin: 0.5rem auto !important;
+  }
+
+  /* Barras de herramientas y encabezados: los botones bajan de línea */
+  .toolbar,
+  .detail-header,
+  .panel-header,
+  .header-acciones,
+  .agregar-linea,
+  .agregar-form,
+  .fila-campos,
+  .crear-form,
+  .filtros,
+  .dialog-acciones {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+  }
+
+  .header-acciones .p-button {
+    min-width: 0 !important;
+  }
+
+  /* Selects de filtro a lo ancho */
+  .toolbar > p-select,
+  .toolbar > .p-select {
+    flex: 1 1 100%;
+  }
+
+  /* Tablas propias (cotización, pagos, extras, degustación): se deslizan de lado */
+  .tabla-lineas,
+  .tabla-pendientes,
+  .tabla-agendados {
+    display: block !important;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Tablas de PrimeNG: lo mismo, dentro de su recuadro */
+  .p-datatable-table-container {
+    overflow-x: auto !important;
+  }
+
+  .p-datatable-table {
+    white-space: nowrap;
+  }
+
+  /* Títulos de las tarjetas y del detalle, más chicos */
+  .p-card-title {
+    font-size: 1.1rem !important;
+  }
+
+  h2 {
+    font-size: 1.4rem;
+  }
+}

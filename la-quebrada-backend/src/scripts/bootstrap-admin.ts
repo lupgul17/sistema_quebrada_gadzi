@@ -22,7 +22,7 @@ async function main() {
   const cui = await preguntar('CUI/DPI', true);
   const telefono = await preguntar('Teléfono', true);
   const correo = await preguntar('Correo');
-  const username = await preguntar('Username');
+  const username = (await preguntar('Username'))?.toLowerCase() ?? null;
   const password = await preguntar('Password');
 
   rl.close();

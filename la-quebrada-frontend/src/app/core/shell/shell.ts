@@ -1,4 +1,4 @@
-import { Component, OnDestroy, computed, signal } from '@angular/core';
+import { Component, HostListener, OnDestroy, computed, effect, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
@@ -27,6 +27,8 @@ export class Shell implements OnDestroy {
   readonly usuario;
   private readonly rutaActual;
   readonly tituloPagina;
+  /** Menú lateral abierto (solo aplica en celular; en pantallas grandes siempre se ve). */
+  readonly menuAbierto = signal(false);
 
    @ViewChild('cambiarPasswordDialog') cambiarPasswordDialog!: CambiarPasswordDialog;
 
@@ -57,6 +59,12 @@ export class Shell implements OnDestroy {
       )
     );
 
+    // Al navegar se cierra el menú del celular
+    effect(() => {
+      this.rutaActual();
+      this.menuAbierto.set(false);
+    });
+
     this.tituloPagina = computed(() => {
       const ruta = this.rutaActual();
       if (ruta === '/') return 'Inicio';
@@ -72,6 +80,11 @@ export class Shell implements OnDestroy {
       return '';
     });
   }
+@HostListener('document:keydown.escape')
+cerrarMenu(): void {
+  this.menuAbierto.set(false);
+}
+
 abrirCambiarPassword(): void {
   this.cambiarPasswordDialog.abrir();
 }

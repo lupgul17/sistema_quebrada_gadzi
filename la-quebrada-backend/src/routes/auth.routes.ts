@@ -19,7 +19,9 @@ const limiteLogin = crearLimitador({
 });
 
 router.post('/login', limiteLogin.middleware, async (req, res) => {
-  const { username, password } = req.body;
+  const { password } = req.body;
+  // Usuarios siempre en minúsculas: "LuisG", "luisg" y " luisg " son el mismo
+  const username = typeof req.body.username === 'string' ? req.body.username.trim().toLowerCase() : '';
 
   if (!username || !password) {
     res.status(400).json({ error: 'Falta username o password' });

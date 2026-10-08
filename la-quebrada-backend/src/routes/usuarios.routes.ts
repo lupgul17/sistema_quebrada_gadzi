@@ -44,8 +44,10 @@ router.post('/', async (req: AuthRequest, res) => {
   try {
     const {
       primer_nombre, segundo_nombre, primer_apellido, segundo_apellido,
-      cui, telefono, correo, username, password, id_rol_acceso, id_tipo_empleado,
+      cui, telefono, correo, password, id_rol_acceso, id_tipo_empleado,
     } = req.body;
+    // Usuarios siempre en minúsculas (el login también los busca así)
+    const username = typeof req.body.username === 'string' ? req.body.username.trim().toLowerCase() : '';
 
     if (!username || !password || !id_rol_acceso || !id_tipo_empleado) {
       res.status(400).json({ error: 'Falta usuario, contraseña, rol o tipo de empleado' });

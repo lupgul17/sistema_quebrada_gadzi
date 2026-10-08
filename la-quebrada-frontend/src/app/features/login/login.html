@@ -8,7 +8,7 @@
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
       <div class="field">
         <label for="username">Usuario</label>
-        <input pInputText id="username" formControlName="username" fluid  />
+        <input pInputText id="username" formControlName="username" fluid autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" (input)="aMinusculas($event)" />
       </div>
 
       <div class="field">

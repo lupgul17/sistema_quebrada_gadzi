@@ -54,6 +54,17 @@ export class Login {
     });
   }
 
+  /** El usuario se escribe siempre en minúsculas (el cursor se queda donde estaba). */
+  aMinusculas(evento: Event): void {
+    const input = evento.target as HTMLInputElement;
+    const minusculas = input.value.toLowerCase();
+    if (minusculas === input.value) return;
+    const cursor = input.selectionStart;
+    input.value = minusculas;
+    input.setSelectionRange(cursor, cursor);
+    this.form.controls.username.setValue(minusculas, { emitEvent: false });
+  }
+
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -65,7 +76,7 @@ export class Login {
 
     const { username, password } = this.form.getRawValue();
 
-    this.authService.login(username!, password!).subscribe({
+    this.authService.login(username!.trim().toLowerCase(), password!).subscribe({
       next: () => {
         this.cargando.set(false);
         this.router.navigate(['/']);

@@ -1,5 +1,9 @@
 <div class="app-shell">
-  <aside class="sidebar">
+  <!-- En celular el menú es deslizable: se abre con ☰ y se cierra al elegir una opción o tocar afuera -->
+  @if (menuAbierto()) {
+    <div class="sidebar-fondo" (click)="menuAbierto.set(false)"></div>
+  }
+  <aside class="sidebar" [class.abierto]="menuAbierto()">
     <div class="sidebar-brand">
       <img [src]="temaService.oscuro() ? '/brand/logo-claro.png' : '/brand/logo.png'" alt="La Quebrada" />
     </div>
@@ -34,9 +38,12 @@
 
   <div class="main-area">
     <header class="topbar">
+      <button type="button" class="btn-menu" aria-label="Abrir menú" (click)="menuAbierto.set(true)">
+        <i class="pi pi-bars"></i>
+      </button>
       <h1 class="lq-display">{{ tituloPagina() }}</h1>
       <div class="usuario-info">
-        <span>Hola, {{ usuario()?.nombre }}</span>
+        <span class="saludo">Hola, {{ usuario()?.nombre }}</span>
         <p-button
           [icon]="temaService.oscuro() ? 'pi pi-sun' : 'pi pi-moon'"
           [rounded]="true"
@@ -48,8 +55,8 @@
           (onClick)="temaService.alternar()"
         />
     
-        <p-button icon="pi pi-key" label="Cambiar contraseña" severity="secondary" size="small" [text]="true" (onClick)="abrirCambiarPassword()" />
-        <p-button label="Cerrar sesión" severity="secondary" size="small" [outlined]="true" (onClick)="logout()" />
+        <p-button icon="pi pi-key" label="Cambiar contraseña" severity="secondary" size="small" [text]="true" styleClass="solo-icono-movil" ariaLabel="Cambiar contraseña" (onClick)="abrirCambiarPassword()" />
+        <p-button icon="pi pi-sign-out" label="Cerrar sesión" severity="secondary" size="small" [outlined]="true" styleClass="solo-icono-movil" ariaLabel="Cerrar sesión" (onClick)="logout()" />
       </div>
     </header>
 

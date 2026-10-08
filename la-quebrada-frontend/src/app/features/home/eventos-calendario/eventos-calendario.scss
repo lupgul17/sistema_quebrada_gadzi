@@ -91,3 +91,32 @@
     }
   }
 }
+
+/* Celular: celdas más bajas y textos más chicos para que el mes entre en pantalla */
+@media (max-width: 640px) {
+  .calendario {
+    .calendario-header {
+      gap: 0.25rem;
+
+      .mes-nombre {
+        min-width: 0;
+        font-size: 1.1rem;
+      }
+    }
+
+    .grilla {
+      gap: 1px;
+    }
+
+    .celda {
+      min-height: 46px;
+      padding: 0.15rem;
+      font-size: 0.68rem;
+
+      .evento-chip {
+        font-size: 0.58rem;
+        padding: 0.05rem 0.15rem;
+      }
+    }
+  }
+}
