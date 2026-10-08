@@ -299,6 +299,10 @@
     }
     .cal-nav button:hover { border-color: var(--verde-claro); }
     .cal-salon { width: 100%; margin-bottom: 1rem; }
+    /* La lista desplegable la dibuja el navegador: con el fondo translúcido del campo, los títulos de
+       grupo (GADZI, La Quebrada) salían en blanco. Fondo sólido del tema para opciones y grupos. */
+    select option, select optgroup { background-color: var(--surface); color: var(--text); }
+    select optgroup { font-weight: 600; color: var(--dorado); }
     .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
     .cal-dow { font-family: var(--mono); font-size: 11px; color: var(--ash); text-align: center; text-transform: uppercase; padding-bottom: 4px; }
     .cal-dia {
@@ -439,7 +443,7 @@
       <a href="#disponibilidad" class="btn btn-crema">Cotizar mi evento</a>
       <!-- Al login del sistema de reservas: el servidor de la landing redirige /sistema (ver Caddyfile) -->
       <a class="btn-tema btn-acceso" href="/sistema" rel="nofollow" aria-label="Acceso para el personal" title="Acceso para el personal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></svg>
       </a>
       <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks">Menú</button>
     </div>
