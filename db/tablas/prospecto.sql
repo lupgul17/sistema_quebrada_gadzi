@@ -10,6 +10,9 @@ CREATE TABLE IF NOT EXISTS prospecto (
     id_salon         INTEGER REFERENCES salon (id_salon),
     fecha_tentativa  DATE,
     invitados        INTEGER CHECK (invitados IS NULL OR invitados > 0),
+    -- Por separado desde la landing nueva; invitados queda como la suma
+    adultos          INTEGER CHECK (adultos IS NULL OR adultos >= 0),
+    ninos            INTEGER CHECK (ninos IS NULL OR ninos >= 0),
     mensaje          TEXT,
     estado           VARCHAR(20) NOT NULL DEFAULT 'nuevo'
                      CHECK (estado IN ('nuevo', 'contactado', 'convertido', 'descartado')),

@@ -34,7 +34,7 @@
             <td>{{ p.tipo_evento || '—' }}</td>
             <td>{{ p.fecha_tentativa ? (p.fecha_tentativa | date: 'dd/MM/yyyy') : '—' }}</td>
             <td>{{ p.salon || '—' }}</td>
-            <td>{{ p.invitados || '—' }}</td>
+            <td>{{ textoInvitados(p) }}</td>
             <td><span class="estado-badge" [class]="'estado-' + p.estado">{{ p.estado }}</span></td>
           </tr>
         </ng-template>
@@ -67,7 +67,7 @@
         </div>
         <div><span class="label">Correo</span><span>{{ p.correo || '—' }}</span></div>
         <div><span class="label">Tipo de evento</span><span>{{ p.tipo_evento || '—' }}</span></div>
-        <div><span class="label">Invitados</span><span>{{ p.invitados || '—' }}</span></div>
+        <div><span class="label">Invitados</span><span>{{ textoInvitados(p) }}</span></div>
         <div><span class="label">Fecha tentativa</span><span>{{ p.fecha_tentativa ? (p.fecha_tentativa | date: 'dd/MM/yyyy') : '—' }}</span></div>
         <div><span class="label">Salón</span><span>{{ p.salon ? p.salon + ' (' + p.locacion + ')' : '—' }}</span></div>
       </div>

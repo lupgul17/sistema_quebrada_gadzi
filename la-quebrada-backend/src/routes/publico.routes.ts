@@ -31,6 +31,13 @@ function entero(valor: unknown): number | null {
   return Number.isInteger(n) && n > 0 ? n : null;
 }
 
+/** Cantidad de personas: entero de 0 a 5000; vacío → null. */
+function personas(valor: unknown): number | null | 'invalido' {
+  if (valor === null || valor === undefined || valor === '') return null;
+  const n = Number(valor);
+  return Number.isInteger(n) && n >= 0 && n <= 5000 ? n : 'invalido';
+}
+
 // GET /api/publico/salones
 router.get('/salones', async (_req, res) => {
   try {
@@ -65,7 +72,7 @@ router.get('/fechas-ocupadas', async (req, res) => {
   }
   try {
     const result = await pool.query(
-      `SELECT to_char(fecha, 'YYYY-MM-DD') AS fecha, id_salon FROM fn_fechas_ocupadas_publico($1::date, $2::date)`,
+      `SELECT to_char(fecha, 'YYYY-MM-DD') AS fecha, id_salon, temporal FROM fn_fechas_ocupadas_publico($1::date, $2::date)`,
       [desde, hasta]
     );
     res.json(result.rows);
@@ -107,11 +114,18 @@ router.post('/solicitudes', limiteSolicitudes.middleware, async (req, res) => {
     res.status(400).json({ error: 'Fecha tentativa inválida' });
     return;
   }
+  // Adultos y niños por separado (si un formulario viejo manda solo "invitados", van como adultos)
+  const adultos = personas(body.adultos ?? body.invitados);
+  const ninos = personas(body.ninos);
+  if (adultos === 'invalido' || ninos === 'invalido') {
+    res.status(400).json({ error: 'La cantidad de invitados no es válida' });
+    return;
+  }
 
   try {
     await pool.query(
-      `CALL sp_crear_prospecto($1::varchar, $2::varchar, $3::varchar, $4::integer, $5::integer, $6::date, $7::integer, $8::text, $9::varchar, NULL)`,
-      [nombre, telefono, correo, entero(body.id_tipo_evento), entero(body.id_salon), fecha, entero(body.invitados), mensaje, req.ip ?? null]
+      `CALL sp_crear_prospecto($1::varchar, $2::varchar, $3::varchar, $4::integer, $5::integer, $6::date, $7::integer, $8::integer, $9::text, $10::varchar, NULL)`,
+      [nombre, telefono, correo, entero(body.id_tipo_evento), entero(body.id_salon), fecha, adultos, ninos, mensaje, req.ip ?? null]
     );
     res.status(201).json({ ok: true });
   } catch (err) {

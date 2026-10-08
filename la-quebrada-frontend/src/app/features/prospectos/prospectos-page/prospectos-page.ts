@@ -26,6 +26,8 @@ interface Prospecto {
   locacion: string | null;
   fecha_tentativa: string | null;
   invitados: number | null;
+  adultos: number | null;
+  ninos: number | null;
   mensaje: string | null;
   estado: 'nuevo' | 'contactado' | 'convertido' | 'descartado';
   notas_internas: string | null;
@@ -143,6 +145,15 @@ export class ProspectosPage implements OnInit {
       });
   }
 
+  /** "80 adultos + 10 niños" (las solicitudes viejas solo tienen el total). */
+  textoInvitados(p: Prospecto): string {
+    if (p.adultos == null && p.ninos == null) return p.invitados ? String(p.invitados) : '—';
+    const partes = [];
+    if (p.adultos) partes.push(`${p.adultos} adultos`);
+    if (p.ninos) partes.push(`${p.ninos} niños`);
+    return partes.join(' + ') || '—';
+  }
+
   guardarNotas(): void {
     const p = this.seleccionado();
     if (p) this.cambiarEstado(p.estado);
@@ -171,8 +182,10 @@ export class ProspectosPage implements OnInit {
     this.eventoFormDialog.abrirNuevo({
       id_cliente: idCliente,
       id_tipo_evento: p.id_tipo_evento,
-      fecha: p.fecha_tentativa ? new Date(`${p.fecha_tentativa}T00:00:00`) : null,
-      total_adultos: p.invitados ?? 0,
+      // La fecha llega como ISO completo (2026-12-01T06:00:00.000Z): se toma solo el día, en hora local
+      fecha: p.fecha_tentativa ? new Date(`${p.fecha_tentativa.slice(0, 10)}T00:00:00`) : null,
+      total_adultos: p.adultos ?? p.invitados ?? 0,
+      total_menores: p.ninos ?? 0,
       notas: p.mensaje ? `Solicitud web: ${p.mensaje}` : '',
     });
   }

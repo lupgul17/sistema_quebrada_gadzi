@@ -1,0 +1,47 @@
+{
+	# Railway pone HTTPS delante: Caddy solo atiende HTTP dentro del contenedor
+	auto_https off
+	admin off
+	servers {
+		# Todo lo que llega pasa por el proxy de Railway: se confía en su X-Forwarded-For para que
+		# el backend vea la IP real del visitante (límite de 5 solicitudes por hora por IP)
+		trusted_proxies static 0.0.0.0/0 ::/0
+	}
+}
+
+:{$PORT:8080} {
+	encode zstd gzip
+
+	# www.eventoslaquebrada.com → eventoslaquebrada.com (una sola dirección para Google)
+	@www expression {host}.startsWith('www.')
+	redir @www https://{http.request.host.labels.1}.{http.request.host.labels.0}{uri} 301
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+
+	# Solo la parte pública de la API (salones, fechas ocupadas, tipos de evento y solicitudes).
+	# El resto del sistema no se expone por este dominio.
+	handle /api/publico/* {
+		reverse_proxy {$BACKEND_URL}
+	}
+
+	handle {
+		root * /srv
+		try_files {path} {path}/index.html
+		file_server
+
+		# Imágenes: una semana en caché; la página se revalida siempre (para ver cambios al instante)
+		@imagenes path_regexp \.(jpe?g|png|webp|ico|svg)$
+		header @imagenes Cache-Control "public, max-age=604800"
+		@pagina not path_regexp \.(jpe?g|png|webp|ico|svg)$
+		header @pagina Cache-Control "no-cache"
+	}
+
+	# Direcciones del sitio viejo que ya no existen → la página principal (301: Google actualiza el enlace)
+	handle_errors {
+		@noExiste expression {err.status_code} == 404
+		redir @noExiste / 301
+	}
+}

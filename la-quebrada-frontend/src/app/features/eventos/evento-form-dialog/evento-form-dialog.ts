@@ -114,7 +114,7 @@ export class EventoFormDialog {
   }
 
   abrirNuevo(
-    datosIniciales?: Partial<{ id_cliente: number; id_tipo_evento: number | null; fecha: Date | null; total_adultos: number; notas: string }>
+    datosIniciales?: Partial<{ id_cliente: number; id_tipo_evento: number | null; fecha: Date | null; total_adultos: number; total_menores: number; notas: string }>
   ): void {
     this.idEvento = null;
     this.esEdicion.set(false);
