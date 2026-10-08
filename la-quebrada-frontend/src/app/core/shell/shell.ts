@@ -2,8 +2,8 @@ import { Component, HostListener, OnDestroy, computed, effect, signal } from '@a
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
-import { Button } from 'primeng/button';
-import { Tooltip } from 'primeng/tooltip';
+import { Menu } from 'primeng/menu';
+import { MenuItem } from 'primeng/api';
 import { AuthService } from '../auth.service';
 import {VisorArchivoDialog} from '../visor-archivo-dialog/visor-archivo-dialog';
 import { PagosPendientesService } from '../pagos-pendientes.service';
@@ -19,7 +19,7 @@ import { CambiarPasswordDialog } from '../cambiar-password-dialog/cambiar-passwo
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, Button, Tooltip, VisorArchivoDialog, InactividadDialog,CambiarPasswordDialog],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, Menu, VisorArchivoDialog, InactividadDialog,CambiarPasswordDialog],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })
@@ -29,6 +29,36 @@ export class Shell implements OnDestroy {
   readonly tituloPagina;
   /** Menú lateral abierto (solo aplica en celular; en pantallas grandes siempre se ve). */
   readonly menuAbierto = signal(false);
+
+  /** Usuario solo de GADZI: el menú lateral lleva el logo de GADZI. */
+  readonly esGadzi = computed(() => this.authService.usuario()?.logo === 'logo-gadzi.png');
+  readonly logoMarca = computed(() => {
+    const oscuro = this.temaService.oscuro();
+    if (this.esGadzi()) return oscuro ? '/brand/logo-gadzi-claro.png' : '/brand/logo-gadzi.png';
+    return oscuro ? '/brand/logo-claro.png' : '/brand/logo.png';
+  });
+
+  /** Iniciales para el avatar del menú de usuario (ej. "Ana Admin" → "AA"). */
+  readonly iniciales = computed(() =>
+    (this.authService.usuario()?.nombre ?? '?')
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0].toUpperCase())
+      .join('')
+  );
+
+  /** Opciones del menú de usuario; computed para que el texto del tema cambie al alternarlo. */
+  readonly opcionesUsuario = computed<MenuItem[]>(() => [
+    {
+      label: this.temaService.oscuro() ? 'Modo claro' : 'Modo oscuro',
+      icon: this.temaService.oscuro() ? 'pi pi-sun' : 'pi pi-moon',
+      command: () => this.temaService.alternar(),
+    },
+    { label: 'Cambiar contraseña', icon: 'pi pi-key', command: () => this.abrirCambiarPassword() },
+    { separator: true },
+    { label: 'Cerrar sesión', icon: 'pi pi-sign-out', command: () => this.logout() },
+  ]);
 
    @ViewChild('cambiarPasswordDialog') cambiarPasswordDialog!: CambiarPasswordDialog;
 

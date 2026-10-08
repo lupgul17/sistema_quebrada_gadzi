@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { API_URL } from './api-config';
 import { Capacidad, PERMISOS } from './permisos';
+import { AreaMenu } from './menus';
 
 export interface Usuario {
   id_usuario: number;
@@ -11,6 +12,10 @@ export interface Usuario {
   nombre: string;
   tipo_usuario: string;
   rol_acceso: string | null;
+  /** Logo de su locación (ej. 'logo-gadzi.png') si todas sus áreas son de una sola; null = La Quebrada */
+  logo?: string | null;
+  /** Áreas asignadas ([] = todas) */
+  areas?: AreaMenu[];
 }
 
 interface LoginResponse {
@@ -62,10 +67,16 @@ export class AuthService {
   // Pide el rol vigente a la base: si un Superusuario te lo cambió, se refleja al recargar.
   // Si la cuenta fue desactivada, esta petición devuelve 401 y el interceptor te saca al login.
   refrescarPerfil(): void {
-    this.http.get<{ rol_acceso: string | null }>(`${API_URL}/auth/me`).subscribe((perfil) => {
+    this.http.get<{ rol_acceso: string | null; logo: string | null; areas: AreaMenu[] }>(`${API_URL}/auth/me`).subscribe((perfil) => {
       const actual = this.usuarioSignal();
-      if (!actual || actual.rol_acceso === perfil.rol_acceso) return;
-      const actualizado = { ...actual, rol_acceso: perfil.rol_acceso };
+      if (!actual) return;
+      const igual =
+        actual.rol_acceso === perfil.rol_acceso &&
+        (actual.logo ?? null) === perfil.logo &&
+        JSON.stringify(actual.areas ?? []) === JSON.stringify(perfil.areas ?? []);
+      if (igual) return;
+      // Rol, logo y áreas vigentes (si un Superusuario los cambió, se reflejan al recargar)
+      const actualizado = { ...actual, rol_acceso: perfil.rol_acceso, logo: perfil.logo, areas: perfil.areas };
       localStorage.setItem(USUARIO_KEY, JSON.stringify(actualizado));
       this.usuarioSignal.set(actualizado);
     });

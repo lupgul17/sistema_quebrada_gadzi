@@ -3,35 +3,43 @@
     <div class="grid-2">
       <div class="field">
         <label for="primer_nombre">Primer nombre *</label>
-        <input pInputText id="primer_nombre" formControlName="primer_nombre" fluid />
+        <input pInputText id="primer_nombre" formControlName="primer_nombre" maxlength="80" fluid />
+        <app-error-campo [control]="form.controls.primer_nombre" />
       </div>
       <div class="field">
         <label for="segundo_nombre">Segundo nombre</label>
-        <input pInputText id="segundo_nombre" formControlName="segundo_nombre" fluid />
+        <input pInputText id="segundo_nombre" formControlName="segundo_nombre" maxlength="80" fluid />
+        <app-error-campo [control]="form.controls.segundo_nombre" />
       </div>
       <div class="field">
         <label for="primer_apellido">Primer apellido *</label>
-        <input pInputText id="primer_apellido" formControlName="primer_apellido" fluid />
+        <input pInputText id="primer_apellido" formControlName="primer_apellido" maxlength="80" fluid />
+        <app-error-campo [control]="form.controls.primer_apellido" />
       </div>
       <div class="field">
         <label for="segundo_apellido">Segundo apellido</label>
-        <input pInputText id="segundo_apellido" formControlName="segundo_apellido" fluid />
+        <input pInputText id="segundo_apellido" formControlName="segundo_apellido" maxlength="80" fluid />
+        <app-error-campo [control]="form.controls.segundo_apellido" />
       </div>
       <div class="field">
         <label for="cui">CUI/DPI</label>
-        <input pInputText id="cui" formControlName="cui" fluid />
+        <input pInputText id="cui" formControlName="cui" inputmode="numeric" maxlength="15" placeholder="13 dígitos" fluid />
+        <app-error-campo [control]="form.controls.cui" />
       </div>
       <div class="field">
         <label for="nit">NIT</label>
-        <input pInputText id="nit" formControlName="nit" fluid />
+        <input pInputText id="nit" formControlName="nit" maxlength="20" placeholder="1234567-8 o CF" fluid />
+        <app-error-campo [control]="form.controls.nit" />
       </div>
       <div class="field">
         <label for="telefono">Teléfono</label>
-        <input pInputText id="telefono" formControlName="telefono" fluid />
+        <input pInputText id="telefono" formControlName="telefono" type="tel" inputmode="tel" maxlength="20" placeholder="5502 4196" fluid />
+        <app-error-campo [control]="form.controls.telefono" />
       </div>
       <div class="field">
         <label for="correo">Correo</label>
-        <input pInputText id="correo" formControlName="correo" fluid />
+        <input pInputText id="correo" formControlName="correo" type="email" maxlength="150" fluid />
+        <app-error-campo [control]="form.controls.correo" />
       </div>
     </div>
 

@@ -44,12 +44,13 @@
             @if (servicioForm.modo === 'catalogo') {
               <p-select [options]="serviciosDisponibles()" optionLabel="nombre" optionValue="id_servicio" [(ngModel)]="servicioForm.id_servicio" (ngModelChange)="onServicioSeleccionado($event)" placeholder="Elegir servicio..." appendTo="body" fluid />
             } @else {
-              <input pInputText [(ngModel)]="servicioForm.descripcion" placeholder="Descripción del cargo..." fluid />
+              <input pInputText [(ngModel)]="servicioForm.descripcion" maxlength="200" placeholder="Descripción del cargo..." fluid />
             }
             <p-inputnumber [(ngModel)]="servicioForm.cantidad" [min]="1" placeholder="Cant." />
-            <p-inputnumber [(ngModel)]="servicioForm.precio_unitario" mode="decimal" [minFractionDigits]="2" placeholder="Precio" />
+            <p-inputnumber [(ngModel)]="servicioForm.precio_unitario" mode="decimal" [minFractionDigits]="2" [min]="0" placeholder="Precio" />
             <p-button label="Agregar" size="small" [loading]="procesandoServicio()" (onClick)="agregarServicio()" />
           </div>
+          @if (intentoServicio() && errorServicioExtra(); as e) { <small class="lq-error-campo">{{ e }}</small> }
         </div>
       }
     </div>
@@ -94,12 +95,13 @@
             @if (menuForm.modo === 'catalogo') {
               <p-select [options]="menusDisponibles()" optionLabel="etiqueta" optionValue="id_menu" [filter]="true" filterBy="etiqueta" [(ngModel)]="menuForm.id_menu" (ngModelChange)="onMenuSeleccionado($event)" placeholder="Elegir menú..." appendTo="body" fluid />
             } @else {
-              <input pInputText [(ngModel)]="menuForm.descripcion" placeholder="Descripción del menú..." fluid />
+              <input pInputText [(ngModel)]="menuForm.descripcion" maxlength="200" placeholder="Descripción del menú..." fluid />
             }
             <p-inputnumber [(ngModel)]="menuForm.cantidad" [min]="1" placeholder="Cant." />
-            <p-inputnumber [(ngModel)]="menuForm.precio_base" mode="decimal" [minFractionDigits]="2" placeholder="Precio" />
+            <p-inputnumber [(ngModel)]="menuForm.precio_base" mode="decimal" [minFractionDigits]="2" [min]="0" placeholder="Precio" />
             <p-button label="Agregar" size="small" [loading]="procesandoMenu()" (onClick)="agregarMenu()" />
           </div>
+          @if (intentoMenu() && errorMenuExtra(); as e) { <small class="lq-error-campo">{{ e }}</small> }
         </div>
       }
     </div>

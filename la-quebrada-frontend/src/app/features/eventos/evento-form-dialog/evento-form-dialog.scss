@@ -86,6 +86,21 @@
       font-weight: 500;
     }
 
+    // El checkbox no recibe clics: solo refleja el estado de la tarjeta
+    .salon-check { pointer-events: none; }
+
+    // Tres estados: libre (borde neutro), elegido (verde) y no disponible (apagado).
+    // El hover solo oscurece el borde un poco para que no parezca "elegido".
+    &:hover:not(.no-disponible):not(.seleccionado) {
+      border-color: var(--lq-borde-fuerte);
+      background: var(--lq-neutral-bg);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--lq-verde-claro);
+      outline-offset: 2px;
+    }
+
     &.seleccionado {
       border-color: var(--lq-verde-claro);
       background: var(--lq-verde-tinte);
@@ -102,4 +117,15 @@
   display: flex;
   gap: 0.75rem;
   justify-content: flex-end;
+}
+
+.aviso-salones {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--lq-warn-fg);
+
+  &.error { color: var(--lq-danger-fg); }
 }

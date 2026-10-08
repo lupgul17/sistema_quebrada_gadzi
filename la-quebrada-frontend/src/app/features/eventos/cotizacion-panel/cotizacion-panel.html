@@ -180,7 +180,7 @@
       @if (editable) {
         <div class="agregar-linea">
           <p-select [options]="serviciosDisponibles()" optionLabel="nombre" optionValue="id_servicio" [(ngModel)]="servicioSeleccionado" placeholder="Elegir servicio..." appendTo="body" fluid />
-          <p-inputnumber [(ngModel)]="cantidadServicio" [min]="1" />
+          <p-inputnumber [(ngModel)]="cantidadServicio" [min]="1" [max]="10000" [useGrouping]="false" />
           <p-button label="Agregar" size="small" [disabled]="!servicioSeleccionado" [loading]="procesando()" (onClick)="agregarServicio()" />
         </div>
       }
@@ -200,11 +200,11 @@
         <div class="detalles-grid">
           <div class="field">
             <label>Personas en mesa principal</label>
-            <p-inputnumber [(ngModel)]="detalleForm.cantidad_mesa_principal" [min]="0" fluid />
+            <p-inputnumber [(ngModel)]="detalleForm.cantidad_mesa_principal" [min]="0" [max]="500" [useGrouping]="false" fluid />
           </div>
           <div class="field">
             <label>Mesas reservadas</label>
-            <p-inputnumber [(ngModel)]="detalleForm.cantidad_mesas_reservadas" [min]="0" fluid />
+            <p-inputnumber [(ngModel)]="detalleForm.cantidad_mesas_reservadas" [min]="0" [max]="500" [useGrouping]="false" fluid />
           </div>
           <div class="field field-checkbox">
             <p-checkbox [(ngModel)]="detalleForm.brindis" [binary]="true" inputId="brindis" />
@@ -221,11 +221,11 @@
         </div>
         <div class="field field-full">
           <label>Boquitas del menú</label>
-          <textarea pTextarea [(ngModel)]="detalleForm.boquitas" rows="2" fluid placeholder="Qué boquitas se eligieron para este evento..."></textarea>
+          <textarea pTextarea [(ngModel)]="detalleForm.boquitas" rows="2" maxlength="1000" fluid placeholder="Qué boquitas se eligieron para este evento..."></textarea>
         </div>
         <div class="field field-full">
           <label>Observaciones</label>
-          <textarea pTextarea [(ngModel)]="detalleForm.observaciones" rows="2" fluid placeholder="Notas libres sobre el evento..."></textarea>
+          <textarea pTextarea [(ngModel)]="detalleForm.observaciones" rows="2" maxlength="1000" fluid placeholder="Notas libres sobre el evento..."></textarea>
         </div>
         <p-button label="Guardar detalles" size="small" [loading]="guardandoDetalles()" (onClick)="guardarDetalles()" />
       </div>
@@ -299,7 +299,7 @@
         @if (descuentoForm.modo === 'porcentaje') {
           <div class="field">
             <label>Porcentaje (%)</label>
-            <p-inputnumber [(ngModel)]="descuentoForm.porcentaje" [min]="0" [max]="100" fluid />
+            <p-inputnumber [(ngModel)]="descuentoForm.porcentaje" [min]="1" [max]="100" suffix="%" fluid />
           </div>
         } @else {
           <div class="field">
@@ -309,8 +309,9 @@
         }
         <div class="field">
           <label>Motivo</label>
-          <textarea pTextarea [(ngModel)]="descuentoForm.motivo" rows="2" fluid placeholder="Por qué se aplica este descuento..."></textarea>
+          <textarea pTextarea [(ngModel)]="descuentoForm.motivo" rows="2" maxlength="500" fluid placeholder="Por qué se aplica este descuento..."></textarea>
         </div>
+        @if (intentoDescuento() && errorDescuento(); as e) { <small class="lq-error-campo">{{ e }}</small> }
         <p-button label="Solicitar descuento" size="small" [loading]="guardandoDescuento()" (onClick)="crearDescuento()" />
       </div>
     }

@@ -1,3 +1,4 @@
+import { ENCABEZADO_CSS, encabezadoHtml } from './encabezado.js';
 interface PagoResumen {
   fecha: string;
   concepto: string;
@@ -21,6 +22,8 @@ interface DatosPlantilla {
   eventoFecha: string;
   eventoSalones: string;
   eventoLocacion: string;
+  /** Escribir la locación debajo del título (cuando el logo no es el de esa locación) */
+  mostrarLocacion?: boolean;
   eventoHorario: string;
   version: number;
   vigenciaDias: number;
@@ -90,10 +93,7 @@ export function armarHtmlCotizacion(d: DatosPlantilla): string {
 <meta charset="utf-8">
 <style>
   body { font-family: Arial, sans-serif; font-size: 12px; color: #222; margin: 0; padding: 30px; }
-  .header { text-align: center; margin-bottom: 20px; }
-  .header .etiqueta { font-size: 11px; letter-spacing: 1px; color: #666; text-transform: uppercase; }
-  .header h1 { color: #093509; margin: 4px 0; font-size: 22px; }
-  .header p { margin: 2px 0; color: #555; }
+  ${ENCABEZADO_CSS}
   .info-boxes { display: flex; gap: 20px; margin-bottom: 20px; }
   .info-box { flex: 1; border: 1px solid #ccc; border-radius: 6px; padding: 10px; }
   .info-box h3 { margin: 0 0 8px; font-size: 13px; color: #093509; text-transform: uppercase; }
@@ -123,12 +123,16 @@ export function armarHtmlCotizacion(d: DatosPlantilla): string {
 </style>
 </head>
 <body>
-  <div class="header">
-    <img src="${d.logoUrl}" alt="Logo" style="max-height:80px; margin-bottom:8px;" />
-    <p class="etiqueta">Cotización de servicio</p>
-    <!-- El logo ya dice "La Quebrada" y el lema: el nombre solo va si el evento es en otra locación -->
-    ${/la quebrada/i.test(d.eventoLocacion) ? '' : `<h1>${d.eventoLocacion}</h1>`}
-  </div>
+  ${encabezadoHtml({
+    logoUrl: d.logoUrl,
+    etiqueta: 'Cotización de servicio',
+    titulo: d.eventoTipo ? `${d.eventoTipo} · ${d.eventoFecha}` : d.eventoFecha,
+    lineas: [
+      // La locación solo se escribe si el logo no es el suyo (y nunca "La Quebrada": ya lo dice el logo)
+      d.mostrarLocacion && !/la quebrada/i.test(d.eventoLocacion) ? d.eventoLocacion : null,
+      `Versión ${d.version}`,
+    ],
+  })}
 
   <div class="info-boxes">
     <div class="info-box">

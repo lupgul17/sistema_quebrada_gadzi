@@ -1,3 +1,4 @@
+import { ENCABEZADO_CSS, encabezadoHtml } from './encabezado.js';
 interface ComponenteMenu {
   categoria: string;
   nombre: string;
@@ -107,10 +108,7 @@ export function armarHtmlDegustaciones(d: DatosDegustaciones): string {
 <meta charset="utf-8">
 <style>
   body { font-family: Arial, sans-serif; font-size: 11px; color: #222; margin: 0; padding: 25px; }
-  .header { text-align: center; margin-bottom: 18px; }
-  .header img { max-height: 60px; margin-bottom: 6px; }
-  .header h1 { color: #093509; margin: 4px 0; font-size: 18px; }
-  .header p { margin: 2px 0; color: #666; font-size: 11px; }
+  ${ENCABEZADO_CSS}
   .sesion { margin-bottom: 18px; }
   .sesion h2 { background: #093509; color: white; font-size: 12px; padding: 6px 10px; border-radius: 4px; margin: 0 0 8px; text-transform: capitalize; }
   .cards { display: grid; grid-template-columns: 1fr; gap: 10px; }
@@ -128,11 +126,7 @@ export function armarHtmlDegustaciones(d: DatosDegustaciones): string {
 </style>
 </head>
 <body>
-  <div class="header">
-    <img src="${d.logoUrl}" alt="Logo" />
-    <h1>Degustaciones — Detallado</h1>
-    <p>${d.subtitulo}</p>
-  </div>
+  ${encabezadoHtml({ logoUrl: d.logoUrl, etiqueta: 'Reporte', titulo: 'Degustaciones — Detallado', lineas: [d.subtitulo] })}
   ${d.sesiones.length === 0 ? '<p>No hay degustaciones en este rango.</p>' : d.sesiones.map(sesionHtml).join('')}
   <div class="footer">
     <p>Generado el ${new Date().toLocaleDateString('es-GT')} — La Quebrada / GADZI</p>

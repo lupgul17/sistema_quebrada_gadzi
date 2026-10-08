@@ -9,6 +9,7 @@
       placeholder="Todas las categorías"
       [showClear]="true"
     />
+    <app-buscador-tabla [tabla]="dt" placeholder="Buscar componente..." />
     <span class="spacer"></span>
     @if (auth.puede('catalogos')) {
       <p-button label="+ Nuevo componente" (onClick)="abrirNuevo()" />
@@ -16,7 +17,7 @@
   </div>
 
   <div class="table-container">
-    <p-table [value]="componentes()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
+    <p-table #dt [globalFilterFields]="['nombre', 'categoria']" [value]="componentes()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
       <ng-template pTemplate="header">
         <tr>
           <th>Categoría</th>
@@ -42,7 +43,7 @@
         </tr>
       </ng-template>
       <ng-template pTemplate="emptymessage">
-        <tr><td colspan="5">No hay componentes cargados todavía.</td></tr>
+        <tr><td colspan="5">@if ($any(dt.filters['global'])?.value) { Sin resultados para la búsqueda. } @else { No hay componentes cargados todavía. }</td></tr>
       </ng-template>
     </p-table>
   </div>
@@ -52,14 +53,17 @@
       <div class="field">
         <label for="categoria">Categoría *</label>
         <p-select appendTo="body" id="categoria" formControlName="id_categoria_componente_menu" [options]="categorias()" optionLabel="descripcion" optionValue="id_categoria_componente_menu" fluid />
+        <app-error-campo [control]="form.controls.id_categoria_componente_menu" />
       </div>
       <div class="field">
         <label for="nombre">Nombre *</label>
-        <input pInputText id="nombre" formControlName="nombre" fluid />
+        <input pInputText id="nombre" formControlName="nombre" maxlength="150" fluid />
+        <app-error-campo [control]="form.controls.nombre" />
       </div>
       <div class="field">
         <label for="recargo">Recargo (Q)</label>
-        <p-inputnumber id="recargo" formControlName="recargo" mode="decimal" [minFractionDigits]="2" fluid />
+        <p-inputnumber id="recargo" formControlName="recargo" mode="decimal" [minFractionDigits]="2" [min]="0" fluid />
+        <app-error-campo [control]="form.controls.recargo" />
       </div>
       <div class="field field-checkbox">
         <p-checkbox formControlName="activo" [binary]="true" inputId="activo" />

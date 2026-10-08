@@ -19,6 +19,9 @@ import { MultiSelect } from 'primeng/multiselect';
 import { ERROR_EN_LINEA } from '../../../core/http-errores';
 import { AreaMenu, FilaArea, opcionesDeAreas, separarAreas, textoDisponibilidad, unirAreas } from '../../../core/menus';
 
+import { BuscadorTabla } from '../../../core/buscador-tabla/buscador-tabla';
+import { ErrorCampo } from '../../../core/error-campo/error-campo';
+import { Validadores } from '../../../core/validaciones';
 interface Menu {
   id_menu: number;
   nombre: string;
@@ -49,7 +52,7 @@ type ModoDisponibilidad = 'todos' | 'restringido';
 @Component({
   selector: 'app-menus-list',
   standalone: true,
-  imports: [
+  imports: [ErrorCampo, BuscadorTabla, 
     CommonModule, FormsModule, ReactiveFormsModule, TableModule, Select,
     InputText, InputNumber, Textarea, Checkbox, Button, Dialog, Message, MultiSelect, SelectButton, Tooltip,
   ],
@@ -98,10 +101,10 @@ export class MenusList implements OnInit {
     public auth: AuthService
   ) {
     this.form = this.fb.group({
-      nombre: ['', Validators.required],
+      nombre: ['', [Validators.required, Validators.maxLength(150)]],
       id_tipo_menu: this.fb.control<number | null>(null, Validators.required),
-      precio_base: this.fb.control<number | null>(null, Validators.required),
-      unidad_medida: ['por_persona', Validators.required],
+      precio_base: this.fb.control<number | null>(null, [Validators.required, Validadores.positivo, Validators.max(100_000)]),
+      unidad_medida: ['por_persona', [Validators.required, Validators.maxLength(30)]],
       descripcion: [''],
       activo: [true],
       componentes: this.fb.control<number[]>([]),
@@ -189,6 +192,7 @@ export class MenusList implements OnInit {
   guardar(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.error.set('Revisá los campos marcados en rojo.');
       return;
     }
     const { modo_disponibilidad, areas, ...datos } = this.form.getRawValue();

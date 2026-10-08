@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { DatePicker } from 'primeng/datepicker';
+import { HoraRapida } from '../../../core/hora-rapida.directive';
 import { Select } from 'primeng/select';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
@@ -70,7 +71,7 @@ function paginaCargando(oscuro: boolean): string {
 @Component({
   selector: 'app-fechas-degustacion-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, DatePicker, Select, Button, Dialog],
+  imports: [CommonModule, FormsModule, TableModule, DatePicker, HoraRapida, Select, Button, Dialog],
   templateUrl: './fechas-degustacion-list.html',
   styleUrl: './fechas-degustacion-list.scss',
 })
@@ -90,6 +91,9 @@ export class FechasDegustacionList implements OnInit {
   nuevaFecha: Date | null = null;
   nuevaHoraInicio: Date | null = null;
   nuevaHoraFin: Date | null = null;
+  /** Se intentó crear: muestra los errores de los campos. */
+  readonly intentoCrear = signal(false);
+  readonly hoy = new Date();
 
   constructor(
     private http: HttpClient,
@@ -112,6 +116,7 @@ export class FechasDegustacionList implements OnInit {
     this.nuevaFecha = null;
     this.nuevaHoraInicio = null;
     this.nuevaHoraFin = null;
+    this.intentoCrear.set(false);
     this.dialogoVisible.set(true);
   }
 
@@ -123,7 +128,24 @@ export class FechasDegustacionList implements OnInit {
     return fecha.toTimeString().split(' ')[0].substring(0, 5);
   }
 
+  /** Errores de la fecha nueva: fecha de hoy en adelante, hora de inicio y fin después del inicio. */
+  erroresFecha(): { fecha?: string; inicio?: string; fin?: string } {
+    const e: { fecha?: string; inicio?: string; fin?: string } = {};
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    if (!this.nuevaFecha) e.fecha = 'Elegí la fecha.';
+    else if (new Date(this.nuevaFecha).setHours(0, 0, 0, 0) < hoy.getTime()) e.fecha = 'La fecha ya pasó.';
+    if (!this.nuevaHoraInicio) e.inicio = 'Elegí la hora de inicio.';
+    if (this.nuevaHoraInicio && this.nuevaHoraFin) {
+      const min = (d: Date) => d.getHours() * 60 + d.getMinutes();
+      if (min(this.nuevaHoraFin) <= min(this.nuevaHoraInicio)) e.fin = 'Debe ser después de la hora de inicio.';
+    }
+    return e;
+  }
+
   crearFecha(): void {
+    this.intentoCrear.set(true);
+    if (Object.keys(this.erroresFecha()).length) return;
     if (!this.nuevaFecha || !this.nuevaHoraInicio) return;
     this.guardando.set(true);
     this.http.post(`${API_URL}/degustaciones/fechas`, {

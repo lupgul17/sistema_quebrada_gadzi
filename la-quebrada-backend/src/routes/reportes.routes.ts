@@ -3,7 +3,8 @@ import { htmlAPdf } from '../utils/pdf.js';
 import { pool } from '../db/pool.js';
 import { armarHtmlReporte } from '../templates/reports/reporte.template.js';
 import { armarHtmlDegustaciones, agruparSesionesDegustacion } from '../templates/reports/reporte-degustacion.template.js';
-import { logoDataUri } from '../utils/logo.js';
+import { logoDataUri, logoDeUsuario } from '../utils/logo.js';
+import { filtrarDegustacionesPorAlcance, filtrarPorAlcance } from '../middleware/alcance.js';
 import { responderError } from '../utils/errores.js';
 
 const router = Router();
@@ -13,7 +14,7 @@ router.get('/eventos', async (req, res) => {
   try {
     const { fecha_desde, fecha_hasta } = req.query;
     const result = await pool.query('SELECT * FROM fn_listar_eventos(NULL, $1::date, $2::date, NULL)', [fecha_desde ?? null, fecha_hasta ?? null]);
-    res.json(result.rows);
+    res.json(await filtrarPorAlcance(req, result.rows));
   } catch (err) {
     responderError(res, err);
   }
@@ -28,17 +29,17 @@ router.get('/eventos-detallado', async (req, res) => {
       return;
     }
     const result = await pool.query('SELECT * FROM fn_reporte_eventos_detallado($1::date, $2::date)', [fecha_desde, fecha_hasta]);
-    res.json(result.rows);
+    res.json(await filtrarPorAlcance(req, result.rows));
   } catch (err) {
     responderError(res, err);
   }
 });
 
 // GET /api/reportes/pendientes-pago
-router.get('/pendientes-pago', async (_req, res) => {
+router.get('/pendientes-pago', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM fn_reporte_pendientes_pago()');
-    res.json(result.rows);
+    res.json(await filtrarPorAlcance(req, result.rows));
   } catch (err) {
     responderError(res, err);
   }
@@ -53,7 +54,7 @@ router.get('/degustaciones', async (req, res) => {
       return;
     }
     const result = await pool.query('SELECT * FROM fn_reporte_degustaciones_detallado($1::date, $2::date)', [fecha_desde, fecha_hasta]);
-    res.json(result.rows);
+    res.json(await filtrarDegustacionesPorAlcance(req, result.rows));
   } catch (err) {
     responderError(res, err);
   }
@@ -65,7 +66,7 @@ router.get('/:tipo/pdf', async (req, res) => {
     const { tipo } = req.params;
     const { fecha_desde, fecha_hasta } = req.query;
 
-    const logoUrl = logoDataUri();
+    const logoUrl = logoDataUri(await logoDeUsuario((req as any).usuario.id_usuario));
 
     const tabla = (titulo: string, subtitulo: string, columnas: string[], filas: (string | number)[][]) =>
       armarHtmlReporte({ titulo, subtitulo, columnas, filas, logoUrl });
@@ -74,7 +75,7 @@ router.get('/:tipo/pdf', async (req, res) => {
     let landscape = true;
 
     if (tipo === 'eventos') {
-      const result = await pool.query('SELECT * FROM fn_listar_eventos(NULL, $1::date, $2::date, NULL)', [fecha_desde ?? null, fecha_hasta ?? null]);
+      const result = { rows: await filtrarPorAlcance(req, (await pool.query('SELECT * FROM fn_listar_eventos(NULL, $1::date, $2::date, NULL)', [fecha_desde ?? null, fecha_hasta ?? null])).rows) };
       html = tabla(
         'Lista de eventos',
         fecha_desde && fecha_hasta ? `${fecha_desde} al ${fecha_hasta}` : 'Todos',
@@ -82,7 +83,7 @@ router.get('/:tipo/pdf', async (req, res) => {
         result.rows.map((r) => [new Date(r.fecha).toLocaleDateString('es-GT'), r.cliente, r.tipo_evento ?? '—', r.salones ?? '—', r.estado])
       );
     } else if (tipo === 'eventos-detallado') {
-      const result = await pool.query('SELECT * FROM fn_reporte_eventos_detallado($1::date, $2::date)', [fecha_desde, fecha_hasta]);
+      const result = { rows: await filtrarPorAlcance(req, (await pool.query('SELECT * FROM fn_reporte_eventos_detallado($1::date, $2::date)', [fecha_desde, fecha_hasta])).rows) };
       html = tabla(
         'Lista de eventos — Detallado',
         `${fecha_desde} al ${fecha_hasta}`,
@@ -94,7 +95,7 @@ router.get('/:tipo/pdf', async (req, res) => {
         ])
       );
     } else if (tipo === 'pendientes-pago') {
-      const result = await pool.query('SELECT * FROM fn_reporte_pendientes_pago()');
+      const result = { rows: await filtrarPorAlcance(req, (await pool.query('SELECT * FROM fn_reporte_pendientes_pago()')).rows) };
       html = tabla(
         'Eventos pendientes de pago',
         '',
@@ -105,7 +106,7 @@ router.get('/:tipo/pdf', async (req, res) => {
         ])
       );
     } else if (tipo === 'degustaciones') {
-      const result = await pool.query('SELECT * FROM fn_reporte_degustaciones_detallado($1::date, $2::date)', [fecha_desde, fecha_hasta]);
+      const result = { rows: await filtrarDegustacionesPorAlcance(req, (await pool.query('SELECT * FROM fn_reporte_degustaciones_detallado($1::date, $2::date)', [fecha_desde, fecha_hasta])).rows) };
 
       html = armarHtmlDegustaciones({
         logoUrl,

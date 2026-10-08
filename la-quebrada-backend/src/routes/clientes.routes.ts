@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
+import { leerPersona } from '../utils/validar.js';
+import { filtrarPorAlcance } from '../middleware/alcance.js';
 import { responderError } from '../utils/errores.js';
 
 const router = Router();
@@ -35,15 +37,13 @@ router.get('/:id', async (req, res) => {
 // POST /api/clientes - crear cliente
 router.post('/', async (req, res) => {
   try {
-    const {
-      primer_nombre, segundo_nombre, primer_apellido, segundo_apellido,
-      cui, nit, telefono, correo,
-    } = req.body;
-
-    if (!primer_nombre || !primer_apellido) {
-      res.status(400).json({ error: 'Falta primer_nombre o primer_apellido' });
+    // Limpia (vacío → null: un CUI "" se confundía con el de otra persona) y valida formatos
+    const leido = leerPersona(req.body);
+    if ('error' in leido) {
+      res.status(400).json({ error: leido.error });
       return;
     }
+    const { primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, cui, nit, telefono, correo } = leido.datos;
 
     const result = await pool.query(
       `CALL sp_crear_cliente(
@@ -51,8 +51,8 @@ router.post('/', async (req, res) => {
         $5::varchar, $6::varchar, $7::varchar, $8::varchar, NULL
       )`,
       [
-        primer_nombre, segundo_nombre ?? null, primer_apellido, segundo_apellido ?? null,
-        cui ?? null, nit ?? null, telefono ?? null, correo ?? null,
+        primer_nombre, segundo_nombre, primer_apellido, segundo_apellido,
+        cui, nit, telefono, correo,
       ]
     );
 
@@ -65,15 +65,13 @@ router.post('/', async (req, res) => {
 // PUT /api/clientes/:id - editar cliente
 router.put('/:id', async (req, res) => {
   try {
-    const {
-      primer_nombre, segundo_nombre, primer_apellido, segundo_apellido,
-      cui, nit, telefono, correo,
-    } = req.body;
-
-    if (!primer_nombre || !primer_apellido) {
-      res.status(400).json({ error: 'Falta primer_nombre o primer_apellido' });
+    // Limpia (vacío → null: un CUI "" se confundía con el de otra persona) y valida formatos
+    const leido = leerPersona(req.body);
+    if ('error' in leido) {
+      res.status(400).json({ error: leido.error });
       return;
     }
+    const { primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, cui, nit, telefono, correo } = leido.datos;
 
     await pool.query(
       `CALL sp_editar_cliente(
@@ -81,8 +79,8 @@ router.put('/:id', async (req, res) => {
         $6::varchar, $7::varchar, $8::varchar, $9::varchar
       )`,
       [
-        req.params.id, primer_nombre, segundo_nombre ?? null, primer_apellido, segundo_apellido ?? null,
-        cui ?? null, nit ?? null, telefono ?? null, correo ?? null,
+        req.params.id, primer_nombre, segundo_nombre, primer_apellido, segundo_apellido,
+        cui, nit, telefono, correo,
       ]
     );
 
@@ -95,7 +93,7 @@ router.put('/:id', async (req, res) => {
 router.get('/:id/pagos', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM fn_listar_pagos_cliente($1::integer)', [req.params.id]);
-    res.json(result.rows);
+    res.json(await filtrarPorAlcance(req, result.rows));
   } catch (err) {
     responderError(res, err);
   }

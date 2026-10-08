@@ -14,6 +14,8 @@ import { API_URL } from '../../../core/api-config';
 import { AuthService } from '../../../core/auth.service';
 import { ERROR_EN_LINEA } from '../../../core/http-errores';
 
+import { BuscadorTabla } from '../../../core/buscador-tabla/buscador-tabla';
+import { ErrorCampo } from '../../../core/error-campo/error-campo';
 interface Servicio {
   id_servicio: number;
   nombre: string;
@@ -32,7 +34,7 @@ interface CategoriaServicio {
 @Component({
   selector: 'app-servicios-list',
   standalone: true,
-  imports: [
+  imports: [ErrorCampo, BuscadorTabla, 
     CommonModule, FormsModule, ReactiveFormsModule, TableModule, Select,
     InputText, InputNumber, Checkbox, Button, Dialog, Message,
   ],
@@ -57,9 +59,10 @@ export class ServiciosList implements OnInit {
   ) {
     this.form = this.fb.group({
       id_categoria_servicio: this.fb.control<number | null>(null, Validators.required),
-      nombre: ['', Validators.required],
-      precio_base: this.fb.control<number | null>(null, Validators.required),
-      unidad_medida: ['', Validators.required],
+      nombre: ['', [Validators.required, Validators.maxLength(150)]],
+      // Q0 se permite (servicios de cortesía); negativo no
+      precio_base: this.fb.control<number | null>(null, [Validators.required, Validators.min(0), Validators.max(1_000_000)]),
+      unidad_medida: ['', [Validators.required, Validators.maxLength(30)]],
       activo: [true],
     });
   }
@@ -103,6 +106,7 @@ export class ServiciosList implements OnInit {
   guardar(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.error.set('Revisá los campos marcados en rojo.');
       return;
     }
 

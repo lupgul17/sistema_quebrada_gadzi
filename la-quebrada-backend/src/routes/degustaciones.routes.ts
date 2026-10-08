@@ -1,11 +1,16 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
+import { exigirAlcance, filtrarDegustacionesPorAlcance, filtrarPorAlcance, guardiaAlcance } from '../middleware/alcance.js';
 import { responderError } from '../utils/errores.js';
 import { htmlAPdf } from '../utils/pdf.js';
-import { logoDataUri } from '../utils/logo.js';
+import { logoDataUri, logoDeUsuario } from '../utils/logo.js';
 import { armarHtmlDegustaciones, agruparSesionesDegustacion } from '../templates/reports/reporte-degustacion.template.js';
 
 const router = Router();
+
+// /:id es una degustación (de un evento); /fechas/:id es una fecha de degustación (compartida, sin área)
+router.param('id', guardiaAlcance((req) => (req.path.startsWith('/fechas/') ? null : 'degustacion')));
+router.param('idLinea', guardiaAlcance('degustacion_menu'));
 
 // GET /api/degustaciones/fechas
 router.get('/fechas', async (_req, res) => {
@@ -91,6 +96,7 @@ router.post('/', async (req, res) => {
       res.status(400).json({ error: 'Falta id_evento o id_fecha_degustacion' });
       return;
     }
+    if (!(await exigirAlcance(req, res, 'evento', id_evento))) return;
     const result = await pool.query(
       'CALL sp_agendar_degustacion($1::integer, $2::integer, $3::time, $4::text, NULL)',
       [id_evento, id_fecha_degustacion, hora_llegada ?? null, notas ?? null]
@@ -168,11 +174,12 @@ router.get('/fechas/:id/pdf', async (req, res) => {
 
     // El reporte trae todo el día: se deja solo la sesión de esta hora
     const result = await pool.query('SELECT * FROM fn_reporte_degustaciones_detallado($1::date, $1::date)', [fecha]);
-    const filas = result.rows.filter((r) => r.hora_inicio === hora_inicio);
+    // Solo los agendados de eventos del área del usuario
+    const filas = await filtrarDegustacionesPorAlcance(req, result.rows.filter((r) => r.hora_inicio === hora_inicio));
 
     const fechaLarga = new Date(`${fecha}T00:00:00`).toLocaleDateString('es-GT', { day: 'numeric', month: 'long', year: 'numeric' });
     const html = armarHtmlDegustaciones({
-      logoUrl: logoDataUri(),
+      logoUrl: logoDataUri(await logoDeUsuario((req as any).usuario.id_usuario)),
       subtitulo: `${fechaLarga}, ${String(hora_inicio).substring(0, 5)}`,
       sesiones: agruparSesionesDegustacion(filas),
     });
@@ -190,7 +197,7 @@ router.get('/fechas/:id/pdf', async (req, res) => {
 router.get('/fechas/:id/agendados', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM fn_listar_degustaciones_por_fecha($1::integer)', [req.params.id]);
-    res.json(result.rows);
+    res.json(await filtrarPorAlcance(req, result.rows));
   } catch (err) {
     responderError(res, err);
   }

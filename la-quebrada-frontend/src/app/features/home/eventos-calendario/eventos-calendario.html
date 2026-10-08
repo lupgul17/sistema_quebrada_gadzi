@@ -19,8 +19,15 @@
         <div class="celda" [class.fuera-de-mes]="!celda.esDelMesActual" [class.hoy]="celda.esHoy">
           <span class="numero-dia">{{ celda.numeroDia }}</span>
           <div class="eventos-del-dia">
-            @for (ev of celda.eventos.slice(0, 2); track ev.id_evento) {
-              <div class="evento-chip" [style.background]="colorEvento(ev) + '22'" [style.color]="colorEvento(ev)" (click)="irAEvento(ev.id_evento)">{{ ev.cliente }}</div>
+            @for (ev of celda.eventos.slice(0, 2); track $index) {
+              @if (ev.fuera_de_alcance) {
+                <!-- Evento de otra área: solo dice que el salón está ocupado -->
+                <div class="evento-chip ocupado" [title]="'Ocupado · ' + (ev.salones ?? '') + ' · ' + ev.hora_inicio.substring(0, 5)">
+                  Ocupado · {{ ev.salones }}
+                </div>
+              } @else {
+                <div class="evento-chip" [style.background]="colorEvento(ev) + '22'" [style.color]="colorEvento(ev)" (click)="irAEvento(ev.id_evento)">{{ ev.cliente }}</div>
+              }
             }
             @if (celda.eventos.length > 2) {
               <div class="mas-eventos">+{{ celda.eventos.length - 2 }} más</div>

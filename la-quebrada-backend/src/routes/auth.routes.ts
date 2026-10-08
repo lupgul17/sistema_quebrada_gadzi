@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { pool } from '../db/pool.js';
 import { requireAuth } from '../middleware/auth.middleware.js';
 import type { AuthRequest } from '../middleware/auth.middleware.js';
+import { logoDeUsuario } from '../utils/logo.js';
 import { responderError } from '../utils/errores.js';
 import { crearLimitador } from '../middleware/limitador.js';
 
@@ -83,6 +84,9 @@ res.json({
     nombre: usuario.nombre_completo,
     tipo_usuario: usuario.tipo_usuario,
     rol_acceso: usuario.rol_acceso,
+    // Para la marca del menú lateral (logo de su locación) y mostrar sus áreas
+    logo: await logoDeUsuario(usuario.id_usuario),
+    areas: (await pool.query('SELECT fn_areas_usuario($1::integer) AS areas', [usuario.id_usuario])).rows[0].areas,
   },
 });
   } catch (err) {
@@ -124,7 +128,18 @@ router.post('/cambiar-password', requireAuth, async (req: AuthRequest, res) => {
 });
 
 // GET /api/auth/me
-router.get('/me', requireAuth, (req: AuthRequest, res) => {
-  res.json({ username: req.usuario!.username, rol_acceso: req.usuario!.rol_acceso });
+router.get('/me', requireAuth, async (req: AuthRequest, res) => {
+  try {
+    const idUsuario = req.usuario!.id_usuario;
+    const areas = await pool.query('SELECT fn_areas_usuario($1::integer) AS areas', [idUsuario]);
+    res.json({
+      username: req.usuario!.username,
+      rol_acceso: req.usuario!.rol_acceso,
+      logo: await logoDeUsuario(idUsuario),
+      areas: areas.rows[0].areas,
+    });
+  } catch (err) {
+    responderError(res, err);
+  }
 });
 export default router;

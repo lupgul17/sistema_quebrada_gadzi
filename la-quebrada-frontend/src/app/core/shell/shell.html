@@ -5,7 +5,7 @@
   }
   <aside class="sidebar" [class.abierto]="menuAbierto()">
     <div class="sidebar-brand">
-      <img [src]="temaService.oscuro() ? '/brand/logo-claro.png' : '/brand/logo.png'" alt="La Quebrada" />
+      <img [src]="logoMarca()" [alt]="esGadzi() ? 'GADZI' : 'La Quebrada'" [class.logo-gadzi]="esGadzi()" />
     </div>
     <nav class="sidebar-nav">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
@@ -42,21 +42,25 @@
         <i class="pi pi-bars"></i>
       </button>
       <h1 class="lq-display">{{ tituloPagina() }}</h1>
+      <!-- Menú de usuario: tema, contraseña y salir quedan detrás de un clic (no a la vista) -->
       <div class="usuario-info">
-        <span class="saludo">Hola, {{ usuario()?.nombre }}</span>
-        <p-button
-          [icon]="temaService.oscuro() ? 'pi pi-sun' : 'pi pi-moon'"
-          [rounded]="true"
-          [text]="true"
-          severity="secondary"
-          [ariaLabel]="temaService.oscuro() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
-          [pTooltip]="temaService.oscuro() ? 'Modo claro' : 'Modo oscuro'"
-          tooltipPosition="bottom"
-          (onClick)="temaService.alternar()"
-        />
-    
-        <p-button icon="pi pi-key" label="Cambiar contraseña" severity="secondary" size="small" [text]="true" styleClass="solo-icono-movil" ariaLabel="Cambiar contraseña" (onClick)="abrirCambiarPassword()" />
-        <p-button icon="pi pi-sign-out" label="Cerrar sesión" severity="secondary" size="small" [outlined]="true" styleClass="solo-icono-movil" ariaLabel="Cerrar sesión" (onClick)="logout()" />
+        <button
+          type="button"
+          class="usuario-boton"
+          aria-haspopup="menu"
+          aria-label="Menú de usuario"
+          (click)="menuUsuario.toggle($event)"
+        >
+          <span class="avatar">{{ iniciales() }}</span>
+          <span class="usuario-texto">
+            <span class="nombre">{{ usuario()?.nombre }}</span>
+            @if (usuario()?.rol_acceso) {
+              <span class="rol">{{ usuario()?.rol_acceso }}</span>
+            }
+          </span>
+          <i class="pi pi-chevron-down"></i>
+        </button>
+        <p-menu #menuUsuario [model]="opcionesUsuario()" [popup]="true" appendTo="body" />
       </div>
     </header>
 

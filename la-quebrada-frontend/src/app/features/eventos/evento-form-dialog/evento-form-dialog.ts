@@ -1,4 +1,5 @@
-import { Component, EventEmitter, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Output, computed, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -6,6 +7,7 @@ import { InputNumber } from 'primeng/inputnumber';
 import { Textarea } from 'primeng/textarea';
 import { Select } from 'primeng/select';
 import { DatePicker } from 'primeng/datepicker';
+import { HoraRapida } from '../../../core/hora-rapida.directive';
 import { Checkbox } from 'primeng/checkbox';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
@@ -13,6 +15,8 @@ import { Message } from 'primeng/message';
 import { API_URL } from '../../../core/api-config';
 import { ERROR_EN_LINEA } from '../../../core/http-errores';
 import { fechaLocalISO } from '../../../core/fechas';
+import { Validadores, revalidarAlCambiar } from '../../../core/validaciones';
+import { ErrorCampo } from '../../../core/error-campo/error-campo';
 
 interface ClienteOpcion {
   id_cliente: number;
@@ -39,7 +43,7 @@ interface SalonDisponibilidad {
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule, InputNumber, Textarea,
-    Select, DatePicker, Checkbox, Button, Dialog, Message,FormsModule
+    Select, DatePicker, HoraRapida, Checkbox, Button, Dialog, Message, FormsModule, ErrorCampo
   ],
   templateUrl: './evento-form-dialog.html',
   styleUrl: './evento-form-dialog.scss',
@@ -57,6 +61,20 @@ export class EventoFormDialog {
   readonly tiposEvento = signal<TipoEventoOpcion[]>([]);
   readonly salones = signal<SalonDisponibilidad[]>([]);
   readonly form;
+  /** Se intentó guardar: muestra el aviso de "elegí un salón" aunque no se haya tocado nada. */
+  readonly intentoGuardar = signal(false);
+  private readonly valores;
+
+  /** Capacidad sumada de los salones elegidos vs. invitados: aviso (no bloquea, puede haber mesas extra). */
+  readonly avisoCapacidad = computed(() => {
+    const v = this.valores();
+    const elegidos = this.salones().filter((s) => (v?.salones ?? []).includes(s.id_salon));
+    const capacidad = elegidos.reduce((acc, s) => acc + (s.capacidad ?? 0), 0);
+    const personas = (v?.total_adultos ?? 0) + (v?.total_menores ?? 0);
+    return elegidos.length && capacidad > 0 && personas > capacidad
+      ? `Son ${personas} invitados y los salones elegidos tienen capacidad para ${capacidad}.`
+      : null;
+  });
 
   private idEvento: number | null = null;
 
@@ -69,13 +87,22 @@ export class EventoFormDialog {
       id_tipo_evento: this.fb.control<number | null>(null),
       fecha: this.fb.control<Date | null>(null, Validators.required),
       hora_inicio: this.fb.control<Date | null>(null, Validators.required),
-      hora_fin: this.fb.control<Date | null>(null, Validators.required),
-      total_adultos: [0],
-      total_menores: [0],
-      notas: [''],
+      hora_fin: this.fb.control<Date | null>(null, [Validators.required, Validadores.horaDespuesDe('hora_inicio', 1)]),
+      total_adultos: this.fb.control<number | null>(0, [Validators.min(0), Validators.max(5000)]),
+      total_menores: this.fb.control<number | null>(0, [Validators.min(0), Validators.max(5000)]),
+      notas: ['', Validators.maxLength(2000)],
       reserva_temporal: [false],
       salones: this.fb.control<number[]>([]),
     });
+    revalidarAlCambiar(this.form.controls.hora_inicio, this.form.controls.hora_fin);
+    this.valores = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
+  }
+
+  /** Un evento nuevo no puede ser en una fecha pasada; al editar sí (hay eventos ya realizados). */
+  private reglasFecha(nuevo: boolean): void {
+    const fecha = this.form.controls.fecha;
+    fecha.setValidators(nuevo ? [Validators.required, Validadores.fechaNoPasada] : [Validators.required]);
+    fecha.updateValueAndValidity({ emitEvent: false });
   }
 
   private cargarCatalogos(): void {
@@ -92,6 +119,8 @@ export class EventoFormDialog {
     this.idEvento = null;
     this.esEdicion.set(false);
     this.error.set(null);
+    this.intentoGuardar.set(false);
+    this.reglasFecha(true);
     this.form.reset({ total_adultos: 0, total_menores: 0, reserva_temporal: false, salones: [], ...(datosIniciales ?? {}) });
     this.salones.set([]);
     this.cargarCatalogos();
@@ -102,6 +131,8 @@ export class EventoFormDialog {
     this.idEvento = idEvento;
     this.esEdicion.set(true);
     this.error.set(null);
+    this.intentoGuardar.set(false);
+    this.reglasFecha(false);
     this.cargarCatalogos();
     this.http.get<any>(`${API_URL}/eventos/${idEvento}`).subscribe((evento) => {
       this.form.patchValue({
@@ -127,7 +158,16 @@ export class EventoFormDialog {
 
   consultarDisponibilidad(): void {
     const { fecha, hora_inicio, hora_fin } = this.form.getRawValue();
-    if (!fecha || !hora_inicio || !hora_fin) return;
+    const c = this.form.controls;
+    if (!fecha || !hora_inicio || !hora_fin || c.fecha.invalid || c.hora_fin.invalid) {
+      // Marcar los campos para que se vea qué falta o qué está mal
+      c.fecha.markAsTouched();
+      c.hora_inicio.markAsTouched();
+      c.hora_fin.markAsTouched();
+      this.error.set('Revisá la fecha y el horario antes de consultar la disponibilidad.');
+      return;
+    }
+    this.error.set(null);
 
     const params = new URLSearchParams({
       fecha: this.formatearFecha(fecha),
@@ -154,9 +194,11 @@ export class EventoFormDialog {
   }
 
   onSubmit(): void {
-    if (this.form.invalid || (this.form.controls.salones.value ?? []).length === 0) {
+    this.intentoGuardar.set(true);
+    const sinSalon = (this.form.controls.salones.value ?? []).length === 0;
+    if (this.form.invalid || sinSalon) {
       this.form.markAllAsTouched();
-      this.error.set('Completá los campos obligatorios y elegí al menos un salón disponible.');
+      this.error.set(this.form.invalid ? 'Revisá los campos marcados en rojo.' : 'Elegí al menos un salón disponible.');
       return;
     }
 

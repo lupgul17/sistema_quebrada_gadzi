@@ -14,6 +14,7 @@
           appendTo="body"
           fluid
         />
+        <app-error-campo [control]="form.controls.id_cliente" />
       </div>
 
       <div class="field">
@@ -41,32 +42,38 @@
       <div class="field">
         <label for="fecha">Fecha *</label>
         <p-datepicker id="fecha" formControlName="fecha" dateFormat="dd/mm/yy" appendTo="body" fluid />
+        <app-error-campo [control]="form.controls.fecha" />
       </div>
 
       <div class="field">
         <label for="hora_inicio">Hora inicio *</label>
-        <p-datepicker id="hora_inicio" formControlName="hora_inicio" [timeOnly]="true" appendTo="body" fluid />
+        <p-datepicker id="hora_inicio" formControlName="hora_inicio" [timeOnly]="true" horaRapida appendTo="body" fluid />
+        <app-error-campo [control]="form.controls.hora_inicio" />
       </div>
 
       <div class="field">
         <label for="hora_fin">Hora fin *</label>
-        <p-datepicker id="hora_fin" formControlName="hora_fin" [timeOnly]="true" appendTo="body" fluid />
+        <p-datepicker id="hora_fin" formControlName="hora_fin" [timeOnly]="true" horaRapida [horaRapidaDesde]="form.controls.hora_inicio.value" appendTo="body" fluid />
+        <app-error-campo [control]="form.controls.hora_fin" />
       </div>
 
       <div class="field">
         <label for="total_adultos">Adultos</label>
-        <p-inputnumber id="total_adultos" formControlName="total_adultos" [min]="0" fluid />
+        <p-inputnumber id="total_adultos" formControlName="total_adultos" [min]="0" [max]="5000" [useGrouping]="false" fluid />
+        <app-error-campo [control]="form.controls.total_adultos" />
       </div>
 
       <div class="field">
         <label for="total_menores">Niños</label>
-        <p-inputnumber id="total_menores" formControlName="total_menores" [min]="0" fluid />
+        <p-inputnumber id="total_menores" formControlName="total_menores" [min]="0" [max]="5000" [useGrouping]="false" fluid />
+        <app-error-campo [control]="form.controls.total_menores" />
       </div>
     </div>
 
     <div class="field field-notas">
       <label for="notas">Notas</label>
-      <textarea pTextarea id="notas" formControlName="notas" rows="3" fluid></textarea>
+      <textarea pTextarea id="notas" formControlName="notas" rows="3" maxlength="2000" fluid></textarea>
+      <app-error-campo [control]="form.controls.notas" />
     </div>
 
     <div class="salones-section">
@@ -80,17 +87,27 @@
       } @else {
         <div class="salones-grid">
           @for (salon of salones(); track salon.id_salon) {
+            <!-- Toda la tarjeta es el botón; el checkbox solo muestra el estado (si también
+                 recibiera el clic, la selección se invertiría dos veces y quedaría desfasada) -->
             <div
               class="salon-card"
+              role="checkbox"
+              [attr.aria-checked]="salonSeleccionado(salon.id_salon)"
+              [attr.aria-disabled]="!salon.disponible"
+              [attr.tabindex]="salon.disponible ? 0 : -1"
               [class.seleccionado]="salonSeleccionado(salon.id_salon)"
               [class.no-disponible]="!salon.disponible"
               (click)="salon.disponible && toggleSalon(salon.id_salon)"
+              (keydown.space)="$event.preventDefault(); salon.disponible && toggleSalon(salon.id_salon)"
+              (keydown.enter)="$event.preventDefault(); salon.disponible && toggleSalon(salon.id_salon)"
             >
               <p-checkbox
+                class="salon-check"
                 [binary]="true"
                 [ngModel]="salonSeleccionado(salon.id_salon)"
                 [ngModelOptions]="{ standalone: true }"
                 [disabled]="!salon.disponible"
+                [tabindex]="-1"
               />
               <div>
                 <strong>{{ salon.nombre }}</strong>
@@ -102,6 +119,12 @@
             </div>
           }
         </div>
+      }
+      @if (intentoGuardar() && !(form.controls.salones.value ?? []).length) {
+        <small class="aviso-salones error"><i class="pi pi-exclamation-circle"></i> Elegí al menos un salón disponible.</small>
+      }
+      @if (avisoCapacidad(); as aviso) {
+        <small class="aviso-salones"><i class="pi pi-info-circle"></i> {{ aviso }}</small>
       }
     </div>
 

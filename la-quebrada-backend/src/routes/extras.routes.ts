@@ -1,9 +1,12 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
 import type { AuthRequest } from '../middleware/auth.middleware.js';
+import { exigirAlcance, guardiaAlcance } from '../middleware/alcance.js';
 import { responderError } from '../utils/errores.js';
 
 const router = Router();
+
+router.param('idLinea', guardiaAlcance((req) => (req.params.tipo === 'menu' ? 'extras_menu' : 'extras_servicios')));
 
 // POST /api/extras/servicio
 router.post('/servicio', async (req: AuthRequest, res) => {
@@ -13,6 +16,7 @@ router.post('/servicio', async (req: AuthRequest, res) => {
       res.status(400).json({ error: 'Falta id_evento, id_tipo_cargo_extra, cantidad o precio_unitario' });
       return;
     }
+    if (!(await exigirAlcance(req, res, 'evento', id_evento))) return;
 
     const empleadoResult = await pool.query('SELECT fn_id_empleado_por_persona($1::integer) AS id_empleado', [req.usuario!.id_persona]);
     const idEmpleado = empleadoResult.rows[0]?.id_empleado ?? null;
@@ -35,6 +39,7 @@ router.post('/menu', async (req: AuthRequest, res) => {
       res.status(400).json({ error: 'Falta id_evento, cantidad o precio_base' });
       return;
     }
+    if (!(await exigirAlcance(req, res, 'evento', id_evento))) return;
 
     const empleadoResult = await pool.query('SELECT fn_id_empleado_por_persona($1::integer) AS id_empleado', [req.usuario!.id_persona]);
     const idEmpleado = empleadoResult.rows[0]?.id_empleado ?? null;

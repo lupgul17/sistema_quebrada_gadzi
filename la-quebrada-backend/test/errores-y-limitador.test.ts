@@ -25,6 +25,20 @@ test('duplicado → 409, referencia rota → 400', () => {
   assert.equal(statusDe({ code: '23503' }).status, 400);
 });
 
+test('regla o duplicado conocido → mensaje que dice qué dato falló', () => {
+  assert.deepEqual(statusDe({ code: '23514', constraint: 'chk_evento_horario' }), {
+    status: 400,
+    error: 'La hora de fin debe ser después de la hora de inicio.',
+  });
+  assert.deepEqual(statusDe({ code: '23505', constraint: 'persona_cui_key' }), {
+    status: 409,
+    error: 'Ya hay una persona registrada con ese CUI.',
+  });
+  assert.equal(statusDe({ code: '23502', column: 'monto' }).error, 'Falta el monto.');
+  // una regla que no está en la lista sigue respondiendo el genérico (y 400)
+  assert.equal(statusDe({ code: '23514', constraint: 'chk_nueva' }).status, 400);
+});
+
 test('error desconocido → 500 genérico, sin filtrar el detalle interno', (t) => {
   t.mock.method(console, 'error', () => undefined); // no ensuciar la salida del test
   const r = statusDe(new Error('relation "tabla_secreta" does not exist'));

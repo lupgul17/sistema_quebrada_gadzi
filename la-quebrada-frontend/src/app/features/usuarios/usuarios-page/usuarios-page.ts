@@ -12,7 +12,13 @@ import { Message } from 'primeng/message';
 import { AuthService } from '../../../core/auth.service';
 import { API_URL } from '../../../core/api-config';
 import { ERROR_EN_LINEA } from '../../../core/http-errores';
+import { Validadores, errorDe, errorPassword } from '../../../core/validaciones';
+import { Validators } from '@angular/forms';
 
+import { BuscadorTabla } from '../../../core/buscador-tabla/buscador-tabla';
+import { MultiSelect } from 'primeng/multiselect';
+import { SelectButton } from 'primeng/selectbutton';
+import { AreaMenu, FilaArea, opcionesDeAreas, separarAreas, unirAreas } from '../../../core/menus';
 interface UsuarioFila {
   id_usuario: number;
   username: string;
@@ -24,6 +30,8 @@ interface UsuarioFila {
   tipo_empleado: string | null;
   activo: boolean;
   fecha_ultimo_acceso: string | null;
+  /** Áreas asignadas ([] = ve todas) */
+  areas: AreaMenu[];
 }
 
 interface RolOpcion {
@@ -53,7 +61,7 @@ const FORM_VACIO = {
 @Component({
   selector: 'app-usuarios-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, Button, Dialog, Select, InputText, Checkbox, Message],
+  imports: [BuscadorTabla, CommonModule, FormsModule, TableModule, Button, Dialog, Select, InputText, Checkbox, Message, MultiSelect, SelectButton],
   templateUrl: './usuarios-page.html',
   styleUrl: './usuarios-page.scss',
 })
@@ -70,9 +78,20 @@ export class UsuariosPage implements OnInit {
   readonly dialogoPasswordVisible = signal(false);
 
   nuevo = { ...FORM_VACIO };
+  /** Se intentó crear: muestra los errores de cada campo. */
+  readonly intentoCrear = signal(false);
+  readonly intentoPassword = signal(false);
   editando: UsuarioFila | null = null;
   editRol: number | null = null;
   editActivo = true;
+  /** Áreas: 'todas' o 'restringido' + las elegidas (valores 'L:id' / 'S:id', como en los menús) */
+  editModoAreas: 'todas' | 'restringido' = 'todas';
+  editAreas: string[] = [];
+  readonly opcionesAreas = signal<ReturnType<typeof opcionesDeAreas>>([]);
+  readonly modosAreas = [
+    { label: 'Todas las áreas', value: 'todas' },
+    { label: 'Solo en…', value: 'restringido' },
+  ];
   passwordNueva = '';
 
   constructor(
@@ -83,6 +102,7 @@ export class UsuariosPage implements OnInit {
   ngOnInit(): void {
     this.http.get<RolOpcion[]>(`${API_URL}/usuarios/roles`).subscribe((data) => this.roles.set(data));
     this.http.get<TipoEmpleadoOpcion[]>(`${API_URL}/usuarios/tipos-empleado`).subscribe((data) => this.tiposEmpleado.set(data));
+    this.http.get<FilaArea[]>(`${API_URL}/salones/areas`).subscribe((data) => this.opcionesAreas.set(opcionesDeAreas(data)));
     this.cargarUsuarios();
   }
 
@@ -93,6 +113,11 @@ export class UsuariosPage implements OnInit {
     });
   }
 
+  /** Texto de las áreas para la tabla. */
+  textoAreas(u: UsuarioFila): string {
+    return u.rol === 'Superusuario' || !(u.areas ?? []).length ? 'Todas' : u.areas.map((a) => a.nombre).join(', ');
+  }
+
   esYo(u: UsuarioFila): boolean {
     return u.id_usuario === this.auth.usuario()?.id_usuario;
   }
@@ -101,17 +126,40 @@ export class UsuariosPage implements OnInit {
   abrirNuevo(): void {
     this.nuevo = { ...FORM_VACIO };
     this.error.set(null);
+    this.intentoCrear.set(false);
     this.dialogoNuevoVisible.set(true);
+  }
+
+  /** Errores de cada campo del usuario nuevo (vacío = se puede crear). */
+  erroresNuevo(): Record<string, string> {
+    const n = this.nuevo;
+    const nombre = [Validators.maxLength(80), Validadores.nombrePersona];
+    const e: Record<string, string | null> = {
+      username: errorDe(n.username, Validators.required, Validadores.usuario),
+      password: errorPassword(n.password),
+      primer_nombre: errorDe(n.primer_nombre, ...nombre),
+      segundo_nombre: errorDe(n.segundo_nombre, ...nombre),
+      primer_apellido: errorDe(n.primer_apellido, ...nombre),
+      segundo_apellido: errorDe(n.segundo_apellido, ...nombre),
+      cui: errorDe(n.cui, Validadores.cui),
+      telefono: errorDe(n.telefono, Validadores.telefono),
+      correo: errorDe(n.correo, Validadores.correo),
+      id_rol_acceso: n.id_rol_acceso ? null : 'Elegí el rol.',
+      id_tipo_empleado: n.id_tipo_empleado ? null : 'Elegí el tipo de empleado.',
+    };
+    return Object.fromEntries(Object.entries(e).filter(([, v]) => v)) as Record<string, string>;
+  }
+
+  /** El usuario siempre en minúsculas (el login también lo convierte). */
+  usuarioEnMinusculas(valor: string): void {
+    this.nuevo.username = (valor ?? '').toLowerCase().replace(/\s/g, '');
   }
 
   crear(): void {
     const n = this.nuevo;
-    if (!n.username.trim() || !n.id_rol_acceso || !n.id_tipo_empleado) {
-      this.error.set('Completá usuario, rol y tipo de empleado.');
-      return;
-    }
-    if (n.password.length < 8) {
-      this.error.set('La contraseña debe tener al menos 8 caracteres.');
+    this.intentoCrear.set(true);
+    if (Object.keys(this.erroresNuevo()).length) {
+      this.error.set('Revisá los campos marcados.');
       return;
     }
 
@@ -135,19 +183,44 @@ export class UsuariosPage implements OnInit {
     this.editando = u;
     this.editRol = u.id_rol_acceso;
     this.editActivo = u.activo;
+    const areas = u.areas ?? [];
+    this.editModoAreas = areas.length ? 'restringido' : 'todas';
+    this.editAreas = unirAreas(
+      areas.filter((a) => a.tipo === 'locacion').map((a) => a.id),
+      areas.filter((a) => a.tipo === 'salon').map((a) => a.id)
+    );
     this.error.set(null);
     this.dialogoEditarVisible.set(true);
   }
 
+  /** El rol elegido es Superusuario: ve todo, las áreas no aplican. */
+  esSuperusuario(): boolean {
+    return this.roles().find((r) => r.id_rol_acceso === this.editRol)?.descripcion === 'Superusuario';
+  }
+
   guardarEdicion(): void {
     if (!this.editando || !this.editRol) return;
+    if (!this.esSuperusuario() && this.editModoAreas === 'restringido' && !this.editAreas.length) {
+      this.error.set('Elegí al menos un área, o marcá "Todas las áreas".');
+      return;
+    }
     this.guardando.set(true);
     this.error.set(null);
-    this.http.patch(`${API_URL}/usuarios/${this.editando.id_usuario}`, { id_rol_acceso: this.editRol, activo: this.editActivo }, ERROR_EN_LINEA).subscribe({
+    const id = this.editando.id_usuario;
+    const areas = this.esSuperusuario() || this.editModoAreas === 'todas' ? { locaciones: [], salones: [] } : separarAreas(this.editAreas);
+    this.http.patch(`${API_URL}/usuarios/${id}`, { id_rol_acceso: this.editRol, activo: this.editActivo }, ERROR_EN_LINEA).subscribe({
       next: () => {
-        this.guardando.set(false);
-        this.dialogoEditarVisible.set(false);
-        this.cargarUsuarios();
+        this.http.put(`${API_URL}/usuarios/${id}/areas`, areas, ERROR_EN_LINEA).subscribe({
+          next: () => {
+            this.guardando.set(false);
+            this.dialogoEditarVisible.set(false);
+            this.cargarUsuarios();
+          },
+          error: (err) => {
+            this.guardando.set(false);
+            this.error.set(err.error?.error ?? 'Se guardó el rol, pero no las áreas.');
+          },
+        });
       },
       error: (err) => {
         this.guardando.set(false);
@@ -161,13 +234,16 @@ export class UsuariosPage implements OnInit {
     this.editando = u;
     this.passwordNueva = '';
     this.error.set(null);
+    this.intentoPassword.set(false);
     this.dialogoPasswordVisible.set(true);
   }
 
   resetearPassword(): void {
     if (!this.editando) return;
-    if (this.passwordNueva.length < 8) {
-      this.error.set('La contraseña debe tener al menos 8 caracteres.');
+    this.intentoPassword.set(true);
+    const problema = errorPassword(this.passwordNueva);
+    if (problema) {
+      this.error.set(problema);
       return;
     }
     this.guardando.set(true);

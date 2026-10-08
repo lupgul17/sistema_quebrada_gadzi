@@ -8,14 +8,12 @@
       }
     </div>
     <span class="spacer"></span>
+    <app-buscador-tabla [tabla]="dt" placeholder="Buscar nombre, teléfono o correo..." />
     <p-button icon="pi pi-refresh" severity="secondary" [text]="true" [rounded]="true" ariaLabel="Recargar" (onClick)="cargar()" />
   </div>
 
-  @if (cargando()) {
-    <p class="hint">Cargando...</p>
-  } @else {
     <div class="table-container">
-      <p-table [value]="visibles()" [paginator]="visibles().length > 15" [rows]="15" styleClass="p-datatable-sm">
+      <p-table #dt [globalFilterFields]="['nombre', 'telefono', 'correo', 'tipo_evento', 'salon', 'mensaje']" [value]="visibles()" [loading]="cargando()" [paginator]="visibles().length > 15" [rows]="15" styleClass="p-datatable-sm">
         <ng-template pTemplate="header">
           <tr>
             <th>Recibida</th>
@@ -41,11 +39,10 @@
           </tr>
         </ng-template>
         <ng-template pTemplate="emptymessage">
-          <tr><td colspan="8" class="hint">No hay solicitudes en este filtro.</td></tr>
+          <tr><td colspan="8" class="hint">@if ($any(dt.filters['global'])?.value) { Sin resultados para la búsqueda. } @else { No hay solicitudes en este filtro. }</td></tr>
         </ng-template>
       </p-table>
     </div>
-  }
 </div>
 
 <p-dialog
@@ -99,6 +96,7 @@
           pTextarea
           id="notas"
           [(ngModel)]="notasEdicion"
+          maxlength="2000"
           rows="3"
           fluid
           placeholder="Qué se habló, cuándo volver a llamar..."

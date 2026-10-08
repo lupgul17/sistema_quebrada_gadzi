@@ -7,6 +7,8 @@ import { Textarea } from 'primeng/textarea';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { DatePicker } from 'primeng/datepicker';
+import { HoraRapida } from '../../../core/hora-rapida.directive';
+import { fechaLocalISO } from '../../../core/fechas';
 import { API_URL } from '../../../core/api-config';
 import { conEtiqueta } from '../../../core/menus';
 import { AuthService } from '../../../core/auth.service';
@@ -63,7 +65,7 @@ const SIGUIENTE_ESTADO_DEGUSTACION: Record<string, { estado: string; label: stri
 @Component({
   selector: 'app-degustacion-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, Select, Textarea, Button, Dialog, DatePicker, ],
+  imports: [CommonModule, FormsModule, Select, Textarea, Button, Dialog, DatePicker, HoraRapida, ],
   templateUrl: './degustacion-panel.html',
   styleUrl: './degustacion-panel.scss',
 })
@@ -175,10 +177,15 @@ export class DegustacionPanel implements OnInit {
     this.notasAgendar = '';
     this.horaLlegada = null;
     this.http.get<FechaDisponible[]>(`${API_URL}/degustaciones/fechas`).subscribe((data) => {
-      const conLabel = data.map((f) => ({
-        ...f,
-        label: `${f.fecha} ${f.hora_inicio.substring(0, 5)} — ${f.estado} (${f.eventos_agendados} agendados)`,
-      }));
+      // Solo las que se pueden elegir: disponibles y de hoy en adelante (no pasadas, llenas ni canceladas)
+      const hoy = fechaLocalISO(new Date());
+      const conLabel = data
+        .filter((f) => f.estado === 'disponible' && f.fecha.slice(0, 10) >= hoy)
+        .map((f) => {
+          const [a, m, d] = f.fecha.slice(0, 10).split('-');
+          const horario = f.hora_inicio.substring(0, 5) + (f.hora_fin ? `–${f.hora_fin.substring(0, 5)}` : '');
+          return { ...f, label: `${d}/${m}/${a} · ${horario} (${f.eventos_agendados} agendados)` };
+        });
       this.fechasDisponibles.set(conLabel);
     });
     this.dialogoAgendarVisible.set(true);
@@ -188,14 +195,38 @@ export class DegustacionPanel implements OnInit {
     return fecha.toTimeString().split(' ')[0].substring(0, 5);
   }
 
+  /** Hora de inicio de la fecha elegida (para sugerir la llegada y validarla). */
+  horaInicioElegida(): Date | null {
+    const f = this.fechasDisponibles().find((x) => x.id_fecha_degustacion === this.fechaElegida);
+    return f ? this.horaComoFecha(f.hora_inicio) : null;
+  }
+
+  /** La hora de llegada tiene que caer dentro del horario de la fecha elegida. */
+  errorLlegada(): string | null {
+    const f = this.fechasDisponibles().find((x) => x.id_fecha_degustacion === this.fechaElegida);
+    if (!f || !this.horaLlegada) return null;
+    const min = (d: Date) => d.getHours() * 60 + d.getMinutes();
+    const llegada = min(this.horaLlegada);
+    if (llegada < min(this.horaComoFecha(f.hora_inicio))) return `La degustación empieza a las ${f.hora_inicio.substring(0, 5)}.`;
+    if (f.hora_fin && llegada >= min(this.horaComoFecha(f.hora_fin))) return `La degustación termina a las ${f.hora_fin.substring(0, 5)}.`;
+    return null;
+  }
+
+  private horaComoFecha(hora: string): Date {
+    const [h, m] = hora.split(':').map(Number);
+    const d = new Date();
+    d.setHours(h, m, 0, 0);
+    return d;
+  }
+
   confirmarAgendar(): void {
-    if (!this.fechaElegida) return;
+    if (!this.fechaElegida || this.errorLlegada() || this.notasAgendar.length > 500) return;
     this.procesando.set(true);
     this.http.post<{ id_degustacion: number }>(`${API_URL}/degustaciones`, {
       id_evento: this.idEvento,
       id_fecha_degustacion: this.fechaElegida,
       hora_llegada: this.horaLlegada ? this.formatearHora(this.horaLlegada) : null,
-      notas: this.notasAgendar || null,
+      notas: this.notasAgendar.trim() || null,
     }).subscribe({ next: () => {
       this.procesando.set(false);
       this.dialogoAgendarVisible.set(false);

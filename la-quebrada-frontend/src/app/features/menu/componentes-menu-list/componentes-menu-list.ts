@@ -14,6 +14,8 @@ import { API_URL } from '../../../core/api-config';
 import { AuthService } from '../../../core/auth.service';
 import { ERROR_EN_LINEA } from '../../../core/http-errores';
 
+import { BuscadorTabla } from '../../../core/buscador-tabla/buscador-tabla';
+import { ErrorCampo } from '../../../core/error-campo/error-campo';
 interface ComponenteMenu {
   id_componente: number;
   nombre: string;
@@ -31,7 +33,7 @@ interface CategoriaComponente {
 @Component({
   selector: 'app-componentes-menu-list',
   standalone: true,
-  imports: [
+  imports: [ErrorCampo, BuscadorTabla, 
     CommonModule, FormsModule, ReactiveFormsModule, TableModule, Select,
     InputText, InputNumber, Checkbox, Button, Dialog, Message,
   ],
@@ -56,8 +58,8 @@ export class ComponentesMenuList implements OnInit {
   ) {
     this.form = this.fb.group({
       id_categoria_componente_menu: this.fb.control<number | null>(null, Validators.required),
-      nombre: ['', Validators.required],
-      recargo: this.fb.control<number>(0),
+      nombre: ['', [Validators.required, Validators.maxLength(150)]],
+      recargo: this.fb.control<number | null>(0, [Validators.min(0), Validators.max(100_000)]),
       activo: [true],
     });
   }
@@ -100,6 +102,7 @@ export class ComponentesMenuList implements OnInit {
   guardar(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.error.set('Revisá los campos marcados en rojo.');
       return;
     }
 

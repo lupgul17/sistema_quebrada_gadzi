@@ -52,19 +52,22 @@
   >
     <div class="field">
       <label>Fecha</label>
-      <p-datepicker appendTo="body" [(ngModel)]="nuevaFecha" dateFormat="dd/mm/yy" fluid />
+      <p-datepicker appendTo="body" [(ngModel)]="nuevaFecha" dateFormat="dd/mm/yy" [minDate]="hoy" fluid />
+      @if (intentoCrear() && erroresFecha().fecha; as e) { <small class="lq-error-campo">{{ e }}</small> }
     </div>
     <div class="field">
       <label>Hora inicio</label>
-      <p-datepicker appendTo="body" [(ngModel)]="nuevaHoraInicio" [timeOnly]="true" fluid />
+      <p-datepicker appendTo="body" [(ngModel)]="nuevaHoraInicio" [timeOnly]="true" horaRapida fluid />
+      @if (intentoCrear() && erroresFecha().inicio; as e) { <small class="lq-error-campo">{{ e }}</small> }
     </div>
     <div class="field">
       <label>Hora fin</label>
-      <p-datepicker appendTo="body" [(ngModel)]="nuevaHoraFin" [timeOnly]="true" fluid />
+      <p-datepicker appendTo="body" [(ngModel)]="nuevaHoraFin" [timeOnly]="true" horaRapida [horaRapidaDesde]="nuevaHoraInicio" [horaRapidaDuracion]="2" fluid />
+      @if (erroresFecha().fin; as e) { <small class="lq-error-campo">{{ e }}</small> }
     </div>
     <div class="dialog-acciones">
       <p-button label="Cancelar" severity="secondary" (onClick)="dialogoVisible.set(false)" />
-      <p-button label="Crear" [disabled]="!nuevaFecha || !nuevaHoraInicio" [loading]="guardando()" (onClick)="crearFecha()" />
+      <p-button label="Crear" [disabled]="guardando()" [loading]="guardando()" (onClick)="crearFecha()" />
     </div>
   </p-dialog>
 

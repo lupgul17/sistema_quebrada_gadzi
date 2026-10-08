@@ -130,5 +130,19 @@ export const QuebradaPreset = definePreset(Aura, {
         borderRadius: '9999px',
       },
     },
+    // Los paneles flotantes usan content.background, que en claro es translúcido (para las
+    // tarjetas) y deja ver lo de atrás: aquí van sólidos en los dos temas
+    datepicker: {
+      colorScheme: {
+        light: { panel: { background: '{surface.0}' } },
+        dark: { panel: { background: '{surface.900}' } },
+      },
+    },
+    menu: {
+      colorScheme: {
+        light: { root: { background: '{surface.0}' } },
+        dark: { root: { background: '{surface.900}' } },
+      },
+    },
   },
 });

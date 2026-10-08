@@ -1,17 +1,18 @@
 <div class="usuarios-page">
   <div class="toolbar">
+    <app-buscador-tabla [tabla]="dt" placeholder="Buscar usuario, nombre o rol..." />
     <span class="spacer"></span>
     <p-button label="+ Nuevo usuario" (onClick)="abrirNuevo()" />
   </div>
 
   <div class="table-container">
-    <p-table [value]="usuarios()" [loading]="cargando()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
+    <p-table #dt [globalFilterFields]="['username', 'nombre_completo', 'correo', 'rol', 'tipo_empleado']" [value]="usuarios()" [loading]="cargando()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
       <ng-template pTemplate="header">
         <tr>
           <th>Usuario</th>
           <th>Nombre</th>
           <th>Rol</th>
-          <th>Tipo de empleado</th>
+          <th>Áreas</th>
           <th>Estado</th>
           <th>Último acceso</th>
           <th></th>
@@ -21,8 +22,11 @@
         <tr>
           <td>{{ u.username }}</td>
           <td>{{ u.nombre_completo }}<br /><small class="sub">{{ u.correo || '' }}</small></td>
-          <td><span class="rol-badge">{{ u.rol || 'Sin rol' }}</span></td>
-          <td>{{ u.tipo_empleado || '—' }}</td>
+          <td><span class="rol-badge" [attr.data-rol]="u.rol">{{ u.rol || 'Sin rol' }}</span></td>
+          <td class="col-areas">
+            {{ textoAreas(u) }}
+            @if (u.tipo_empleado) { <br /><small class="sub">{{ u.tipo_empleado }}</small> }
+          </td>
           <td><span class="estado-badge" [class]="u.activo ? 'estado-activo' : 'estado-inactivo'">{{ u.activo ? 'activo' : 'inactivo' }}</span></td>
           <td>{{ u.fecha_ultimo_acceso ? (u.fecha_ultimo_acceso | date: 'dd/MM/yyyy HH:mm') : '—' }}</td>
           <td class="col-acciones">
@@ -38,7 +42,7 @@
         </tr>
       </ng-template>
       <ng-template pTemplate="emptymessage">
-        <tr><td colspan="7">No hay usuarios.</td></tr>
+        <tr><td colspan="7">@if ($any(dt.filters['global'])?.value) { Sin resultados para la búsqueda. } @else { No hay usuarios. }</td></tr>
       </ng-template>
     </p-table>
   </div>
@@ -47,23 +51,34 @@
   <p-dialog header="Nuevo usuario" [(visible)]="dialogoNuevoVisible" [modal]="true" [style]="{ width: '640px', maxHeight: '90vh' }" [contentStyle]="{ overflow: 'auto' }" appendTo="body">
     <p class="hint">Si la persona ya existe en el sistema (por CUI o correo), se reutiliza y no hace falta completar sus datos personales.</p>
     <div class="grid-2">
-      <div class="field"><label>Usuario *</label><input pInputText [(ngModel)]="nuevo.username" autocomplete="off" fluid /></div>
-      <div class="field"><label>Contraseña * (mínimo 8)</label><input pInputText type="password" [(ngModel)]="nuevo.password" autocomplete="new-password" fluid /></div>
-      <div class="field"><label>Primer nombre</label><input pInputText [(ngModel)]="nuevo.primer_nombre" fluid /></div>
-      <div class="field"><label>Segundo nombre</label><input pInputText [(ngModel)]="nuevo.segundo_nombre" fluid /></div>
-      <div class="field"><label>Primer apellido</label><input pInputText [(ngModel)]="nuevo.primer_apellido" fluid /></div>
-      <div class="field"><label>Segundo apellido</label><input pInputText [(ngModel)]="nuevo.segundo_apellido" fluid /></div>
-      <div class="field"><label>CUI/DPI</label><input pInputText [(ngModel)]="nuevo.cui" fluid /></div>
-      <div class="field"><label>Teléfono</label><input pInputText [(ngModel)]="nuevo.telefono" fluid /></div>
-      <div class="field"><label>Correo</label><input pInputText [(ngModel)]="nuevo.correo" fluid /></div>
+      <div class="field"><label>Usuario *</label><input pInputText [ngModel]="nuevo.username" (ngModelChange)="usuarioEnMinusculas($event)" autocomplete="off" autocapitalize="off" maxlength="30" placeholder="ej. maria.lopez" fluid />
+        @if (intentoCrear() && erroresNuevo()['username']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
+      <div class="field"><label>Contraseña *</label><input pInputText type="password" [(ngModel)]="nuevo.password" autocomplete="new-password" fluid />
+        @if (intentoCrear() && erroresNuevo()['password']; as e) { <small class="lq-error-campo">{{ e }}</small> } @else { <small class="hint-campo">Mínimo 8, con letras y números.</small> }</div>
+      <div class="field"><label>Primer nombre</label><input pInputText [(ngModel)]="nuevo.primer_nombre" maxlength="80" fluid />
+        @if (intentoCrear() && erroresNuevo()['primer_nombre']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
+      <div class="field"><label>Segundo nombre</label><input pInputText [(ngModel)]="nuevo.segundo_nombre" maxlength="80" fluid />
+        @if (intentoCrear() && erroresNuevo()['segundo_nombre']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
+      <div class="field"><label>Primer apellido</label><input pInputText [(ngModel)]="nuevo.primer_apellido" maxlength="80" fluid />
+        @if (intentoCrear() && erroresNuevo()['primer_apellido']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
+      <div class="field"><label>Segundo apellido</label><input pInputText [(ngModel)]="nuevo.segundo_apellido" maxlength="80" fluid />
+        @if (intentoCrear() && erroresNuevo()['segundo_apellido']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
+      <div class="field"><label>CUI/DPI</label><input pInputText [(ngModel)]="nuevo.cui" inputmode="numeric" maxlength="15" fluid />
+        @if (intentoCrear() && erroresNuevo()['cui']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
+      <div class="field"><label>Teléfono</label><input pInputText [(ngModel)]="nuevo.telefono" type="tel" maxlength="20" fluid />
+        @if (intentoCrear() && erroresNuevo()['telefono']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
+      <div class="field"><label>Correo</label><input pInputText [(ngModel)]="nuevo.correo" type="email" maxlength="150" fluid />
+        @if (intentoCrear() && erroresNuevo()['correo']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
       <div class="field"></div>
       <div class="field">
         <label>Rol *</label>
         <p-select [options]="roles()" optionLabel="descripcion" optionValue="id_rol_acceso" [(ngModel)]="nuevo.id_rol_acceso" placeholder="Elegir..." appendTo="body" fluid />
+        @if (intentoCrear() && erroresNuevo()['id_rol_acceso']; as e) { <small class="lq-error-campo">{{ e }}</small> }
       </div>
       <div class="field">
         <label>Tipo de empleado *</label>
         <p-select [options]="tiposEmpleado()" optionLabel="descripcion" optionValue="id_tipo_empleado" [(ngModel)]="nuevo.id_tipo_empleado" placeholder="Elegir..." appendTo="body" fluid />
+        @if (intentoCrear() && erroresNuevo()['id_tipo_empleado']; as e) { <small class="lq-error-campo">{{ e }}</small> }
       </div>
     </div>
 
@@ -78,10 +93,32 @@
   </p-dialog>
 
   <!-- Editar rol y estado -->
-  <p-dialog [header]="'Editar — ' + (editando?.username ?? '')" [(visible)]="dialogoEditarVisible" [modal]="true" [style]="{ width: '420px' }" appendTo="body">
+  <p-dialog [header]="'Editar — ' + (editando?.username ?? '')" [(visible)]="dialogoEditarVisible" [modal]="true" [style]="{ width: '520px' }" appendTo="body">
     <div class="field">
       <label>Rol</label>
       <p-select [options]="roles()" optionLabel="descripcion" optionValue="id_rol_acceso" [(ngModel)]="editRol" appendTo="body" fluid />
+    </div>
+    <div class="field">
+      <label>Áreas que maneja</label>
+      @if (esSuperusuario()) {
+        <small class="hint-dialogo">El Superusuario ve todas las áreas.</small>
+      } @else {
+        <p-selectbutton [options]="modosAreas" optionLabel="label" optionValue="value" [(ngModel)]="editModoAreas" [allowEmpty]="false" />
+        @if (editModoAreas === 'restringido') {
+          <p-multiselect
+            appendTo="body"
+            [(ngModel)]="editAreas"
+            [options]="opcionesAreas()"
+            [group]="true"
+            optionLabel="label"
+            optionValue="value"
+            display="chip"
+            placeholder="Elegí locaciones o salones..."
+            fluid
+          />
+          <small class="hint-dialogo">Solo verá los eventos de estas áreas; los demás le salen como "Ocupado" en el calendario.</small>
+        }
+      }
     </div>
     <div class="field-check">
       <p-checkbox [(ngModel)]="editActivo" [binary]="true" inputId="editActivo" />

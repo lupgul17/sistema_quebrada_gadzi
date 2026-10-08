@@ -16,6 +16,7 @@ import { MenuPersonalizadoDialog } from '../menu-personalizado-dialog/menu-perso
 import { DegustacionEventoService } from '../../../core/degustacion-evento';
 import { SaldoEventoService } from '../../../core/saldo-evento.service';
 import { InputText } from 'primeng/inputtext';
+import { MessageService } from 'primeng/api';
 import { AplicarPaqueteDialog } from '../aplicar-paquete-dialog/aplicar-paquete-dialog';
 import { PaqueteAplicado } from '../../../core/paquetes';
 
@@ -199,7 +200,8 @@ export class CotizacionPanel implements OnInit {
     private http: HttpClient,
     public auth: AuthService,
     public degustacionEventoService: DegustacionEventoService,
-    private saldoService: SaldoEventoService
+    private saldoService: SaldoEventoService,
+    private messageService: MessageService
   ) {}
 
   // Getter (no campo) para que lea this.auth después de que el constructor lo asigne
@@ -268,11 +270,27 @@ export class CotizacionPanel implements OnInit {
     if (activa) this.cargarDetalle(activa.id_cotizacion);
   }
 
+  /** Detalles del evento: cantidades enteras razonables y textos con largo máximo. */
+  errorDetalles(): string | null {
+    const d = this.detalleForm;
+    const entero = (n: number | null) => n === null || (Number.isInteger(n) && n >= 0 && n <= 500);
+    if (!entero(d.cantidad_mesa_principal)) return 'Las personas en mesa principal deben ser un número de 0 a 500.';
+    if (!entero(d.cantidad_mesas_reservadas)) return 'Las mesas reservadas deben ser un número de 0 a 500.';
+    if ((d.boquitas ?? '').length > 1000 || (d.observaciones ?? '').length > 1000) return 'Los textos pueden tener máximo 1000 caracteres.';
+    return null;
+  }
+
   guardarDetalles(): void {
     if (!this.cotizacion()) return;
+    const problema = this.errorDetalles();
+    if (problema) {
+      this.messageService.add({ severity: 'warn', summary: 'Revisá los detalles', detail: problema, life: 4000 });
+      return;
+    }
     this.guardandoDetalles.set(true);
     this.http.put(`${API_URL}/cotizaciones/${this.cotizacion()!.id_cotizacion}`, this.detalleForm).subscribe({ next: () => {
       this.guardandoDetalles.set(false);
+      this.messageService.add({ severity: 'success', summary: 'Detalles guardados', life: 2500 });
       this.cargarDetalle(this.cotizacion()!.id_cotizacion);
     }, error: () => this.guardandoDetalles.set(false) });
   }
@@ -401,9 +419,25 @@ cambiarCantidadMenu(linea: LineaMenu, input: HTMLInputElement): void {
     this.http.get<DescuentoLinea[]>(`${API_URL}/cotizaciones/servicios/${idLinea}/descuentos`).subscribe((data) => this.descuentosLinea.set(data));
   }
 
+  readonly intentoDescuento = signal(false);
+
+  /** Qué le falta al descuento (null = se puede solicitar). */
+  errorDescuento(): string | null {
+    const f = this.descuentoForm;
+    const linea = this.lineaDescuentoActual();
+    if (!f.id_tipo_descuento) return 'Elegí el tipo de descuento.';
+    if (f.modo === 'porcentaje' && (!f.porcentaje || f.porcentaje <= 0 || f.porcentaje > 100)) return 'El porcentaje debe ser de 1 a 100.';
+    if (f.modo === 'monto' && (!f.monto || f.monto <= 0)) return 'El monto debe ser mayor a Q0.';
+    if (f.modo === 'monto' && linea && f.monto! > Number(linea.subtotal)) return `El descuento no puede pasar del subtotal de la línea (Q${Number(linea.subtotal).toFixed(2)}).`;
+    if (!f.motivo.trim()) return 'Escribí el motivo del descuento (lo ve quien lo aprueba).';
+    if (f.motivo.length > 500) return 'El motivo puede tener máximo 500 caracteres.';
+    return null;
+  }
+
   crearDescuento(): void {
     const linea = this.lineaDescuentoActual();
-    if (!linea || !this.descuentoForm.id_tipo_descuento) return;
+    this.intentoDescuento.set(true);
+    if (!linea || this.errorDescuento()) return;
     this.guardandoDescuento.set(true);
     this.http.post<{ id_descuento: number }>(`${API_URL}/cotizaciones/servicios/${linea.id_cotizacion_servicios}/descuentos`, {
       id_tipo_descuento: this.descuentoForm.id_tipo_descuento,
@@ -412,6 +446,7 @@ cambiarCantidadMenu(linea: LineaMenu, input: HTMLInputElement): void {
       motivo: this.descuentoForm.motivo,
     }).subscribe({ next: () => {
       this.guardandoDescuento.set(false);
+      this.intentoDescuento.set(false);
       this.descuentoForm = { id_tipo_descuento: null, modo: 'porcentaje', porcentaje: null, monto: null, motivo: '' };
       this.cargarDescuentosLinea(linea.id_cotizacion_servicios);
     }, error: () => this.guardandoDescuento.set(false) });

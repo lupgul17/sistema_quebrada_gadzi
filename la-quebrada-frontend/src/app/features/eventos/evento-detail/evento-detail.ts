@@ -6,7 +6,7 @@ import { Card } from 'primeng/card';
 import { Tabs, TabList, Tab, TabPanels, TabPanel } from 'primeng/tabs';
 import { API_URL } from '../../../core/api-config';
 import { AuthService } from '../../../core/auth.service';
-import { DatePipe } from '@angular/common';
+import { DatePipe, Location } from '@angular/common';
 import { CotizacionPanel } from '../cotizacion-panel/cotizacion-panel';
 import { PagosPanel } from '../pagos-panel/pagos-panel';
 import { DegustacionPanel } from '../degustacion-panel/degustacion-panel';
@@ -65,6 +65,7 @@ export class EventoDetail implements OnInit {
     private http: HttpClient,
     private route: ActivatedRoute,
     private router: Router,
+    private location: Location,
     public auth: AuthService,
   ) {}
 
@@ -99,7 +100,13 @@ export class EventoDetail implements OnInit {
   this.eventoFormDialog.abrirEditar(Number(this.idEvento));
 }
 
+  /** Regresa a donde se vino (calendario, cliente, pagos...); si se abrió el link directo, a la lista. */
   volver(): void {
+    // Angular numera cada navegación en history.state: > 1 = hay una pantalla anterior del sistema
+    if ((window.history.state?.navigationId ?? 0) > 1) {
+      this.location.back();
+      return;
+    }
     this.router.navigate(['/eventos']);
   }
 }

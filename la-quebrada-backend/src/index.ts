@@ -22,6 +22,7 @@ import reportesRouter from './routes/reportes.routes.js';
 import { iniciarJobRecordatorios } from './jobs/recordatorios.job.js';
 import { requireAuth } from './middleware/auth.middleware.js';
 import { aplicarPermisos } from './middleware/permisos.js';
+import { resolverAlcance } from './middleware/alcance.js';
 import usuariosRouter from './routes/usuarios.routes.js';
 import publicoRouter from './routes/publico.routes.js';
 import prospectosRouter from './routes/prospectos.routes.js';
@@ -58,7 +59,7 @@ app.get('/api/health', async (_req, res) => {
 // Rutas públicas de la landing: cualquier origen (son públicas) y van ANTES del middleware global de auth
 app.use('/api/publico', cors(), publicoRouter);
 app.use(cors({ origin: ORIGENES_PERMITIDOS }));
-app.use('/api', requireAuth, aplicarPermisos);
+app.use('/api', requireAuth, aplicarPermisos, resolverAlcance);
 app.use('/api/prospectos', prospectosRouter);
 app.use('/api/paquetes', paquetesRouter);
 app.use('/api/usuarios', usuariosRouter);

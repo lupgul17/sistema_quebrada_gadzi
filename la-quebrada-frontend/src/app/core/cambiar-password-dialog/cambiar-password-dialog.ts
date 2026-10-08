@@ -8,6 +8,7 @@ import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { API_URL } from '../api-config';
 import { ERROR_EN_LINEA } from '../http-errores';
+import { errorPassword } from '../validaciones';
 
 @Component({
   selector: 'app-cambiar-password-dialog',
@@ -38,8 +39,13 @@ export class CambiarPasswordDialog {
   }
 
   guardar(): void {
-    if (this.nueva.length < 8) {
-      this.error.set('La contraseña nueva debe tener al menos 8 caracteres.');
+    const problema = errorPassword(this.nueva);
+    if (problema) {
+      this.error.set(`Contraseña nueva: ${problema.charAt(0).toLowerCase()}${problema.slice(1)}`);
+      return;
+    }
+    if (this.nueva === this.actual) {
+      this.error.set('La contraseña nueva debe ser distinta de la actual.');
       return;
     }
     if (this.nueva !== this.confirmar) {

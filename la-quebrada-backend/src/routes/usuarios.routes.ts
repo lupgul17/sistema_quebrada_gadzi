@@ -2,6 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { pool } from '../db/pool.js';
 import type { AuthRequest } from '../middleware/auth.middleware.js';
+import { formato, textoONull } from '../utils/validar.js';
 import { responderError } from '../utils/errores.js';
 
 const router = Router();
@@ -12,7 +13,7 @@ const MIN_PASSWORD = 8;
 // GET /api/usuarios
 router.get('/', async (_req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM fn_listar_usuarios()');
+    const result = await pool.query('SELECT u.*, fn_areas_usuario(u.id_usuario) AS areas FROM fn_listar_usuarios() u');
     res.json(result.rows);
   } catch (err) {
     responderError(res, err);
@@ -57,14 +58,35 @@ router.post('/', async (req: AuthRequest, res) => {
       res.status(400).json({ error: `La contraseña debe tener al menos ${MIN_PASSWORD} caracteres` });
       return;
     }
+    if (!/^[a-z0-9._-]{3,30}$/.test(username)) {
+      res.status(400).json({ error: 'El usuario solo puede tener minúsculas, números, punto o guiones (3 a 30).' });
+      return;
+    }
+    // Vacío → null: el SP reutiliza a la persona con el mismo CUI o correo, y un "" se confundía
+    // con el de otra persona que también lo tuviera vacío
+    const cuiLimpio = textoONull(cui)?.replace(/\s/g, '') ?? null;
+    const telLimpio = textoONull(telefono)?.replace(/[\s-]/g, '') ?? null;
+    const correoLimpio = textoONull(correo)?.toLowerCase() ?? null;
+    if (cuiLimpio && !formato.cui(cuiLimpio)) {
+      res.status(400).json({ error: 'El CUI debe tener 13 dígitos.' });
+      return;
+    }
+    if (telLimpio && !formato.telefono(telLimpio)) {
+      res.status(400).json({ error: 'El teléfono debe tener 8 dígitos.' });
+      return;
+    }
+    if (correoLimpio && !formato.correo(correoLimpio)) {
+      res.status(400).json({ error: 'El correo no es válido.' });
+      return;
+    }
 
     const hash = await bcrypt.hash(password, 10);
     const result = await pool.query(
       `CALL sp_crear_usuario($1::varchar, $2::varchar, $3::varchar, $4::varchar, $5::varchar, $6::varchar, $7::varchar,
                              $8::varchar, $9::varchar, $10::integer, $11::integer, NULL)`,
       [
-        primer_nombre ?? null, segundo_nombre ?? null, primer_apellido ?? null, segundo_apellido ?? null,
-        cui ?? null, telefono ?? null, correo ?? null, username, hash, id_rol_acceso, id_tipo_empleado,
+        textoONull(primer_nombre), textoONull(segundo_nombre), textoONull(primer_apellido), textoONull(segundo_apellido),
+        cuiLimpio, telLimpio, correoLimpio, username, hash, id_rol_acceso, id_tipo_empleado,
       ]
     );
     res.status(201).json({ id_usuario: result.rows[0].p_id_usuario });
@@ -86,6 +108,23 @@ router.patch('/:id', async (req: AuthRequest, res) => {
       return;
     }
     await pool.query('CALL sp_editar_usuario($1::integer, $2::integer, $3::boolean)', [req.params.id, id_rol_acceso, activo]);
+    res.json({ ok: true });
+  } catch (err) {
+    responderError(res, err);
+  }
+});
+
+// PUT /api/usuarios/:id/areas  { locaciones: [ids], salones: [ids] }  (vacío = ve todo)
+router.put('/:id/areas', async (req, res) => {
+  try {
+    const locaciones = Array.isArray(req.body.locaciones) ? req.body.locaciones : [];
+    const salones = Array.isArray(req.body.salones) ? req.body.salones : [];
+    const valido = (v: unknown) => Number.isInteger(v) && (v as number) > 0;
+    if (![...locaciones, ...salones].every(valido)) {
+      res.status(400).json({ error: 'Las áreas no son válidas' });
+      return;
+    }
+    await pool.query('CALL sp_guardar_areas_usuario($1::integer, $2::integer[], $3::integer[])', [req.params.id, locaciones, salones]);
     res.json({ ok: true });
   } catch (err) {
     responderError(res, err);

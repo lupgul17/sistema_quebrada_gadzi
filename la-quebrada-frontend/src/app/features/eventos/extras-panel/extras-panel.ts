@@ -127,11 +127,35 @@ export class ExtrasPanel implements OnInit {
     if (menu) this.menuForm.precio_base = menu.precio_base;
   }
 
+  /** Qué le falta al cargo extra (null = se puede agregar). Antes el botón no hacía nada y no decía por qué. */
+  errorServicioExtra(): string | null {
+    const f = this.servicioForm;
+    if (!f.id_tipo_cargo_extra) return 'Elegí el tipo de cargo.';
+    if (f.modo === 'catalogo' && !f.id_servicio) return 'Elegí el servicio.';
+    if (f.modo === 'personalizado' && !f.descripcion.trim()) return 'Escribí la descripción del cargo.';
+    if (f.modo === 'personalizado' && f.descripcion.trim().length > 200) return 'La descripción puede tener máximo 200 caracteres.';
+    if (!f.cantidad || f.cantidad < 1) return 'La cantidad debe ser 1 o más.';
+    if (f.precio_unitario == null || f.precio_unitario < 0) return 'Escribí el precio (Q0 o más).';
+    return null;
+  }
+
+  errorMenuExtra(): string | null {
+    const f = this.menuForm;
+    if (f.modo === 'catalogo' && !f.id_menu) return 'Elegí el menú.';
+    if (f.modo === 'personalizado' && !f.descripcion.trim()) return 'Escribí la descripción del menú.';
+    if (f.modo === 'personalizado' && f.descripcion.trim().length > 200) return 'La descripción puede tener máximo 200 caracteres.';
+    if (!f.cantidad || f.cantidad < 1) return 'La cantidad debe ser 1 o más.';
+    if (f.precio_base == null || f.precio_base < 0) return 'Escribí el precio (Q0 o más).';
+    return null;
+  }
+
+  readonly intentoServicio = signal(false);
+  readonly intentoMenu = signal(false);
+
  agregarServicio(): void {
   const f = this.servicioForm;
-  if (!f.id_tipo_cargo_extra || !f.cantidad || f.precio_unitario == null) return;
-  if (f.modo === 'catalogo' && !f.id_servicio) return;
-  if (f.modo === 'personalizado' && !f.descripcion.trim()) return;
+  this.intentoServicio.set(true);
+  if (this.errorServicioExtra()) return;
 
   this.procesandoServicio.set(true);
   this.http.post(`${API_URL}/extras/servicio`, {
@@ -144,15 +168,15 @@ export class ExtrasPanel implements OnInit {
   }).subscribe({ next: () => {
     this.procesandoServicio.set(false);
     this.servicioForm = { id_tipo_cargo_extra: null, modo: 'catalogo', id_servicio: null, descripcion: '', cantidad: 1, precio_unitario: null };
+    this.intentoServicio.set(false);
     this.cargarExtras();
   }, error: () => this.procesandoServicio.set(false) });
 }
 
   agregarMenu(): void {
     const f = this.menuForm;
-    if (!f.cantidad || f.precio_base == null) return;
-    if (f.modo === 'catalogo' && !f.id_menu) return;
-    if (f.modo === 'personalizado' && !f.descripcion.trim()) return;
+    this.intentoMenu.set(true);
+    if (this.errorMenuExtra()) return;
 
     this.procesandoMenu.set(true);
     this.http.post(`${API_URL}/extras/menu`, {
@@ -164,6 +188,7 @@ export class ExtrasPanel implements OnInit {
     }).subscribe({ next: () => {
       this.procesandoMenu.set(false);
       this.menuForm = { modo: 'catalogo', id_menu: null, descripcion: '', cantidad: 1, precio_base: null };
+      this.intentoMenu.set(false);
       this.cargarExtras();
     }, error: () => this.procesandoMenu.set(false) });
   }

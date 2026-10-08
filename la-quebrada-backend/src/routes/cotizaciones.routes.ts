@@ -6,6 +6,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import type { AuthRequest } from '../middleware/auth.middleware.js';
+import { exigirAlcance, filtrarPorAlcance, guardiaAlcance } from '../middleware/alcance.js';
+import { logoDeEvento } from '../utils/logo.js';
 import { responderError } from '../utils/errores.js';
 import bcrypt from 'bcryptjs';
 import { crearLimitador } from '../middleware/limitador.js';
@@ -14,12 +16,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const router = Router();
 
+// Alcance por área (404 si la cotización / línea / descuento no es de un evento de su área)
+router.param('id', guardiaAlcance('cotizacion'));
+router.param('idLinea', guardiaAlcance((req) => (req.path.startsWith('/menu/') ? 'cotizacion_menu' : 'cotizacion_servicios')));
+router.param('idDescuento', guardiaAlcance('descuento'));
+
 // GET /api/cotizaciones/por-vencer?dias=3
 router.get('/por-vencer', async (req, res) => {
   try {
     const dias = req.query.dias ? Number(req.query.dias) : 3;
     const result = await pool.query('SELECT * FROM fn_cotizaciones_proximas_vencer($1::integer)', [dias]);
-    res.json(result.rows);
+    res.json(await filtrarPorAlcance(req, result.rows));
   } catch (err) {
     responderError(res, err);
   }
@@ -71,6 +78,7 @@ router.post('/paquete', limiteAutorizacion.middleware, async (req: AuthRequest, 
       res.status(400).json({ error: 'Falta el evento o el paquete' });
       return;
     }
+    if (!(await exigirAlcance(req, res, 'evento', id_evento))) return;
     const listaValida = (v: unknown) => Array.isArray(v) && v.every(esEnteroPositivo);
     if (!listaValida(menus ?? []) || !listaValida(componentes ?? []) || !listaValida(cortesias ?? [])) {
       res.status(400).json({ error: 'Las opciones elegidas no son válidas' });
@@ -101,6 +109,15 @@ router.post('/paquete', limiteAutorizacion.middleware, async (req: AuthRequest, 
         res.status(403).json({ error: 'El usuario o la contraseña del administrador no son correctos' });
         return;
       }
+      // Un administrador solo autoriza eventos de su área (un admin de GADZI no autoriza en La Quebrada)
+      const enSuArea = await pool.query(
+        'SELECT fn_evento_en_alcance($1::integer, fn_salones_usuario($2::integer)) AS ok',
+        [Number(id_evento), admin.id_usuario]
+      );
+      if (!enSuArea.rows[0]?.ok) {
+        res.status(403).json({ error: 'Ese administrador no tiene este evento en su área; tiene que autorizarlo uno de esta locación.' });
+        return;
+      }
       idAutoriza = admin.id_usuario;
     }
 
@@ -128,6 +145,7 @@ router.post('/', async (req: AuthRequest, res) => {
       res.status(400).json({ error: 'Falta id_evento' });
       return;
     }
+    if (!(await exigirAlcance(req, res, 'evento', id_evento))) return;
 
     // Quién crea la cotización sale de la sesión, nunca del body (si no, se podría falsificar)
     const empleadoResult = await pool.query('SELECT fn_id_empleado_por_persona($1::integer) AS id_empleado', [req.usuario!.id_persona]);
@@ -330,12 +348,13 @@ router.get('/:id/pdf', async (req, res) => {
       : [];
     const totalExtras = extras.reduce((acc, e) => acc + e.subtotal, 0);
 
-    // Logo incrustado como base64
-    const logoPath = path.join(__dirname, '..', '..', 'assets', 'logo-quebrada.png');
-    const logoDataUri = `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}`;
+    // Logo de la locación del evento (GADZI o La Quebrada)
+    const logo = await logoDeEvento(cot.id_evento);
 
     const html = armarHtmlCotizacion({
-      logoUrl: logoDataUri,
+      logoUrl: logo.dataUri,
+      // Con el logo propio de la locación ya se sabe dónde es: el nombre solo hace falta con el genérico
+      mostrarLocacion: !logo.archivo,
       clienteNombre: evento?.cliente ?? '—',
       clienteTelefono: evento?.telefono_cliente ?? null,
       fechaCotizacion: new Date(cot.fecha_cotizacion).toLocaleDateString('es-GT'),

@@ -78,6 +78,15 @@
       border-radius: 4px;
       padding: 0.1rem 0.3rem;
       cursor: pointer;
+
+      &.ocupado {
+        cursor: default;
+        background: var(--lq-neutral-bg);
+        color: var(--p-text-muted-color);
+        font-weight: 400;
+        font-style: italic;
+      }
+
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;

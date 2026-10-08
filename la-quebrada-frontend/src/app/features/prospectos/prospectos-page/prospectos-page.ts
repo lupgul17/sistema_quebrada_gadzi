@@ -13,6 +13,7 @@ import { ProspectosPendientesService } from '../../../core/prospectos-pendientes
 import { ClienteFormDialog } from '../../clientes/cliente-form-dialog/cliente-form-dialog';
 import { EventoFormDialog } from '../../eventos/evento-form-dialog/evento-form-dialog';
 
+import { BuscadorTabla } from '../../../core/buscador-tabla/buscador-tabla';
 interface Prospecto {
   id_prospecto: number;
   nombre: string;
@@ -45,7 +46,7 @@ const FILTROS = [
 @Component({
   selector: 'app-prospectos-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, Button, Dialog, Textarea, ClienteFormDialog, EventoFormDialog],
+  imports: [BuscadorTabla, CommonModule, FormsModule, TableModule, Button, Dialog, Textarea, ClienteFormDialog, EventoFormDialog],
   templateUrl: './prospectos-page.html',
   styleUrl: './prospectos-page.scss',
 })

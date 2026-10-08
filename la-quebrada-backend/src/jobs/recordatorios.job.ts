@@ -4,6 +4,7 @@ import { pool } from '../db/pool.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { armarHtmlRecordatorio } from '../templates/emails/recordatorio.templates.js';
+import { logoDeEvento } from '../utils/logo.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -35,13 +36,15 @@ export async function ejecutarRecordatorios(): Promise<{ enviados: number }> {
     try {
       const saldoPendiente = Number(fila.total_a_pagar) - Number(fila.total_pagado);
 
+      const logo = await logoDeEvento(fila.id_evento);
+      const esGadzi = logo.archivo === 'logo-gadzi.png';
       const html = armarHtmlRecordatorio({
         cliente: fila.cliente,
         fechaEvento: fila.fecha,
         saldoPendiente,
         totalAPagar: Number(fila.total_a_pagar),
         tipoRecordatorio: fila.tipo_recordatorio,
-        eventoLocacion: 'La Quebrada',
+        eventoLocacion: esGadzi ? 'GADZI' : 'La Quebrada',
       });
 
       await transporter.sendMail({
@@ -52,7 +55,7 @@ export async function ejecutarRecordatorios(): Promise<{ enviados: number }> {
         attachments: [
             {
                 filename: 'logo.png',
-                path: path.join(__dirname, '..', '..', 'assets', 'logo-quebrada.png'),
+                path: path.join(__dirname, '..', '..', 'assets', logo.archivo ?? 'logo-quebrada.png'),
                 cid: 'logo-la-quebrada',
             },
             ],

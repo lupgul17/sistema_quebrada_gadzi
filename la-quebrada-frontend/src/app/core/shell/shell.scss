@@ -120,6 +120,53 @@
   }
 }
 
+.usuario-boton {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.3rem 0.7rem 0.3rem 0.3rem;
+  border: 1px solid var(--lq-borde);
+  border-radius: var(--lq-radius-pill);
+  background: transparent;
+  color: var(--lq-paper);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: var(--lq-neutral-bg);
+    border-color: var(--lq-borde-fuerte);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--lq-verde-claro);
+    outline-offset: 2px;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: var(--lq-warn-bg);
+    color: var(--lq-dorado);
+  }
+
+  .usuario-texto {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.15;
+  }
+
+  .nombre { font-size: 0.88rem; font-weight: 500; }
+  .rol { font-size: 0.72rem; color: var(--lq-fog); }
+
+  .pi-chevron-down { font-size: 0.7rem; color: var(--lq-fog); }
+}
+
 .dashboard-grid {
   flex: 1;
   padding: 1.5rem;
@@ -207,8 +254,10 @@
       gap: 0.25rem;
     }
 
-    .saludo {
-      display: none;
+    .usuario-boton {
+      padding-right: 0.5rem;
+
+      .usuario-texto { display: none; }
     }
   }
 }
@@ -218,4 +267,10 @@
   :host ::ng-deep .solo-icono-movil .p-button-label {
     display: none;
   }
+}
+
+/* El logo de GADZI es solo texto: más bajo que el de La Quebrada para que pesen parecido */
+.sidebar-brand img.logo-gadzi {
+  max-height: 44px;
+  width: auto;
 }

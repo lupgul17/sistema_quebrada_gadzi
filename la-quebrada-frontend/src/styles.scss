@@ -254,3 +254,28 @@ h2 {
     font-size: 1.4rem;
   }
 }
+
+/* ---------- Campos con error (formularios reactivos, una vez tocados o al intentar guardar) ---------- */
+input.ng-invalid.ng-touched,
+textarea.ng-invalid.ng-touched,
+/* En PrimeNG 20 el borde de select/multiselect está en el propio elemento */
+p-select.ng-invalid.ng-touched,
+p-multiselect.ng-invalid.ng-touched,
+p-datepicker.ng-invalid.ng-touched .p-inputtext,
+p-inputnumber.ng-invalid.ng-touched .p-inputtext,
+p-password.ng-invalid.ng-touched .p-inputtext {
+  border-color: var(--lq-danger-fg) !important;
+}
+
+/* Mensajes debajo de un campo (formularios con ngModel; los reactivos usan <app-error-campo>) */
+.lq-error-campo,
+.lq-aviso-campo,
+.hint-campo {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+.lq-error-campo { color: var(--lq-danger-fg); }
+.lq-aviso-campo { color: var(--lq-warn-fg); }
+.hint-campo { color: var(--p-text-muted-color); }

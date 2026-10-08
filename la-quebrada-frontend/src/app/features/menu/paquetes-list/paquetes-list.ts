@@ -20,6 +20,7 @@ import { ERROR_EN_LINEA } from '../../../core/http-errores';
 import { AreaMenu, FilaArea, conEtiqueta, opcionesDeAreas, separarAreas, textoDisponibilidad, unirAreas } from '../../../core/menus';
 import { CalculoExtra, GrupoPaquete, Paquete, TipoGrupo } from '../../../core/paquetes';
 
+import { BuscadorTabla } from '../../../core/buscador-tabla/buscador-tabla';
 /** Menú del catálogo (GET /api/menus): las opciones de los grupos de menús. */
 interface MenuCatalogo {
   id_menu: number;
@@ -101,7 +102,7 @@ const NOMBRE_GRUPO: Record<TipoGrupo, string> = { menu: '', componente: '', cort
 @Component({
   selector: 'app-paquetes-list',
   standalone: true,
-  imports: [
+  imports: [BuscadorTabla, 
     CommonModule, FormsModule, TableModule, Select, InputText, InputNumber, Textarea, Checkbox,
     Button, Dialog, Message, MultiSelect, SelectButton, Tooltip,
   ],

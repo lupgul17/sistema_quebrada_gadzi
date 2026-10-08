@@ -9,6 +9,7 @@
       placeholder="Todas las categorías"
       [showClear]="true"
     />
+    <app-buscador-tabla [tabla]="dt" placeholder="Buscar servicio..." />
     <span class="spacer"></span>
     @if (auth.puede('catalogos')) {
       <p-button label="+ Nuevo servicio" (onClick)="abrirNuevo()" />
@@ -16,7 +17,7 @@
   </div>
 
   <div class="table-container">
-    <p-table [value]="servicios()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
+    <p-table #dt [globalFilterFields]="['nombre', 'categoria', 'unidad_medida']" [value]="servicios()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
       <ng-template pTemplate="header">
         <tr>
           <th>Categoría</th>
@@ -44,7 +45,7 @@
         </tr>
       </ng-template>
       <ng-template pTemplate="emptymessage">
-        <tr><td colspan="6">No hay servicios cargados todavía.</td></tr>
+        <tr><td colspan="6">@if ($any(dt.filters['global'])?.value) { Sin resultados para la búsqueda. } @else { No hay servicios cargados todavía. }</td></tr>
       </ng-template>
     </p-table>
   </div>
@@ -54,18 +55,22 @@
       <div class="field">
         <label for="categoria">Categoría *</label>
         <p-select appendTo="body" id="categoria" formControlName="id_categoria_servicio" [options]="categorias()" optionLabel="descripcion" optionValue="id_categoria_servicio" fluid />
+        <app-error-campo [control]="form.controls.id_categoria_servicio" />
       </div>
       <div class="field">
         <label for="nombre">Nombre *</label>
-        <input pInputText id="nombre" formControlName="nombre" fluid />
+        <input pInputText id="nombre" formControlName="nombre" maxlength="150" fluid />
+        <app-error-campo [control]="form.controls.nombre" />
       </div>
       <div class="field">
         <label for="precio_base">Precio (Q) *</label>
-        <p-inputnumber id="precio_base" formControlName="precio_base" mode="decimal" [minFractionDigits]="2" fluid />
+        <p-inputnumber id="precio_base" formControlName="precio_base" mode="decimal" [minFractionDigits]="2" [min]="0" fluid />
+        <app-error-campo [control]="form.controls.precio_base" />
       </div>
       <div class="field">
         <label for="unidad_medida">Unidad *</label>
-        <input pInputText id="unidad_medida" formControlName="unidad_medida" placeholder="unidad, hora, por_evento..." fluid />
+        <input pInputText id="unidad_medida" formControlName="unidad_medida" placeholder="unidad, hora, por_evento..." maxlength="30" fluid />
+        <app-error-campo [control]="form.controls.unidad_medida" />
       </div>
       <div class="field field-checkbox">
         <p-checkbox formControlName="activo" [binary]="true" inputId="activo" />

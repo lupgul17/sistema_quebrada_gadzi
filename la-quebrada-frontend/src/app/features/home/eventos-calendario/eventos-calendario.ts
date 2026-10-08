@@ -7,7 +7,10 @@ import { API_URL } from '../../../core/api-config';
 import { TemaService } from '../../../core/tema.service';
 
 interface EventoCalendario {
-  id_evento: number;
+  /** null si es de otra área (viene como "Ocupado", sin datos del cliente) */
+  id_evento: number | null;
+  fuera_de_alcance?: boolean;
+  salones?: string | null;
   fecha: string;
   hora_inicio: string;
   cliente: string;
@@ -27,6 +30,8 @@ interface DiaCalendario {
 
 const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const DIAS_SEMANA = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+const CLAVE_MES = 'lq_calendario_mes';
 
 @Component({
   selector: 'app-eventos-calendario',
@@ -89,6 +94,14 @@ export class EventosCalendario implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Al volver de un evento, se queda en el mes que se estaba viendo (solo en esta pestaña)
+    try {
+      const guardado = JSON.parse(sessionStorage.getItem(CLAVE_MES) ?? 'null');
+      if (guardado && Number.isInteger(guardado.anio) && guardado.mes >= 0 && guardado.mes <= 11) {
+        this.anioActual.set(guardado.anio);
+        this.mesActual.set(guardado.mes);
+      }
+    } catch { /* sin almacenamiento: arranca en el mes actual */ }
     this.cargarMes();
   }
 
@@ -115,11 +128,15 @@ export class EventosCalendario implements OnInit {
   cargarMes(): void {
     const anio = this.anioActual();
     const mes = this.mesActual();
+    try {
+      sessionStorage.setItem(CLAVE_MES, JSON.stringify({ anio, mes }));
+    } catch { /* no es crítico */ }
     const desde = `${anio}-${(mes + 1).toString().padStart(2, '0')}-01`;
     const ultimoDia = new Date(Date.UTC(anio, mes + 1, 0)).getUTCDate();
     const hasta = `${anio}-${(mes + 1).toString().padStart(2, '0')}-${ultimoDia.toString().padStart(2, '0')}`;
 
-    this.http.get<EventoCalendario[]>(`${API_URL}/eventos?fecha_desde=${desde}&fecha_hasta=${hasta}`).subscribe((data) => {
+    // calendario=1: también los eventos de otras áreas, como "Ocupado" (para recomendar otro salón libre)
+    this.http.get<EventoCalendario[]>(`${API_URL}/eventos?fecha_desde=${desde}&fecha_hasta=${hasta}&calendario=1`).subscribe((data) => {
       this.eventos.set(data.filter((ev) => this.colorEvento(ev) !== null));
       this.cargando.set(false);
     });
@@ -161,7 +178,8 @@ export class EventosCalendario implements OnInit {
     this.cargarMes();
   }
 
-  irAEvento(idEvento: number): void {
+  irAEvento(idEvento: number | null): void {
+    if (idEvento === null) return; // evento de otra área: solo informa que está ocupado
     this.router.navigate(['/eventos', idEvento]);
   }
 }

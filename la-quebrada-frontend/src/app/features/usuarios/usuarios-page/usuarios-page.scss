@@ -39,8 +39,16 @@
     border-radius: 6px;
     font-size: 0.78rem;
     font-weight: 600;
-    background: var(--p-surface-200);
-    color: var(--p-text-color);
+    // Colores del tema (tienen versión clara y oscura); cada rol con el suyo
+    background: var(--lq-neutral-bg);
+    color: var(--p-text-muted-color);
+
+    &[data-rol='Superusuario'] { background: var(--lq-warn-bg); color: var(--lq-warn-fg); }
+    &[data-rol='Administrador'],
+    &[data-rol='Administrador2'] { background: var(--lq-ok-bg); color: var(--lq-ok-fg); }
+    &[data-rol='Vendedor'],
+    &[data-rol='Secretaria'],
+    &[data-rol='Revisor'] { background: var(--lq-info-bg); color: var(--lq-info-fg); }
   }
 
   .estado-badge {
@@ -50,42 +58,48 @@
     font-weight: 600;
     text-transform: capitalize;
 
-    &.estado-activo { background: #d4edda; color: #155724; }
-    &.estado-inactivo { background: #f8d7da; color: #721c24; }
+    &.estado-activo { background: var(--lq-ok-bg); color: var(--lq-ok-fg); }
+    &.estado-inactivo { background: var(--lq-danger-bg); color: var(--lq-danger-fg); }
   }
+}
 
-  .grid-2 {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem 1.5rem;
-    margin-bottom: 1.25rem;
+/* Diálogos: van al <body> (appendTo), fuera de .usuarios-page, así que sus estilos no se anidan */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+
+  label {
+    font-weight: 600;
+    font-size: 0.9rem;
   }
+}
 
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    margin-bottom: 1rem;
+.grid-2 .field { margin-bottom: 0; }
 
-    label {
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-  }
+.field-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
 
-  .grid-2 .field { margin-bottom: 0; }
+.acciones {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
 
-  .field-check {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .acciones {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: flex-end;
-    margin-top: 1rem;
-  }
+.hint-dialogo {
+  color: var(--p-text-muted-color);
+  font-size: 0.8rem;
 }

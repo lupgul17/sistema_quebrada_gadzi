@@ -58,15 +58,19 @@
         <div class="registrar-form">
           <div class="field">
             <label>Fecha</label>
-            <p-datepicker [(ngModel)]="pagoForm.fecha_pago" dateFormat="dd/mm/yy" fluid />
+            <p-datepicker [(ngModel)]="pagoForm.fecha_pago" dateFormat="dd/mm/yy" [maxDate]="hoy" appendTo="body" fluid />
+            @if (intentoPago() && erroresPago().fecha; as e) { <small class="lq-error-campo">{{ e }}</small> }
           </div>
           <div class="field">
             <label>Monto (Q)</label>
             <p-inputnumber [(ngModel)]="pagoForm.monto" mode="decimal" [minFractionDigits]="2" [min]="0" fluid />
+            @if (intentoPago() && erroresPago().monto; as e) { <small class="lq-error-campo">{{ e }}</small> }
+            @else if (avisoSaldo(); as a) { <small class="lq-aviso-campo">{{ a }}</small> }
           </div>
           <div class="field">
             <label>Tipo de pago</label>
-            <p-select [options]="tiposPago()" optionLabel="descripcion" optionValue="id_tipo_pago" [(ngModel)]="pagoForm.id_tipo_pago" placeholder="Elegir..." fluid />
+            <p-select [options]="tiposPago()" optionLabel="descripcion" optionValue="id_tipo_pago" [(ngModel)]="pagoForm.id_tipo_pago" placeholder="Elegir..." appendTo="body" fluid />
+            @if (intentoPago() && erroresPago().tipo; as e) { <small class="lq-error-campo">{{ e }}</small> }
           </div>
           <div class="field">
             <label>Concepto</label>
@@ -83,12 +87,15 @@
               type="button"
               (onClick)="abrirSelectorArchivo()"
             />
+            @if (errorArchivo(); as e) { <small class="lq-error-campo">{{ e }}</small> }
+            @else { <small class="hint-campo">Imagen o PDF, hasta 5 MB.</small> }
           </div>
           <div class="field field-full">
             <label>Notas</label>
-            <textarea pTextarea [(ngModel)]="pagoForm.notas" rows="2" fluid placeholder="Referencia, número de transferencia..."></textarea>
+            <textarea pTextarea [(ngModel)]="pagoForm.notas" rows="2" maxlength="500" fluid placeholder="Referencia, número de transferencia..."></textarea>
+            @if (intentoPago() && erroresPago().notas; as e) { <small class="lq-error-campo">{{ e }}</small> }
           </div>
-          <p-button label="Registrar pago" [loading]="registrando()" [disabled]="!pagoForm.monto || !pagoForm.id_tipo_pago" (onClick)="registrarPago()" />
+          <p-button label="Registrar pago" [loading]="registrando()" [disabled]="registrando()" (onClick)="registrarPago()" />
         </div>
       </div>
     }

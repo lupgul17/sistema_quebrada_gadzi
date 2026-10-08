@@ -20,6 +20,7 @@
       [showClear]="true"
       appendTo="body"
     />
+    <app-buscador-tabla [tabla]="dt" placeholder="Buscar menú o componente..." />
     <span class="spacer"></span>
     @if (auth.puede('menus')) {
       <p-button label="+ Nuevo menú" (onClick)="abrirNuevo()" />
@@ -27,7 +28,7 @@
   </div>
 
   <div class="table-container">
-    <p-table [value]="menus()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
+    <p-table #dt [globalFilterFields]="['nombre', 'tipo_menu', 'componentes']" [value]="menus()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
       <ng-template pTemplate="header">
         <tr>
           <th>Tipo</th>
@@ -66,7 +67,7 @@
         </tr>
       </ng-template>
       <ng-template pTemplate="emptymessage">
-        <tr><td colspan="7">No hay menús para este filtro.</td></tr>
+        <tr><td colspan="7">@if ($any(dt.filters['global'])?.value) { Sin resultados para la búsqueda. } @else { No hay menús para este filtro. }</td></tr>
       </ng-template>
     </p-table>
   </div>
@@ -81,19 +82,23 @@
       <div class="grid-2">
         <div class="field">
           <label for="nombre">Nombre *</label>
-          <input pInputText id="nombre" formControlName="nombre" fluid />
+          <input pInputText id="nombre" formControlName="nombre" maxlength="150" fluid />
+          <app-error-campo [control]="form.controls.nombre" />
         </div>
         <div class="field">
           <label for="tipo">Tipo *</label>
           <p-select appendTo="body" id="tipo" formControlName="id_tipo_menu" [options]="tiposMenu()" optionLabel="descripcion" optionValue="id_tipo_menu" fluid />
+          <app-error-campo [control]="form.controls.id_tipo_menu" />
         </div>
         <div class="field">
           <label for="precio_base">Precio (Q) *</label>
-          <p-inputnumber id="precio_base" formControlName="precio_base" mode="decimal" [minFractionDigits]="2" fluid />
+          <p-inputnumber id="precio_base" formControlName="precio_base" mode="decimal" [minFractionDigits]="2" [min]="0" fluid />
+          <app-error-campo [control]="form.controls.precio_base" />
         </div>
         <div class="field">
           <label for="unidad_medida">Unidad *</label>
-          <input pInputText id="unidad_medida" formControlName="unidad_medida" fluid />
+          <input pInputText id="unidad_medida" formControlName="unidad_medida" maxlength="30" fluid />
+          <app-error-campo [control]="form.controls.unidad_medida" />
         </div>
       </div>
 

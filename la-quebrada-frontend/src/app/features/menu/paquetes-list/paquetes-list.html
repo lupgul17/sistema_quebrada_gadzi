@@ -5,13 +5,14 @@
       Se aplican desde la cotización del evento.
     </p>
     <span class="spacer"></span>
+    <app-buscador-tabla [tabla]="dt" placeholder="Buscar paquete..." />
     @if (auth.puede('paquetes')) {
       <p-button label="+ Nuevo paquete" (onClick)="abrirNuevo()" />
     }
   </div>
 
   <div class="table-container">
-    <p-table [value]="paquetes()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
+    <p-table #dt [globalFilterFields]="['nombre', 'tipo_menu', 'descripcion']" [value]="paquetes()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
       <ng-template pTemplate="header">
         <tr>
           <th>Nombre</th>
@@ -66,7 +67,7 @@
         </tr>
       </ng-template>
       <ng-template pTemplate="emptymessage">
-        <tr><td colspan="7">Todavía no hay paquetes.</td></tr>
+        <tr><td colspan="7">@if ($any(dt.filters['global'])?.value) { Sin resultados para la búsqueda. } @else { Todavía no hay paquetes. }</td></tr>
       </ng-template>
     </p-table>
   </div>

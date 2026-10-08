@@ -12,6 +12,7 @@ import { DatePipe } from '@angular/common';
 import { EventoFormDialog } from '../evento-form-dialog/evento-form-dialog';
 import { fechaLocalISO } from '../../../core/fechas';
 
+import { BuscadorTabla } from '../../../core/buscador-tabla/buscador-tabla';
 interface Evento {
   id_evento: number;
   fecha: string;
@@ -37,7 +38,7 @@ const ESTADOS = [
 @Component({
   selector: 'app-eventos-list',
   standalone: true,
-  imports: [TableModule, Select, DatePicker, Button, FormsModule,DatePipe, EventoFormDialog],
+  imports: [BuscadorTabla, TableModule, Select, DatePicker, Button, FormsModule,DatePipe, EventoFormDialog],
   templateUrl: './eventos-list.html',
   styleUrl: './eventos-list.scss',
 })

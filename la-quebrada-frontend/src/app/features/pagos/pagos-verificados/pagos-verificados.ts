@@ -7,6 +7,7 @@ import { API_URL } from '../../../core/api-config';
 import { Button } from 'primeng/button';
 import {VisorArchivoService} from "../../../core/visor-archivo.service";
 
+import { BuscadorTabla } from '../../../core/buscador-tabla/buscador-tabla';
 interface PagoVerificado {
   id_pago: number;
   id_evento: number;
@@ -24,7 +25,7 @@ interface PagoVerificado {
 @Component({
   selector: 'app-pagos-verificados',
   standalone: true,
-  imports: [CommonModule, TableModule, Button],
+  imports: [BuscadorTabla, CommonModule, TableModule, Button],
   templateUrl: './pagos-verificados.html',
   styleUrl: './pagos-verificados.scss',
 })

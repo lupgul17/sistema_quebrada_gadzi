@@ -1,18 +1,49 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
 import { responderError } from '../utils/errores.js';
+import { type RequestConAlcance, eventosEnAlcance, exigirAlcance, filtrarPorAlcance, salonesEnAlcance } from '../middleware/alcance.js';
 
 const router = Router();
 
-// GET /api/eventos?estado=&fecha_desde=&fecha_hasta=&id_cliente=
-router.get('/', async (req, res) => {
+// Toda ruta con :id en este archivo es de un evento: si no es del área del usuario → 404
+router.param('id', async (req, res, next, id) => {
   try {
-    const { estado, fecha_desde, fecha_hasta, id_cliente } = req.query;
+    if (await exigirAlcance(req as RequestConAlcance, res, 'evento', id)) next();
+  } catch (err) {
+    responderError(res, err);
+  }
+});
+
+// GET /api/eventos?estado=&fecha_desde=&fecha_hasta=&id_cliente=&calendario=1
+// Solo los eventos del área del usuario. Con calendario=1 vienen también los demás, pero solo como
+// "Ocupado" (fecha, horario y salón; sin cliente ni id): sirve para recomendar otro salón libre.
+router.get('/', async (req: RequestConAlcance, res) => {
+  try {
+    const { estado, fecha_desde, fecha_hasta, id_cliente, calendario } = req.query;
     const result = await pool.query(
       'SELECT * FROM fn_listar_eventos($1::varchar, $2::date, $3::date, $4::integer)',
       [estado ?? null, fecha_desde ?? null, fecha_hasta ?? null, id_cliente ?? null]
     );
-    res.json(result.rows);
+    const visibles = await eventosEnAlcance(req);
+    if (visibles === null) {
+      res.json(result.rows);
+      return;
+    }
+    if (calendario === '1') {
+      res.json(
+        result.rows.map((ev) =>
+          visibles.has(ev.id_evento)
+            ? ev
+            : {
+                id_evento: null, fuera_de_alcance: true, cliente: 'Ocupado', fecha: ev.fecha,
+                hora_inicio: ev.hora_inicio, hora_fin: ev.hora_fin, estado: ev.estado,
+                reserva_temporal: ev.reserva_temporal, salones: ev.salones, locaciones: ev.locaciones,
+              }
+        )
+      );
+      return;
+    }
+    res.json(result.rows.filter((ev) => visibles.has(ev.id_evento)));
   } catch (err) {
     responderError(res, err);
   }
@@ -20,7 +51,7 @@ router.get('/', async (req, res) => {
 
 // GET /api/eventos/disponibilidad-salones?fecha=&hora_inicio=&hora_fin=&excluir_evento=
 // OJO: tiene que ir ANTES que /:id, mismo motivo que "clientes/nuevo" en Angular
-router.get('/disponibilidad-salones', async (req, res) => {
+router.get('/disponibilidad-salones', async (req: RequestConAlcance, res) => {
   try {
     const { fecha, hora_inicio, hora_fin, excluir_evento } = req.query;
     if (!fecha || !hora_inicio || !hora_fin) {
@@ -31,16 +62,18 @@ router.get('/disponibilidad-salones', async (req, res) => {
       'SELECT * FROM fn_salones_disponibilidad($1::date, $2::time, $3::time, $4::integer)',
       [fecha, hora_inicio, hora_fin, excluir_evento ?? null]
     );
-    res.json(result.rows);
+    // Para crear/editar un evento solo se ofrecen los salones del área del usuario
+    const alcance = req.alcance;
+    res.json(alcance ? result.rows.filter((s) => alcance.includes(s.id_salon)) : result.rows);
   } catch (err) {
     responderError(res, err);
   }
 });
 // GET /api/eventos/pendientes-pago
-router.get('/pendientes-pago', async (_req, res) => {
+router.get('/pendientes-pago', async (req: RequestConAlcance, res) => {
   try {
     const result = await pool.query('SELECT * FROM fn_eventos_pendientes_pago()');
-    res.json(result.rows);
+    res.json(await filtrarPorAlcance(req, result.rows));
   } catch (err) {
     responderError(res, err);
   }
@@ -71,7 +104,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/eventos
-router.post('/', async (req, res) => {
+router.post('/', async (req: RequestConAlcance, res) => {
   try {
     const {
       id_cliente, id_tipo_evento, fecha, hora_inicio, hora_fin,
@@ -80,6 +113,10 @@ router.post('/', async (req, res) => {
 
     if (!id_cliente || !fecha || !hora_inicio || !hora_fin || !salones?.length) {
       res.status(400).json({ error: 'Falta id_cliente, fecha, hora_inicio, hora_fin o salones' });
+      return;
+    }
+    if (!salonesEnAlcance(req, salones)) {
+      res.status(403).json({ error: 'Solo podés crear eventos en los salones de tu área.' });
       return;
     }
 
@@ -101,7 +138,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/eventos/:id
-router.put('/:id', async (req, res) => {
+router.put('/:id', async (req: RequestConAlcance, res) => {
   try {
     const {
       id_tipo_evento, fecha, hora_inicio, hora_fin,
@@ -110,6 +147,10 @@ router.put('/:id', async (req, res) => {
 
     if (!fecha || !hora_inicio || !hora_fin || !salones?.length) {
       res.status(400).json({ error: 'Falta fecha, hora_inicio, hora_fin o salones' });
+      return;
+    }
+    if (!salonesEnAlcance(req, salones)) {
+      res.status(403).json({ error: 'Solo podés usar salones de tu área.' });
       return;
     }
 
