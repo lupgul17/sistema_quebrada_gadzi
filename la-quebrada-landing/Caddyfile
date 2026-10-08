@@ -21,6 +21,10 @@
 		Referrer-Policy strict-origin-when-cross-origin
 	}
 
+	# Botón "Acceso para el personal" → login del sistema. SISTEMA_URL es una variable del servicio
+	# (ej. https://sistema.eventoslaquebrada.com); así la dirección no queda escrita en la página
+	redir /sistema {$SISTEMA_URL}/login 302
+
 	# Solo la parte pública de la API (salones, fechas ocupadas, tipos de evento y solicitudes).
 	# El resto del sistema no se expone por este dominio.
 	handle /api/publico/* {
