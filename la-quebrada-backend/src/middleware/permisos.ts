@@ -27,6 +27,7 @@ const REGLAS: Regla[] = [
 
   { metodos: ESCRITURA, ruta: /^\/extras(\/|$)/, roles: ['Vendedor', 'Administrador', 'Superusuario'] },
   { metodos: ESCRITURA, ruta: /^\/menus(\/|$)/, roles: ['Secretaria', 'Administrador', 'Superusuario'] },
+  { metodos: ESCRITURA, ruta: /^\/paquetes(\/|$)/, roles: ['Secretaria', 'Administrador', 'Superusuario'] },
   { metodos: ESCRITURA, ruta: /^\/(servicios|componentes-menu)(\/|$)/, roles: ['Administrador', 'Superusuario'] },
   { metodos: ESCRITURA, ruta: /^\/prospectos(\/|$)/, roles: ['Vendedor', 'Secretaria', 'Administrador', 'Superusuario'] },
   { metodos: ESCRITURA, ruta: /^\/clientes(\/|$)/, roles: ['Vendedor', 'Administrador', 'Superusuario'] },

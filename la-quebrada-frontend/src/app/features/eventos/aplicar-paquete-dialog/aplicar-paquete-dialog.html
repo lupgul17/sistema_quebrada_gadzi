@@ -1,0 +1,162 @@
+<p-dialog
+  header="Aplicar paquete"
+  [(visible)]="visible"
+  [modal]="true"
+  [style]="{ width: '700px' }"
+  appendTo="body"
+>
+  @if (cargando()) {
+    <p class="hint">Cargando paquetes...</p>
+  } @else if (!paquetes().length) {
+    <p class="hint">No hay paquetes activos disponibles para el salón de este evento. Se crean en Menú → Paquetes.</p>
+  } @else {
+    @if (reemplaza()) {
+      <p-message severity="warn" styleClass="w-full mb-3"
+        text="Se crea una versión nueva de la cotización solo con el paquete. Los menús y servicios actuales se reemplazan (los platillos extra de degustación se mantienen)." />
+    }
+
+    <div class="grid-2">
+      <div class="field">
+        <label for="ap-paquete">Paquete *</label>
+        <p-select
+          appendTo="body"
+          inputId="ap-paquete"
+          [options]="paquetes()"
+          optionLabel="nombre"
+          optionValue="id_paquete"
+          [ngModel]="idPaquete()"
+          (ngModelChange)="elegirPaquete($event)"
+          placeholder="Elegí un paquete..."
+          fluid
+        />
+      </div>
+      <div class="field">
+        <label for="ap-cantidad">Personas (adultos) *</label>
+        <p-inputnumber inputId="ap-cantidad" [ngModel]="cantidad()" (ngModelChange)="cambiarCantidad($event)" [min]="1" [useGrouping]="false" fluid />
+        <small class="hint">Los niños se cotizan aparte.</small>
+      </div>
+    </div>
+
+    @if (paquete(); as p) {
+      <div class="resumen">
+        <span>Q{{ p.precio_por_persona | number: '1.2-2' }} por persona · mínimo {{ p.minimo_personas }}</span>
+        <strong>Q{{ totalPaquete() | number: '1.2-2' }}</strong>
+      </div>
+      @if (p.descripcion) {
+        <p class="hint">{{ p.descripcion }}</p>
+      }
+
+      @for (g of p.grupos; track g.id) {
+        <div class="grupo">
+          <span class="grupo-titulo">
+            {{ g.nombre }}
+            <small>
+              @if (g.tipo === 'cortesia') { cortesía · }
+              elegí {{ g.cantidad_a_elegir }}{{ g.opciones.length === g.cantidad_a_elegir ? ' (incluidas todas)' : '' }}
+            </small>
+          </span>
+          <div class="chips">
+            @for (o of g.opciones; track o.id) {
+              <button type="button" class="chip" [class.seleccionado]="estaElegida(g, o.id)" [class.cortesia]="g.tipo === 'cortesia'" (click)="alternar(g, o.id)">
+                <span>{{ o.nombre }}</span>
+                @if (o.detalle) {
+                  <small class="chip-detalle">{{ o.detalle }}</small>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      @if (p.incluidos.length) {
+        <div class="bloque">
+          <span class="grupo-titulo">Incluye</span>
+          <ul class="incluidos">
+            @for (i of p.incluidos; track $index) {
+              <li>{{ textoIncluido(i) }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      @if (filasExtras.length) {
+        <div class="bloque">
+          <span class="grupo-titulo">
+            Extras
+            @if (horasEvento() !== null && p.horas_incluidas) {
+              <small>el evento dura {{ horasEvento() | number: '1.0-1' }} h, incluye {{ p.horas_incluidas }} h</small>
+            }
+          </span>
+          <table class="extras">
+            <tbody>
+              @for (f of filasExtras; track f.extra.id_servicio) {
+                <tr [class.marcado]="f.marcado">
+                  <td class="col-check">
+                    <p-checkbox [(ngModel)]="f.marcado" [binary]="true" [inputId]="'ex-' + f.extra.id_servicio" />
+                  </td>
+                  <td>
+                    <label [for]="'ex-' + f.extra.id_servicio">{{ f.extra.nombre }}</label>
+                    <small class="precio-extra">
+                      Q{{ f.extra.precio | number: '1.2-2' }} / {{ f.extra.unidad_medida }}
+                      @if (+f.extra.precio < +f.extra.precio_catalogo) {
+                        <s>Q{{ f.extra.precio_catalogo | number: '1.2-2' }}</s>
+                      }
+                    </small>
+                  </td>
+                  <td class="col-cant">
+                    <p-inputnumber [(ngModel)]="f.cantidad" [min]="1" [useGrouping]="false" [disabled]="!f.marcado" class="cantidad" />
+                  </td>
+                  <td class="col-subtotal">
+                    @if (f.marcado && f.cantidad) {
+                      Q{{ +f.extra.precio * f.cantidad | number: '1.2-2' }}
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      <div class="resumen total">
+        <span>Total (paquete{{ totalExtras() ? ' + extras' : '' }})</span>
+        <strong>Q{{ totalPaquete() + totalExtras() | number: '1.2-2' }}</strong>
+      </div>
+
+      @if (bajoMinimo()) {
+        <div class="autorizacion">
+          <p-message severity="warn" styleClass="w-full"
+            [text]="'Son menos de ' + p.minimo_personas + ' personas: se necesita autorización de un administrador.'" />
+          @if (puedeAutorizar()) {
+            <p class="hint">Se registra con tu usuario como quien autoriza.</p>
+          } @else {
+            <div class="grid-2">
+              <div class="field">
+                <label for="ap-admin">Usuario del administrador</label>
+                <input pInputText id="ap-admin" [(ngModel)]="autorizacion.username" autocomplete="off" autocapitalize="off" fluid />
+              </div>
+              <div class="field">
+                <label for="ap-clave">Contraseña</label>
+                <p-password inputId="ap-clave" [(ngModel)]="autorizacion.password" [feedback]="false" [toggleMask]="true" autocomplete="new-password" fluid />
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <div class="field field-checkbox">
+        <p-checkbox [(ngModel)]="aplicaDeposito" [binary]="true" inputId="ap-deposito" />
+        <label for="ap-deposito">Aplica depósito de garantía (Q1,000)</label>
+      </div>
+    }
+  }
+
+  @if (error()) {
+    <p-message severity="error" [text]="error()!" styleClass="w-full mb-3" />
+  }
+
+  <div class="dialog-acciones">
+    <p-button label="Cancelar" severity="secondary" (onClick)="visible.set(false)" />
+    <p-button label="Aplicar paquete" icon="pi pi-check" [loading]="guardando()" [disabled]="!paquete() || guardando()" (onClick)="aplicar()" />
+  </div>
+</p-dialog>

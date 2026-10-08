@@ -7,6 +7,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import type { AuthRequest } from '../middleware/auth.middleware.js';
 import { responderError } from '../utils/errores.js';
+import bcrypt from 'bcryptjs';
+import { crearLimitador } from '../middleware/limitador.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -26,10 +28,11 @@ router.get('/por-vencer', async (req, res) => {
 // GET /api/cotizaciones/:id - detalle completo (header + líneas)
 router.get('/:id', async (req, res) => {
   try {
-    const [detalle, menus, servicios] = await Promise.all([
+    const [detalle, menus, servicios, paquetes] = await Promise.all([
       pool.query('SELECT * FROM fn_cotizacion_detalle($1::integer)', [req.params.id]),
       pool.query('SELECT * FROM fn_cotizacion_menu_detalle($1::integer)', [req.params.id]),
       pool.query('SELECT * FROM fn_cotizacion_servicios_detalle($1::integer)', [req.params.id]),
+      pool.query('SELECT * FROM fn_cotizacion_paquete($1::integer)', [req.params.id]),
     ]);
 
     const cotizacion = detalle.rows[0];
@@ -38,7 +41,7 @@ router.get('/:id', async (req, res) => {
       return;
     }
 
-    res.json({ ...cotizacion, menus: menus.rows, servicios: servicios.rows });
+    res.json({ ...cotizacion, menus: menus.rows, servicios: servicios.rows, paquetes: paquetes.rows });
   } catch (err) {
     responderError(res, err);
   }
@@ -46,6 +49,78 @@ router.get('/:id', async (req, res) => {
 
 // POST /api/cotizaciones - crear nueva versión
 // POST /api/cotizaciones
+// Intentos de autorización de administrador (usuario + contraseña) al aplicar paquetes bajo el mínimo
+const limiteAutorizacion = crearLimitador({
+  ventanaMs: 15 * 60 * 1000,
+  max: 10,
+  mensaje: 'Demasiados intentos de autorización. Esperá unos minutos e intentá de nuevo.',
+  clave: (req) => `${req.ip}|${String(req.body?.autorizacion?.username ?? '').trim().toLowerCase()}`,
+});
+
+const ROLES_AUTORIZAN = ['Administrador', 'Superusuario'];
+const esEnteroPositivo = (v: unknown) => Number.isInteger(v) && (v as number) > 0;
+
+// POST /api/cotizaciones/paquete - aplica un paquete: crea una nueva versión con las líneas ya llenas
+// body: { id_evento, id_paquete, menus: [ids], componentes: [ids], cortesias: [ids],
+//         extras: [{ id_servicio, cantidad }], cantidad?, deposito_garantia?,
+//         autorizacion?: { username, password } }   ← solo si la cantidad es menor al mínimo
+router.post('/paquete', limiteAutorizacion.middleware, async (req: AuthRequest, res) => {
+  try {
+    const { id_evento, id_paquete, menus, componentes, cortesias, extras, cantidad, deposito_garantia, autorizacion } = req.body;
+    if (!esEnteroPositivo(Number(id_evento)) || !esEnteroPositivo(Number(id_paquete))) {
+      res.status(400).json({ error: 'Falta el evento o el paquete' });
+      return;
+    }
+    const listaValida = (v: unknown) => Array.isArray(v) && v.every(esEnteroPositivo);
+    if (!listaValida(menus ?? []) || !listaValida(componentes ?? []) || !listaValida(cortesias ?? [])) {
+      res.status(400).json({ error: 'Las opciones elegidas no son válidas' });
+      return;
+    }
+    const extrasLista: any[] = extras ?? [];
+    if (!Array.isArray(extrasLista) || !extrasLista.every((e) => esEnteroPositivo(e?.id_servicio) && esEnteroPositivo(Number(e?.cantidad)))) {
+      res.status(400).json({ error: 'Los extras elegidos no son válidos' });
+      return;
+    }
+    if (cantidad != null && !esEnteroPositivo(Number(cantidad))) {
+      res.status(400).json({ error: 'La cantidad debe ser un número entero mayor a 0' });
+      return;
+    }
+
+    // Quién autoriza (solo se usa si la cantidad queda bajo el mínimo; el SP lo vuelve a validar):
+    // un Administrador/Superusuario con sesión se autoriza a sí mismo; si no, usuario y contraseña de uno.
+    let idAutoriza: number | null = null;
+    if (ROLES_AUTORIZAN.includes(req.usuario!.rol_acceso ?? '')) {
+      idAutoriza = req.usuario!.id_usuario;
+    } else if (autorizacion?.username && autorizacion?.password) {
+      const busqueda = await pool.query('SELECT * FROM fn_buscar_usuario_login($1)', [String(autorizacion.username).trim().toLowerCase()]);
+      const admin = busqueda.rows[0];
+      const valido =
+        admin && admin.activo && admin.confirmacion && ROLES_AUTORIZAN.includes(admin.rol_acceso) &&
+        (await bcrypt.compare(String(autorizacion.password), admin.password_hash));
+      if (!valido) {
+        res.status(403).json({ error: 'El usuario o la contraseña del administrador no son correctos' });
+        return;
+      }
+      idAutoriza = admin.id_usuario;
+    }
+
+    const empleado = await pool.query('SELECT fn_id_empleado_por_persona($1::integer) AS id_empleado', [req.usuario!.id_persona]);
+    const result = await pool.query(
+      `CALL sp_aplicar_paquete($1::integer, $2::integer, $3::integer[], $4::integer[], $5::integer[], $6::jsonb,
+                               $7::integer, $8::numeric, $9::integer, $10::integer, NULL)`,
+      [
+        Number(id_evento), Number(id_paquete), [...new Set(menus ?? [])], [...new Set(componentes ?? [])], [...new Set(cortesias ?? [])],
+        JSON.stringify(extrasLista.map((e) => ({ id_servicio: e.id_servicio, cantidad: Number(e.cantidad) }))),
+        cantidad ?? null, Number(deposito_garantia ?? 0), empleado.rows[0]?.id_empleado ?? null, idAutoriza,
+      ]
+    );
+    limiteAutorizacion.reiniciar(req);
+    res.status(201).json({ id_cotizacion: result.rows[0].p_id_cotizacion });
+  } catch (err) {
+    responderError(res, err);
+  }
+});
+
 router.post('/', async (req: AuthRequest, res) => {
   try {
     const { id_evento, vigencia_dias, deposito_garantia } = req.body;
@@ -205,10 +280,11 @@ router.patch('/descuentos/:idDescuento', async (req, res) => {
 // GET /api/cotizaciones/:id/pdf
 router.get('/:id/pdf', async (req, res) => {
   try {
-    const [detalleRes, menusRes, serviciosRes] = await Promise.all([
+    const [detalleRes, menusRes, serviciosRes, paquetesRes] = await Promise.all([
       pool.query('SELECT * FROM fn_cotizacion_detalle($1::integer)', [req.params.id]),
       pool.query('SELECT * FROM fn_cotizacion_menu_detalle($1::integer)', [req.params.id]),
       pool.query('SELECT * FROM fn_cotizacion_servicios_detalle($1::integer)', [req.params.id]),
+      pool.query('SELECT * FROM fn_cotizacion_paquete($1::integer)', [req.params.id]),
     ]);
 
     const cot = detalleRes.rows[0];
@@ -273,6 +349,8 @@ router.get('/:id/pdf', async (req, res) => {
       vendedor: cot.vendedor,
       menus: menusRes.rows.map((m) => ({
         nombre: m.menu,
+        // Línea de un paquete: lo elegido (plato, bebida...) debajo del nombre
+        detalle: paquetesRes.rows.find((p) => p.id_cotizacion_menu === m.id_cotizacion_menu)?.elecciones ?? null,
         cantidad: m.cantidad,
         precio: Number(m.precio_unitario_congelado),
         subtotal: Number(m.subtotal),
@@ -285,6 +363,11 @@ router.get('/:id/pdf', async (req, res) => {
         subtotal: Number(s.subtotal),
       })),
       extras,
+      paquetes: paquetesRes.rows.map((p) => ({
+        nombre: p.paquete as string,
+        incluye: (p.incluye ?? []) as string[],
+        horasIncluidas: p.horas_incluidas as number | null,
+      })),
       subtotalMenus: Number(cot.subtotal_menus),
       subtotalServicios: Number(cot.subtotal_servicios),
       depositoGarantia: Number(cot.deposito_garantia),

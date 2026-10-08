@@ -3,7 +3,8 @@ export type Capacidad =
   | 'clientes' | 'eventos'
   | 'cotizaciones' | 'descuentos'
   | 'degustaciones' | 'fechasDegustacion'
-  | 'extras' | 'pagosRegistrar' | 'pagosVerificar' | 'prospectos';
+  | 'extras' | 'pagosRegistrar' | 'pagosVerificar' | 'prospectos'
+  | 'paquetes' | 'autorizarMinimo';
 
 // Espejo de src/middleware/permisos.ts del backend: si cambia uno, cambia el otro.
 // El backend es el que manda; esto solo decide qué se muestra en pantalla.
@@ -22,4 +23,7 @@ export const PERMISOS: Record<Capacidad, string[]> = {
   pagosRegistrar: ['Vendedor', 'Administrador', 'Superusuario'],
   pagosVerificar: ['Revisor', 'Administrador', 'Superusuario'],
   prospectos: ['Vendedor', 'Secretaria', 'Administrador', 'Superusuario'],
+  paquetes: ['Secretaria', 'Administrador', 'Superusuario'],
+  // Aplicar un paquete por debajo de su mínimo de personas (el backend lo vuelve a validar)
+  autorizarMinimo: ['Administrador', 'Superusuario'],
 };

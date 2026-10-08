@@ -25,7 +25,9 @@ interface DatosPlantilla {
   version: number;
   vigenciaDias: number;
   vendedor: string | null;
-  menus: { nombre: string; cantidad: number; precio: number; subtotal: number; esExtraDegustacion: boolean }[];
+  menus: { nombre: string; detalle?: string | null; cantidad: number; precio: number; subtotal: number; esExtraDegustacion: boolean }[];
+  /** Paquetes aplicados: lo que incluyen (textos) y las horas de instalaciones */
+  paquetes?: { nombre: string; incluye: string[]; horasIncluidas: number | null }[];
   servicios: { nombre: string; cantidad: number; precio: number; subtotal: number }[];
   extras: LineaExtra[];
   subtotalMenus: number;
@@ -56,9 +58,11 @@ export function armarHtmlCotizacion(d: DatosPlantilla): string {
   const hayExtras = d.extras.length > 0;
   const totalGeneral = d.total + d.totalExtras;
 
-  const filaMenu = (m: { nombre: string; cantidad: number; precio: number; subtotal: number; esExtraDegustacion: boolean }) => `
+  const paquetes = (d.paquetes ?? []).filter((p) => p.incluye.length > 0);
+  const filaMenu = (m: DatosPlantilla['menus'][number]) => `
     <tr>
-      <td>${m.nombre}${m.esExtraDegustacion ? ' <span class="tag-degustacion">Degustación</span>' : ''}</td>
+      <td>${m.nombre}${m.esExtraDegustacion ? ' <span class="tag-degustacion">Degustación</span>' : ''}
+        ${m.detalle ? `<div class="detalle-linea">${m.detalle}</div>` : ''}</td>
       <td class="num">${m.cantidad}</td>
       <td class="num">Q${m.precio.toFixed(2)}</td>
       <td class="num">Q${m.subtotal.toFixed(2)}</td>
@@ -111,6 +115,9 @@ export function armarHtmlCotizacion(d: DatosPlantilla): string {
   .detalles-grid { display: flex; flex-wrap: wrap; gap: 15px; }
   .tag-degustacion { display: inline-block; padding: 1px 5px; border-radius: 4px; font-size: 8px; font-weight: bold; background: #fff3cd; color: #856404; margin-left: 4px; }
   .tag-extra { display: inline-block; padding: 1px 5px; border-radius: 4px; font-size: 8px; font-weight: bold; background: #e9ecef; color: #495057; margin-left: 4px; }
+  .detalle-linea { font-size: 10px; color: #666; margin-top: 2px; }
+  .incluye { margin: 0 0 15px; padding: 6px 8px 6px 24px; }
+  .incluye li { margin: 2px 0; }
   .footer { margin-top: 25px; font-size: 9px; color: #777; border-top: 1px solid #eee; padding-top: 10px; }
   .footer p { margin: 2px 0; }
 </style>
@@ -119,8 +126,8 @@ export function armarHtmlCotizacion(d: DatosPlantilla): string {
   <div class="header">
     <img src="${d.logoUrl}" alt="Logo" style="max-height:80px; margin-bottom:8px;" />
     <p class="etiqueta">Cotización de servicio</p>
-    <h1>${d.eventoLocacion}</h1>
-    <p>El escenario perfecto para su evento</p>
+    <!-- El logo ya dice "La Quebrada" y el lema: el nombre solo va si el evento es en otra locación -->
+    ${/la quebrada/i.test(d.eventoLocacion) ? '' : `<h1>${d.eventoLocacion}</h1>`}
   </div>
 
   <div class="info-boxes">
@@ -152,6 +159,11 @@ export function armarHtmlCotizacion(d: DatosPlantilla): string {
       <tbody>${d.menus.map(filaMenu).join('')}</tbody>
     </table>
   ` : ''}
+
+  ${paquetes.map((p) => `
+    <div class="seccion-titulo">Incluye — ${p.nombre}</div>
+    <ul class="incluye">${p.incluye.map((t) => `<li>${t}</li>`).join('')}</ul>
+  `).join('')}
 
   ${d.servicios.length > 0 ? `
     <div class="seccion-titulo">Descripción — Servicios</div>

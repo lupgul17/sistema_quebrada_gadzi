@@ -1,0 +1,329 @@
+<div class="paquetes-list">
+  <div class="toolbar">
+    <p class="hint intro">
+      Precio fijo por persona: el cliente elige su plato (y bebida, etc.) dentro del paquete.
+      Se aplican desde la cotización del evento.
+    </p>
+    <span class="spacer"></span>
+    @if (auth.puede('paquetes')) {
+      <p-button label="+ Nuevo paquete" (onClick)="abrirNuevo()" />
+    }
+  </div>
+
+  <div class="table-container">
+    <p-table [value]="paquetes()" [paginator]="true" [rows]="15" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Nombre</th>
+          <th>Precio / persona</th>
+          <th>Mínimo</th>
+          <th>Disponible en</th>
+          <th>Contenido</th>
+          <th>Activo</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-p>
+        <tr>
+          <td>
+            <strong>{{ p.nombre }}</strong>
+            <div class="sub">{{ p.tipo_menu }}{{ p.horas_incluidas ? ' · ' + p.horas_incluidas + ' h' : '' }}</div>
+          </td>
+          <td>Q{{ p.precio_por_persona | number: '1.2-2' }}</td>
+          <td>{{ p.minimo_personas }} pers.</td>
+          <td class="col-areas">
+            @if (p.disponibilidad?.length) {
+              @for (a of p.disponibilidad; track a.tipo + a.id) {
+                <span class="area-chip" [class.locacion]="a.tipo === 'locacion'">{{ a.nombre }}</span>
+              }
+            } @else {
+              <span class="area-chip todos">Todos lados</span>
+            }
+          </td>
+          <td class="col-incluye">
+            @for (g of p.grupos; track g.id) {
+              <span class="grupo-chip" [class.cortesia]="g.tipo === 'cortesia'"
+                [pTooltip]="nombresOpciones(g)" tooltipPosition="top">
+                {{ g.nombre }}{{ g.opciones.length > 1 ? ' (' + g.opciones.length + ' opc.)' : '' }}
+              </span>
+            }
+            @if (p.incluidos.length) {
+              <span class="grupo-chip incluido">{{ p.incluidos.length }} incluidos</span>
+            }
+            @if (p.extras.length) {
+              <span class="grupo-chip incluido">{{ p.extras.length }} extras</span>
+            }
+          </td>
+          <td>{{ p.activo ? 'Sí' : 'No' }}</td>
+          <td class="col-acciones">
+            <div class="acciones-wrapper">
+              @if (auth.puede('paquetes')) {
+                <p-button icon="pi pi-pencil" severity="secondary" size="small" (onClick)="abrirEditar(p)" pTooltip="Editar" tooltipPosition="left" />
+                <p-button icon="pi pi-copy" severity="secondary" size="small" [text]="true" (onClick)="abrirDuplicar(p)" pTooltip="Duplicar para otra área o precio" tooltipPosition="left" />
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="7">Todavía no hay paquetes.</td></tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <p-dialog
+    [header]="editandoId() ? 'Editar paquete' : 'Nuevo paquete'"
+    [(visible)]="dialogoVisible"
+    [modal]="true"
+    [style]="{ width: '820px', maxHeight: '90vh' }"
+    appendTo="body"
+  >
+    <div class="grid-2">
+      <div class="field">
+        <label for="pq-nombre">Nombre *</label>
+        <input pInputText id="pq-nombre" [(ngModel)]="form.nombre" placeholder="Ej. Menús convivios y graduaciones" fluid />
+      </div>
+      <div class="field">
+        <label for="pq-tipo">Tipo de menú *</label>
+        <p-select appendTo="body" inputId="pq-tipo" [(ngModel)]="form.id_tipo_menu" [options]="tiposMenu()" optionLabel="descripcion" optionValue="id_tipo_menu" fluid />
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="field">
+        <label for="pq-precio">Precio por persona (Q) *</label>
+        <p-inputnumber inputId="pq-precio" [(ngModel)]="form.precio_por_persona" mode="decimal" [minFractionDigits]="2" [min]="0" fluid />
+      </div>
+      <div class="field">
+        <label for="pq-minimo">Mínimo de personas *</label>
+        <p-inputnumber inputId="pq-minimo" [(ngModel)]="form.minimo_personas" [min]="1" [useGrouping]="false" fluid />
+      </div>
+      <div class="field">
+        <label for="pq-horas">Horas incluidas</label>
+        <p-inputnumber inputId="pq-horas" [(ngModel)]="form.horas_incluidas" [min]="1" [useGrouping]="false" placeholder="Ej. 4" fluid />
+      </div>
+    </div>
+    <small class="hint bloque">Con menos personas del mínimo se necesita autorización de un administrador. Si el evento dura más de las horas incluidas, se sugiere la hora extra.</small>
+
+    <div class="field">
+      <label for="pq-desc">Descripción</label>
+      <textarea pTextarea id="pq-desc" [(ngModel)]="form.descripcion" rows="2" fluid></textarea>
+    </div>
+
+    <!-- Qué elige el cliente -->
+    <section class="seccion">
+      <div class="seccion-titulo">
+        <span>El cliente elige <small class="hint">— con una sola opción, va fija</small></span>
+        <span class="seccion-botones">
+          <p-button label="+ Menús" size="small" severity="secondary" [text]="true" (onClick)="agregarGrupo('menu')" pTooltip="Ej. plato fuerte: elige 1 de 5 menús" />
+          <p-button label="+ Componentes" size="small" severity="secondary" [text]="true" (onClick)="agregarGrupo('componente')" pTooltip="Ej. bebida: naranjada, jamaica o gaseosa" />
+        </span>
+      </div>
+      @for (g of gruposDe('menu', 'componente'); track g) {
+        <div class="grupo-editor">
+          <span class="tipo-chip" [class.componente]="g.tipo === 'componente'">{{ g.tipo === 'menu' ? 'Menús' : 'Comp.' }}</span>
+          <input pInputText [(ngModel)]="g.nombre" [placeholder]="g.tipo === 'menu' ? 'Ej. Plato fuerte' : 'Ej. Bebida fría'" class="grupo-nombre" />
+          <div class="grupo-cantidad">
+            <span class="hint">Elige</span>
+            <p-inputnumber [(ngModel)]="g.cantidad_a_elegir" [min]="1" [max]="99" [useGrouping]="false" class="cantidad" />
+          </div>
+          <p-multiselect
+            appendTo="body"
+            [(ngModel)]="g.opciones"
+            [options]="opcionesDe(g.tipo)"
+            [group]="true"
+            optionLabel="label"
+            optionValue="value"
+            [filter]="true"
+            [maxSelectedLabels]="2"
+            selectedItemsLabel="{0} opciones"
+            [placeholder]="g.tipo === 'menu' ? 'Menús...' : 'Componentes...'"
+            class="grupo-opciones"
+          />
+          <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small" (onClick)="quitarGrupo(g)" pTooltip="Quitar grupo" />
+        </div>
+      } @empty {
+        <p class="hint vacio">Agregá al menos un grupo de menús (plato fuerte, brunch…). Los menús se crean en "Menús armados".</p>
+      }
+    </section>
+
+    <!-- Cortesías -->
+    <section class="seccion">
+      <div class="seccion-titulo">
+        <span>Cortesías <small class="hint">— servicios sin costo a elegir (discoteca, brindis, pastel…)</small></span>
+        <p-button label="+ Grupo" size="small" severity="secondary" [text]="true" (onClick)="agregarGrupo('cortesia')" />
+      </div>
+      @for (g of gruposDe('cortesia'); track g) {
+        <div class="grupo-editor">
+          <input pInputText [(ngModel)]="g.nombre" placeholder="Nombre" class="grupo-nombre" />
+          <div class="grupo-cantidad">
+            <span class="hint">Elige</span>
+            <p-inputnumber [(ngModel)]="g.cantidad_a_elegir" [min]="1" [max]="99" [useGrouping]="false" class="cantidad" />
+          </div>
+          <p-multiselect
+            appendTo="body"
+            [(ngModel)]="g.opciones"
+            [options]="opcionesServicios()"
+            [group]="true"
+            optionLabel="label"
+            optionValue="value"
+            [filter]="true"
+            [maxSelectedLabels]="3"
+            selectedItemsLabel="{0} opciones"
+            placeholder="Opciones..."
+            class="grupo-opciones"
+          />
+          <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small" (onClick)="quitarGrupo(g)" pTooltip="Quitar grupo" />
+        </div>
+      } @empty {
+        <p class="hint vacio">Sin cortesías.</p>
+      }
+    </section>
+
+    <!-- Incluye -->
+    <section class="seccion">
+      <div class="seccion-titulo">
+        <span>Incluye <small class="hint">— va en el precio por persona</small></span>
+        <span class="seccion-botones">
+          <p-button label="+ Servicio" size="small" severity="secondary" [text]="true" (onClick)="agregarIncluido('servicio')" pTooltip="Aparece como línea a Q0 (ej. meseros)" />
+          <p-button label="+ Texto" size="small" severity="secondary" [text]="true" (onClick)="agregarIncluido('texto')" pTooltip="Solo se muestra (ej. cristalería, mantelería)" />
+        </span>
+      </div>
+      @for (i of form.incluidos; track i) {
+        <div class="incluido-editor">
+          @if (i.modo === 'servicio') {
+            <p-select
+              appendTo="body"
+              [(ngModel)]="i.id_servicio"
+              [options]="serviciosPlanos()"
+              optionLabel="nombre"
+              optionValue="id_servicio"
+              [filter]="true"
+              placeholder="Servicio..."
+              class="incluido-servicio"
+            />
+            <p-inputnumber [(ngModel)]="i.cantidad" [min]="1" [useGrouping]="false" class="cantidad" pTooltip="Cantidad" />
+            <span class="hint">por cada</span>
+            <p-inputnumber [(ngModel)]="i.por_cada_personas" [min]="1" [useGrouping]="false" class="cantidad" placeholder="—" />
+            <span class="hint">pers.</span>
+          } @else {
+            <input pInputText [(ngModel)]="i.texto" maxlength="250" placeholder="Ej. Cristalería (plato de comida, tenedor, cuchillo y vaso)" class="incluido-texto" />
+          }
+          <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small" (onClick)="quitarIncluido(i)" />
+        </div>
+      } @empty {
+        <p class="hint vacio">Nada todavía. Ej.: "Uso de instalaciones por 4 horas" (texto), Mesero 1 por cada 40 pers. (servicio).</p>
+      }
+    </section>
+
+    <!-- Extras -->
+    <section class="seccion">
+      <div class="seccion-titulo">
+        <span>Extras opcionales <small class="hint">— con precio de paquete; al cotizar se marcan los que quiera el cliente</small></span>
+        <p-button label="+ Extra" size="small" severity="secondary" [text]="true" (onClick)="agregarExtra()" />
+      </div>
+      @for (e of form.extras; track e) {
+        <div class="incluido-editor">
+          <p-select
+            appendTo="body"
+            [(ngModel)]="e.id_servicio"
+            (onChange)="alElegirServicioExtra(e)"
+            [options]="serviciosPlanos()"
+            optionLabel="nombre"
+            optionValue="id_servicio"
+            [filter]="true"
+            placeholder="Servicio..."
+            class="incluido-servicio"
+          />
+          <p-inputnumber [(ngModel)]="e.precio" mode="decimal" [minFractionDigits]="2" [min]="0" prefix="Q" class="precio"
+            [pTooltip]="precioCatalogo(e.id_servicio) !== null ? 'Catálogo: Q' + precioCatalogo(e.id_servicio) : ''" />
+          <p-select appendTo="body" [(ngModel)]="e.calculo" [options]="calculos" optionLabel="label" optionValue="value" class="calculo" />
+          <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small" (onClick)="quitarExtra(e)" />
+        </div>
+      } @empty {
+        <p class="hint vacio">Sin extras. Ej.: hora extra, mesas redondas, descorches, pantalla LED…</p>
+      }
+    </section>
+
+    <div class="field">
+      <label>Disponible en</label>
+      <p-selectbutton [options]="modosDisponibilidad" optionLabel="label" optionValue="value" [(ngModel)]="form.modo" [allowEmpty]="false" />
+      @if (form.modo === 'restringido') {
+        <p-multiselect
+          appendTo="body"
+          [(ngModel)]="form.areas"
+          [options]="opcionesAreas()"
+          [group]="true"
+          optionLabel="label"
+          optionValue="value"
+          display="chip"
+          placeholder="Elegí locaciones o salones..."
+          fluid
+        />
+        <small class="hint">Para otro precio en otra área, guardá y usá Duplicar.</small>
+      }
+    </div>
+
+    <div class="field field-checkbox">
+      <p-checkbox [(ngModel)]="form.activo" [binary]="true" inputId="pq-activo" />
+      <label for="pq-activo">Activo</label>
+    </div>
+
+    @if (error()) {
+      <p-message severity="error" [text]="error()!" styleClass="w-full mb-3" />
+    }
+
+    <div class="dialog-acciones">
+      <p-button label="Cancelar" severity="secondary" (onClick)="dialogoVisible.set(false)" />
+      <p-button label="Guardar" [loading]="guardando()" [disabled]="guardando()" (onClick)="guardar()" />
+    </div>
+  </p-dialog>
+
+  <p-dialog
+    [header]="'Duplicar — ' + (paqueteADuplicar()?.nombre ?? '')"
+    [(visible)]="dialogoDuplicarVisible"
+    [modal]="true"
+    [style]="{ width: '520px' }"
+    appendTo="body"
+  >
+    @if (paqueteADuplicar(); as original) {
+      <p class="hint">
+        Se copia todo (opciones, incluidos, extras con sus precios y el mínimo). Hoy se ofrece en:
+        <strong>{{ textoDisponibilidad(original.disponibilidad) }}</strong> a Q{{ original.precio_por_persona | number: '1.2-2' }} por persona.
+      </p>
+      <div class="grid-2">
+        <div class="field">
+          <label for="dup-nombre">Nombre *</label>
+          <input pInputText id="dup-nombre" [(ngModel)]="duplicarForm.nombre" fluid />
+        </div>
+        <div class="field">
+          <label for="dup-precio">Precio por persona (Q) *</label>
+          <p-inputnumber inputId="dup-precio" [(ngModel)]="duplicarForm.precio_por_persona" mode="decimal" [minFractionDigits]="2" [min]="0" fluid />
+        </div>
+      </div>
+      <div class="field">
+        <label>Disponible en</label>
+        <p-selectbutton [options]="modosDisponibilidad" optionLabel="label" optionValue="value" [(ngModel)]="duplicarForm.modo" [allowEmpty]="false" />
+        @if (duplicarForm.modo === 'restringido') {
+          <p-multiselect
+            appendTo="body"
+            [(ngModel)]="duplicarForm.areas"
+            [options]="opcionesAreas()"
+            [group]="true"
+            optionLabel="label"
+            optionValue="value"
+            display="chip"
+            placeholder="Elegí locaciones o salones..."
+            fluid
+          />
+        }
+      </div>
+      @if (errorDuplicar()) {
+        <p-message severity="error" [text]="errorDuplicar()!" styleClass="w-full mb-3" />
+      }
+      <div class="dialog-acciones">
+        <p-button label="Cancelar" severity="secondary" (onClick)="dialogoDuplicarVisible.set(false)" />
+        <p-button label="Duplicar" icon="pi pi-copy" [loading]="duplicando()" (onClick)="confirmarDuplicar()" />
+      </div>
+    }
+  </p-dialog>
+</div>

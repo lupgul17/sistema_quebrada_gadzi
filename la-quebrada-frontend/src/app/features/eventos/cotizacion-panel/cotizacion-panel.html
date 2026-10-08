@@ -8,6 +8,7 @@
         <p-checkbox [(ngModel)]="aplicaDeposito" [binary]="true" inputId="deposito1" />
         <label for="deposito1">Aplica depósito de garantía (Q1,000)</label>
         <p-button label="Crear cotización" [loading]="procesando()" (onClick)="crearCotizacion()" />
+        <p-button label="Usar paquete" icon="pi pi-box" severity="secondary" [disabled]="procesando()" (onClick)="abrirPaquete()" />
       </div>
     }
   </div>
@@ -56,6 +57,7 @@
         <p-button label="Descargar PDF" icon="pi pi-file-pdf" severity="secondary" size="small" [loading]="descargandoPdf()" (onClick)="descargarPdf()" />
         @if (editable) {
           <p-button label="Nueva versión" severity="secondary" size="small" [loading]="procesando()" (onClick)="crearCotizacion()" />
+          <p-button label="Aplicar paquete" icon="pi pi-box" severity="secondary" size="small" [disabled]="procesando()" (onClick)="abrirPaquete()" />
         }
       </div>
     </div>
@@ -80,7 +82,12 @@
           <tbody>
             @for (linea of cotizacion()!.menus; track linea.id_cotizacion_menu) {
               <tr>
-                <td>{{ linea.menu }}</td>
+                <td>
+                  {{ linea.menu }}
+                  @if (eleccionesDe(linea); as elecciones) {
+                    <div class="elecciones-paquete">{{ elecciones }}</div>
+                  }
+                </td>
                 <td>
                   {{ linea.tipo_menu }}
                   @if (linea.es_extra_degustacion) {
@@ -103,6 +110,18 @@
             }
           </tbody>
         </table>
+      }
+      @for (pq of cotizacion()!.paquetes; track pq.id_cotizacion_menu) {
+        @if (pq.incluye.length) {
+          <div class="incluye-paquete">
+            <strong>Incluye — {{ pq.paquete }}</strong>
+            <ul>
+              @for (t of pq.incluye; track $index) {
+                <li>{{ t }}</li>
+              }
+            </ul>
+          </div>
+        }
       }
           @if (cuadre(); as q) {
       <div class="cuadre">
@@ -304,3 +323,6 @@
 
 <!-- Modal de menú a medida, montado una vez -->
 <app-menu-personalizado-dialog #menuPersonalizadoDialog (guardado)="alAgregarMenuPersonalizado()" />
+
+<!-- Modal para aplicar un paquete (crea una versión nueva de la cotización) -->
+<app-aplicar-paquete-dialog #aplicarPaqueteDialog (aplicado)="alAplicarPaquete($event)" />

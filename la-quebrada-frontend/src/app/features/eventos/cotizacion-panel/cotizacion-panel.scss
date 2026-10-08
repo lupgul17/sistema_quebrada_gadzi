@@ -11,6 +11,7 @@
 }
 
 .crear-form {
+  flex-wrap: wrap;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -318,4 +319,20 @@
 
   &.ok { background: var(--lq-ok-bg); color: var(--lq-ok-fg); }
   &.alerta { background: var(--lq-danger-bg); color: var(--lq-danger-fg); }
+}
+
+/* Paquete: lo elegido bajo la línea y lo que incluye */
+.elecciones-paquete {
+  font-size: 0.78rem;
+  color: var(--p-text-muted-color);
+}
+
+.incluye-paquete {
+  margin: 0.5rem 0 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+  background: var(--lq-neutral-bg);
+  font-size: 0.85rem;
+
+  ul { margin: 0.3rem 0 0; padding-left: 1.2rem; }
 }

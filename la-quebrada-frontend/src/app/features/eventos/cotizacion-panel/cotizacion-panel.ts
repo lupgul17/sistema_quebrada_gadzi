@@ -16,6 +16,8 @@ import { MenuPersonalizadoDialog } from '../menu-personalizado-dialog/menu-perso
 import { DegustacionEventoService } from '../../../core/degustacion-evento';
 import { SaldoEventoService } from '../../../core/saldo-evento.service';
 import { InputText } from 'primeng/inputtext';
+import { AplicarPaqueteDialog } from '../aplicar-paquete-dialog/aplicar-paquete-dialog';
+import { PaqueteAplicado } from '../../../core/paquetes';
 
 /**
  * Tipo de menú que cuenta para niños. Debe coincidir EXACTO con la descripción en tc_tipo_menu
@@ -76,6 +78,8 @@ interface CotizacionDetalle {
   color_cubremanteles: string | null;
   observaciones: string | null;
   boquitas: string | null;
+  /** Paquetes aplicados: lo elegido y lo que incluyen (ligado a su línea de menú) */
+  paquetes: PaqueteAplicado[];
 }
 
 interface MenuOpcion {
@@ -119,13 +123,14 @@ const SIGUIENTE_ESTADO_COTIZACION: Record<string, { estado: string; label: strin
 @Component({
   selector: 'app-cotizacion-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, Select, InputNumber, Checkbox, Textarea, Button, Dialog, ProgressSpinner,MenuPersonalizadoDialog, InputText],
+  imports: [CommonModule, FormsModule, Select, InputNumber, Checkbox, Textarea, Button, Dialog, ProgressSpinner,MenuPersonalizadoDialog, InputText, AplicarPaqueteDialog],
   templateUrl: './cotizacion-panel.html',
   styleUrl: './cotizacion-panel.scss',
 })
 export class CotizacionPanel implements OnInit {
   @Input({ required: true }) idEvento!: number;
   @ViewChild('menuPersonalizadoDialog') menuPersonalizadoDialog!: MenuPersonalizadoDialog;
+  @ViewChild('aplicarPaqueteDialog') aplicarPaqueteDialog!: AplicarPaqueteDialog;
 
   readonly cotizacion = signal<CotizacionDetalle | null>(null);
   readonly versiones = signal<CotizacionResumen[]>([]);
@@ -438,4 +443,18 @@ alAgregarMenuPersonalizado(): void {
   this.cargarVersiones();
   this.saldoService.actualizar(this.idEvento);
 }
+
+  /** Lo elegido en el paquete de esta línea (ej. "Milanesa de pollo · Jamaica · 3 tortillas"). */
+  eleccionesDe(linea: LineaMenu): string | null {
+    return this.cotizacion()?.paquetes?.find((p) => p.id_cotizacion_menu === linea.id_cotizacion_menu)?.elecciones ?? null;
+  }
+
+  abrirPaquete(): void {
+    this.aplicarPaqueteDialog.abrir(this.idEvento, this.totalAdultos(), this.aplicaDeposito, !!this.cotizacion());
+  }
+
+  alAplicarPaquete(idCotizacion: number): void {
+    this.cargarDetalle(idCotizacion);
+    this.cargarVersiones();
+  }
 }

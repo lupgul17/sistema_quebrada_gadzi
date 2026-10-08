@@ -1,0 +1,227 @@
+.paquetes-list {
+  padding: 1.5rem;
+
+  .toolbar {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    .spacer { flex: 1; }
+    .intro { margin: 0; max-width: 560px; }
+  }
+
+  .table-container {
+    border: 1px solid var(--lq-borde);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .sub {
+    font-size: 0.75rem;
+    color: var(--p-text-muted-color);
+  }
+
+  .col-areas { max-width: 220px; }
+  .col-incluye { max-width: 340px; }
+
+  .col-acciones {
+    width: 6rem;
+    text-align: center;
+  }
+
+  .acciones-wrapper {
+    display: flex;
+    gap: 0.25rem;
+    justify-content: center;
+  }
+}
+
+.area-chip,
+.grupo-chip {
+  display: inline-block;
+  padding: 0.12rem 0.55rem;
+  margin: 0.1rem 0.25rem 0.1rem 0;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  border: 1px solid var(--lq-borde-fuerte);
+  color: var(--p-text-muted-color);
+  white-space: nowrap;
+}
+
+.area-chip {
+  &.locacion {
+    border-color: var(--lq-dorado);
+    color: var(--lq-dorado);
+  }
+
+  &.todos {
+    border-color: transparent;
+    background: var(--lq-neutral-bg);
+  }
+}
+
+.grupo-chip {
+  border-color: var(--lq-verde-claro);
+  color: var(--lq-verde-claro);
+  cursor: default;
+
+  &.cortesia {
+    border-color: var(--lq-dorado);
+    color: var(--lq-dorado);
+  }
+
+  &.incluido {
+    border-color: transparent;
+    background: var(--lq-neutral-bg);
+    color: var(--p-text-muted-color);
+  }
+}
+
+.hint {
+  color: var(--p-text-muted-color);
+  font-size: 0.8rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+
+  label {
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+}
+
+.field-checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.grid-2,
+.grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1.5rem;
+}
+
+.grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.hint.bloque {
+  display: block;
+  margin: -0.4rem 0 1rem;
+}
+
+.seccion {
+  border: 1px solid var(--lq-borde);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  margin-bottom: 1rem;
+
+  .seccion-titulo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .vacio { margin: 0.25rem 0; }
+
+  .seccion-botones { display: inline-flex; gap: 0.1rem; }
+}
+
+.tipo-chip {
+  flex: none;
+  width: 3.6rem;
+  text-align: center;
+  font-size: 0.7rem;
+  padding: 0.15rem 0;
+  border-radius: 999px;
+  border: 1px solid var(--lq-verde-claro);
+  color: var(--lq-verde-claro);
+
+  &.componente {
+    border-color: var(--lq-borde-fuerte);
+    color: var(--p-text-muted-color);
+  }
+}
+
+.grupo-editor,
+.incluido-editor {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.grupo-nombre { width: 170px; flex-shrink: 0; }
+
+.grupo-cantidad {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.grupo-opciones,
+.incluido-servicio,
+.incluido-texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.precio {
+  width: 8rem;
+  flex: none;
+
+  ::ng-deep input { width: 100%; }
+}
+
+.calculo {
+  width: 10.5rem;
+  flex: none;
+}
+
+// El diálogo va al body: ::ng-deep cuelga de .cantidad (con atributo de este componente)
+.cantidad {
+  width: 3.5rem;
+  flex: none;
+
+  ::ng-deep input {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.dialog-acciones {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .paquetes-list {
+    padding: 1rem 0;
+
+    .toolbar { flex-wrap: wrap; }
+  }
+
+  .grid-2,
+  .grid-3 { grid-template-columns: 1fr; }
+
+  .incluido-editor { flex-wrap: wrap; }
+  .incluido-servicio,
+  .incluido-texto { flex-basis: 100%; }
+
+  .grupo-editor { flex-wrap: wrap; }
+  .grupo-nombre { width: auto; flex: 1; }
+  .grupo-opciones { flex-basis: 100%; }
+}
