@@ -7,6 +7,7 @@ import { Card } from 'primeng/card';
 import { API_URL } from '../../../core/api-config';
 import { AuthService } from '../../../core/auth.service';
 import { ClienteFormDialog } from '../cliente-form-dialog/cliente-form-dialog';
+import { TelefonoPipe } from '../../../core/telefono.pipe';
 
 interface Cliente {
   id_cliente: number;
@@ -40,7 +41,7 @@ interface PagoCliente {
 @Component({
   selector: 'app-cliente-detail',
   standalone: true,
-  imports: [CommonModule, Button, Card, ClienteFormDialog],
+  imports: [CommonModule, Button, Card, ClienteFormDialog, TelefonoPipe],
   templateUrl: './cliente-detail.html',
   styleUrl: './cliente-detail.scss',
 })

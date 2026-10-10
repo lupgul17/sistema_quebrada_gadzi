@@ -14,7 +14,7 @@
 
       <p-card header="Datos de contacto" class="datos-card">
         <div class="datos-grid">
-          <div><span class="label">Teléfono</span><span>{{ c.telefono || '—' }}</span></div>
+          <div><span class="label">Teléfono</span><span>{{ (c.telefono | telefono) || '—' }}</span></div>
           <div><span class="label">Correo</span><span>{{ c.correo || '—' }}</span></div>
           <div><span class="label">CUI/DPI</span><span>{{ c.cui || '—' }}</span></div>
           <div><span class="label">NIT</span><span>{{ c.nit || '—' }}</span></div>

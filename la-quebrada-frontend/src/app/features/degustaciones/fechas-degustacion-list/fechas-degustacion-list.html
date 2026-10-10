@@ -92,7 +92,7 @@
               <tr>
                 <td>{{ a.hora_llegada ? a.hora_llegada.substring(0,5) : '—' }}</td>
                 <td>{{ a.cliente }}</td>
-                <td>{{ a.telefono || '—' }}</td>
+                <td>{{ (a.telefono | telefono) || '—' }}</td>
                 <td>{{ a.tipo_evento || '—' }}</td>
                 <td>{{ a.fecha_evento | date: 'dd/MM/yyyy' }}</td>
               </tr>

@@ -11,6 +11,7 @@ import { Dialog } from 'primeng/dialog';
 import { API_URL } from '../../../core/api-config';
 import { AuthService } from '../../../core/auth.service';
 import { fechaLocalISO } from '../../../core/fechas';
+import { TelefonoPipe } from '../../../core/telefono.pipe';
 
 interface FechaDegustacion {
   id_fecha_degustacion: number;
@@ -71,7 +72,7 @@ function paginaCargando(oscuro: boolean): string {
 @Component({
   selector: 'app-fechas-degustacion-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, DatePicker, HoraRapida, Select, Button, Dialog],
+  imports: [CommonModule, FormsModule, TableModule, DatePicker, HoraRapida, Select, Button, Dialog, TelefonoPipe],
   templateUrl: './fechas-degustacion-list.html',
   styleUrl: './fechas-degustacion-list.scss',
 })

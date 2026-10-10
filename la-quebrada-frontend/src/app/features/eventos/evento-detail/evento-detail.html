@@ -24,7 +24,7 @@
         <div><span class="label">Salón(es)</span><span>{{ e.salones || '—' }}</span></div>
         <div><span class="label">Adultos / Niños</span><span>{{ e.total_adultos }} / {{ e.total_menores }}</span></div>
         <div><span class="label">Reserva temporal</span><span>{{ e.reserva_temporal ? 'Sí' : 'No' }}</span></div>
-        <div><span class="label">Teléfono del cliente</span><span>{{ e.telefono_cliente || '—' }}</span></div>
+        <div><span class="label">Teléfono del cliente</span><span>{{ (e.telefono_cliente | telefono) || '—' }}</span></div>
       </div>
       @if (e.notas) {
         <p class="notas"><span class="label">Notas</span> {{ e.notas }}</p>

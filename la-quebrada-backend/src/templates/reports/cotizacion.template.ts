@@ -57,6 +57,11 @@ const NOMBRE_CONCEPTO: Record<string, string> = {
   recargo: 'Recargo',
 };
 
+/** Teléfono como 5502-4196 (igual que en el sistema); si no son 8 dígitos se deja tal cual. */
+function mostrarTelefono(t: string | null): string | null {
+  return t && /^\d{8}$/.test(t) ? `${t.slice(0, 4)}-${t.slice(4)}` : t;
+}
+
 export function armarHtmlCotizacion(d: DatosPlantilla): string {
   const hayExtras = d.extras.length > 0;
   const totalGeneral = d.total + d.totalExtras;
@@ -138,7 +143,7 @@ export function armarHtmlCotizacion(d: DatosPlantilla): string {
     <div class="info-box">
       <h3>Cliente</h3>
       <p><strong>Nombre:</strong> ${d.clienteNombre}</p>
-      <p><strong>Teléfono:</strong> ${d.clienteTelefono || '—'}</p>
+      <p><strong>Teléfono:</strong> ${mostrarTelefono(d.clienteTelefono) || '—'}</p>
       <p><strong>Fecha de cotización:</strong> ${d.fechaCotizacion}</p>
     </div>
     <div class="info-box">

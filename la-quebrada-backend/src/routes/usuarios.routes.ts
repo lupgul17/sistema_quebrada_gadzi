@@ -2,7 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { pool } from '../db/pool.js';
 import type { AuthRequest } from '../middleware/auth.middleware.js';
-import { formato, textoONull } from '../utils/validar.js';
+import { formato, leerPersona, textoONull } from '../utils/validar.js';
 import { responderError } from '../utils/errores.js';
 
 const router = Router();
@@ -90,6 +90,40 @@ router.post('/', async (req: AuthRequest, res) => {
       ]
     );
     res.status(201).json({ id_usuario: result.rows[0].p_id_usuario });
+  } catch (err) {
+    responderError(res, err);
+  }
+});
+
+// GET /api/usuarios/:id  (datos personales, para el diálogo Editar)
+router.get('/:id', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM fn_obtener_usuario($1::integer)', [req.params.id]);
+    if (!result.rows.length) {
+      res.status(404).json({ error: 'No existe el usuario.' });
+      return;
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    responderError(res, err);
+  }
+});
+
+// PUT /api/usuarios/:id/datos  (nombres, CUI, teléfono y correo; el NIT no se toca)
+router.put('/:id/datos', async (req, res) => {
+  try {
+    const leido = leerPersona({ ...req.body, nit: null });
+    if ('error' in leido) {
+      res.status(400).json({ error: leido.error });
+      return;
+    }
+    const { primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, cui, telefono, correo } = leido.datos;
+    await pool.query(
+      `CALL sp_editar_datos_usuario($1::integer, $2::varchar, $3::varchar, $4::varchar, $5::varchar,
+                                    $6::varchar, $7::varchar, $8::varchar)`,
+      [req.params.id, primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, cui, telefono, correo]
+    );
+    res.json({ ok: true });
   } catch (err) {
     responderError(res, err);
   }

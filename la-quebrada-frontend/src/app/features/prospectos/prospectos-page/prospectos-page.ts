@@ -14,6 +14,7 @@ import { ClienteFormDialog } from '../../clientes/cliente-form-dialog/cliente-fo
 import { EventoFormDialog } from '../../eventos/evento-form-dialog/evento-form-dialog';
 
 import { BuscadorTabla } from '../../../core/buscador-tabla/buscador-tabla';
+import { TelefonoPipe } from '../../../core/telefono.pipe';
 interface Prospecto {
   id_prospecto: number;
   nombre: string;
@@ -48,7 +49,7 @@ const FILTROS = [
 @Component({
   selector: 'app-prospectos-page',
   standalone: true,
-  imports: [BuscadorTabla, CommonModule, FormsModule, TableModule, Button, Dialog, Textarea, ClienteFormDialog, EventoFormDialog],
+  imports: [BuscadorTabla, CommonModule, FormsModule, TableModule, Button, Dialog, Textarea, ClienteFormDialog, EventoFormDialog, TelefonoPipe],
   templateUrl: './prospectos-page.html',
   styleUrl: './prospectos-page.scss',
 })

@@ -39,7 +39,7 @@
       <ng-template pTemplate="body" let-fila>
         <tr>
           @for (col of columnas(); track col) {
-            <td>{{ fila[col] }}</td>
+            <td>{{ col === 'telefono' ? (fila[col] | telefono) : fila[col] }}</td>
           }
         </tr>
       </ng-template>

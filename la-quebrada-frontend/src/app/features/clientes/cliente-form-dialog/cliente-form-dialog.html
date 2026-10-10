@@ -23,22 +23,22 @@
       </div>
       <div class="field">
         <label for="cui">CUI/DPI</label>
-        <input pInputText id="cui" formControlName="cui" inputmode="numeric" maxlength="15" placeholder="13 dígitos" fluid />
+        <input pInputText id="cui" formControlName="cui" inputmode="numeric" minlength="13" #cuiInput (input)="soloDigitosCui(cuiInput)" placeholder="13 dígitos" fluid />
         <app-error-campo [control]="form.controls.cui" />
       </div>
       <div class="field">
         <label for="nit">NIT</label>
-        <input pInputText id="nit" formControlName="nit" maxlength="20" placeholder="1234567-8 o CF" fluid />
+        <input pInputText id="nit" formControlName="nit" maxlength="9" placeholder="1234567-8 o CF" fluid />
         <app-error-campo [control]="form.controls.nit" />
       </div>
       <div class="field">
         <label for="telefono">Teléfono</label>
-        <input pInputText id="telefono" formControlName="telefono" type="tel" inputmode="tel" maxlength="20" placeholder="5502 4196" fluid />
+        <input pInputText id="telefono" formControlName="telefono" type="tel" inputmode="tel" #telefonoInput (input)="formatoTelefono(telefonoInput)" placeholder="1234-5678" fluid />
         <app-error-campo [control]="form.controls.telefono" />
       </div>
       <div class="field">
         <label for="correo">Correo</label>
-        <input pInputText id="correo" formControlName="correo" type="email" maxlength="150" fluid />
+        <input pInputText id="correo" formControlName="correo" type="email" maxlength="150"  placeholder="correo@ejemplo.com" fluid />
         <app-error-campo [control]="form.controls.correo" />
       </div>
     </div>

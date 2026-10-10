@@ -12,6 +12,7 @@ import { PagosPanel } from '../pagos-panel/pagos-panel';
 import { DegustacionPanel } from '../degustacion-panel/degustacion-panel';
 import { ExtrasPanel } from '../extras-panel/extras-panel';
 import { EventoFormDialog } from '../evento-form-dialog/evento-form-dialog';
+import { TelefonoPipe } from '../../../core/telefono.pipe';
 
 interface EventoDetalle {
   id_evento: number;
@@ -50,7 +51,7 @@ const ESTADOS_CONFIRMADOS = ['confirmado', 'en_curso', 'cerrado'];
 @Component({
   selector: 'app-evento-detail',
   standalone: true,
-  imports: [Button, Card, Tabs, TabList, Tab, TabPanels, TabPanel,DatePipe, CotizacionPanel, PagosPanel, DegustacionPanel,ExtrasPanel,EventoFormDialog],
+  imports: [Button, Card, Tabs, TabList, Tab, TabPanels, TabPanel,DatePipe, CotizacionPanel, PagosPanel, DegustacionPanel,ExtrasPanel,EventoFormDialog, TelefonoPipe],
   templateUrl: './evento-detail.html',
   styleUrl: './evento-detail.scss',
 })

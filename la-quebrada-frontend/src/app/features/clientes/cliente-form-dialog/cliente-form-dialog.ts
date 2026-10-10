@@ -8,7 +8,7 @@ import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { API_URL } from '../../../core/api-config';
 import { ERROR_EN_LINEA } from '../../../core/http-errores';
-import { Validadores } from '../../../core/validaciones';
+import { Validadores, formatearCui, formatearTelefono } from '../../../core/validaciones';
 import { ErrorCampo } from '../../../core/error-campo/error-campo';
 
 @Component({
@@ -55,7 +55,7 @@ export class ClienteFormDialog {
   abrirNuevo(datosIniciales?: Partial<{ primer_nombre: string; primer_apellido: string; telefono: string; correo: string }>): void {
     this.idCliente = null;
     this.esEdicion.set(false);
-    this.form.reset(datosIniciales ?? {});
+    this.form.reset({ ...datosIniciales, telefono: formatearTelefono(datosIniciales?.telefono ?? '') });
     this.error.set(null);
     this.visible.set(true);
   }
@@ -65,9 +65,27 @@ export class ClienteFormDialog {
     this.esEdicion.set(true);
     this.error.set(null);
     this.http.get<any>(`${API_URL}/clientes/${idCliente}`).subscribe((cliente) => {
-      this.form.patchValue(cliente);
+      this.form.patchValue({ ...cliente, telefono: formatearTelefono(cliente.telefono ?? '') });
     });
     this.visible.set(true);
+  }
+
+  // El CUI solo admite dígitos: se quita lo demás al escribir o pegar (p. ej. "1234 56789 0101")
+  soloDigitosCui(input: HTMLInputElement): void {
+    const digitos = formatearCui(input.value);
+    if (digitos !== input.value) {
+      input.value = digitos;
+      this.form.controls.cui.setValue(digitos);
+    }
+  }
+
+  // El teléfono se muestra como 1234-5678 mientras se escribe; al guardar se le quita el guion
+  formatoTelefono(input: HTMLInputElement): void {
+    const conGuion = formatearTelefono(input.value);
+    if (conGuion !== input.value) {
+      input.value = conGuion;
+      this.form.controls.telefono.setValue(conGuion);
+    }
   }
 
   onSubmit(): void {

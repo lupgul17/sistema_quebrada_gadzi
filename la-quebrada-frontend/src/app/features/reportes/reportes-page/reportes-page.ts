@@ -8,6 +8,7 @@ import { Button } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { API_URL } from '../../../core/api-config';
 import { fechaLocalISO } from '../../../core/fechas';
+import { TelefonoPipe } from '../../../core/telefono.pipe';
 
 type TipoReporte = 'eventos' | 'eventos-detallado' | 'pendientes-pago' | 'degustaciones';
 
@@ -28,7 +29,7 @@ const RANGOS_RAPIDOS = [
 @Component({
   selector: 'app-reportes-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, Select, DatePicker, Button, TableModule],
+  imports: [CommonModule, FormsModule, Select, DatePicker, Button, TableModule, TelefonoPipe],
   templateUrl: './reportes-page.html',
   styleUrl: './reportes-page.scss',
 })

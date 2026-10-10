@@ -9,6 +9,7 @@ import { Button } from 'primeng/button';
 import { API_URL } from '../../../core/api-config';
 import { AuthService } from '../../../core/auth.service';
 import { ClienteFormDialog } from '../cliente-form-dialog/cliente-form-dialog';
+import { TelefonoPipe } from '../../../core/telefono.pipe';
 
 interface Cliente {
   id_cliente: number;
@@ -23,7 +24,7 @@ interface Cliente {
 @Component({
   selector: 'app-clientes-list',
   standalone: true,
-  imports: [TableModule, InputText, Button, FormsModule, ClienteFormDialog],
+  imports: [TableModule, InputText, Button, FormsModule, ClienteFormDialog, TelefonoPipe],
   templateUrl: './clientes-list.html',
   styleUrl: './clientes-list.scss',
 })
@@ -77,6 +78,11 @@ export class ClientesList implements OnInit {
 
   ngOnInit(): void {
     this.cargarClientes('');
+  }
+
+  /** El teléfono se guarda sin guion: "5502-41" también encuentra 55024196. */
+  sinGuiones(texto: string): string {
+    return texto.replace(/[\s-]/g, '');
   }
 
   onBusquedaChange(texto: string): void {

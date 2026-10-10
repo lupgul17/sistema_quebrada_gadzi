@@ -26,7 +26,7 @@
       <input pInputText type="text" (input)="dt.filter($any($event.target).value, 'nombre_completo', 'contains')" placeholder="Filtrar nombre" class="filtro-columna" />
     </th>
     <th>
-      <input pInputText type="text" (input)="dt.filter($any($event.target).value, 'telefono', 'contains')" placeholder="Filtrar teléfono" class="filtro-columna" />
+      <input pInputText type="text" (input)="dt.filter(sinGuiones($any($event.target).value), 'telefono', 'contains')" placeholder="Filtrar teléfono" class="filtro-columna" />
     </th>
     <th>
       <input pInputText type="text" (input)="dt.filter($any($event.target).value, 'correo', 'contains')" placeholder="Filtrar correo" class="filtro-columna" />
@@ -37,7 +37,7 @@
    <ng-template pTemplate="body" let-cliente>
   <tr>
     <td>{{ nombreCompleto(cliente) }}</td>
-    <td>{{ cliente.telefono || '—' }}</td>
+    <td>{{ (cliente.telefono | telefono) || '—' }}</td>
     <td>{{ cliente.correo || '—' }}</td>
     <td class="col-acciones">
   <div class="acciones-wrapper">

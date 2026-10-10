@@ -63,9 +63,9 @@
         @if (intentoCrear() && erroresNuevo()['primer_apellido']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
       <div class="field"><label>Segundo apellido</label><input pInputText [(ngModel)]="nuevo.segundo_apellido" maxlength="80" fluid />
         @if (intentoCrear() && erroresNuevo()['segundo_apellido']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
-      <div class="field"><label>CUI/DPI</label><input pInputText [(ngModel)]="nuevo.cui" inputmode="numeric" maxlength="15" fluid />
+      <div class="field"><label>CUI/DPI</label><input pInputText [(ngModel)]="nuevo.cui" inputmode="numeric" #cuiInput (input)="cuiSoloDigitos(cuiInput, nuevo)" placeholder="13 dígitos" fluid />
         @if (intentoCrear() && erroresNuevo()['cui']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
-      <div class="field"><label>Teléfono</label><input pInputText [(ngModel)]="nuevo.telefono" type="tel" maxlength="20" fluid />
+      <div class="field"><label>Teléfono</label><input pInputText [(ngModel)]="nuevo.telefono" type="tel" inputmode="tel" #telefonoInput (input)="telefonoConGuion(telefonoInput, nuevo)" placeholder="1234-5678" fluid />
         @if (intentoCrear() && erroresNuevo()['telefono']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
       <div class="field"><label>Correo</label><input pInputText [(ngModel)]="nuevo.correo" type="email" maxlength="150" fluid />
         @if (intentoCrear() && erroresNuevo()['correo']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
@@ -92,8 +92,32 @@
     </div>
   </p-dialog>
 
-  <!-- Editar rol y estado -->
-  <p-dialog [header]="'Editar — ' + (editando?.username ?? '')" [(visible)]="dialogoEditarVisible" [modal]="true" [style]="{ width: '520px' }" appendTo="body">
+  <!-- Editar datos personales, rol y estado -->
+  <p-dialog [header]="'Editar — ' + (editando?.username ?? '')" [(visible)]="dialogoEditarVisible" [modal]="true" [style]="{ width: '640px', maxHeight: '90vh' }" [contentStyle]="{ overflow: 'auto' }" appendTo="body">
+    <h4 class="seccion">Datos personales</h4>
+    @if (cargandoDatos()) {
+      <p class="hint-dialogo">Cargando datos...</p>
+    } @else {
+      <div class="grid-2">
+        <div class="field"><label>Primer nombre *</label><input pInputText [(ngModel)]="editDatos.primer_nombre" maxlength="80" fluid />
+          @if (intentoEditar() && erroresEditar()['primer_nombre']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
+        <div class="field"><label>Segundo nombre</label><input pInputText [(ngModel)]="editDatos.segundo_nombre" maxlength="80" fluid />
+          @if (intentoEditar() && erroresEditar()['segundo_nombre']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
+        <div class="field"><label>Primer apellido *</label><input pInputText [(ngModel)]="editDatos.primer_apellido" maxlength="80" fluid />
+          @if (intentoEditar() && erroresEditar()['primer_apellido']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
+        <div class="field"><label>Segundo apellido</label><input pInputText [(ngModel)]="editDatos.segundo_apellido" maxlength="80" fluid />
+          @if (intentoEditar() && erroresEditar()['segundo_apellido']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
+        <div class="field"><label>CUI/DPI</label><input pInputText [(ngModel)]="editDatos.cui" inputmode="numeric" #editCuiInput (input)="cuiSoloDigitos(editCuiInput, editDatos)" placeholder="13 dígitos" fluid />
+          @if (intentoEditar() && erroresEditar()['cui']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
+        <div class="field"><label>Teléfono</label><input pInputText [(ngModel)]="editDatos.telefono" type="tel" inputmode="tel" #editTelefonoInput (input)="telefonoConGuion(editTelefonoInput, editDatos)" placeholder="1234-5678" fluid />
+          @if (intentoEditar() && erroresEditar()['telefono']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
+        <div class="field"><label>Correo</label><input pInputText [(ngModel)]="editDatos.correo" type="email" maxlength="150" fluid />
+          @if (intentoEditar() && erroresEditar()['correo']; as e) { <small class="lq-error-campo">{{ e }}</small> }</div>
+        <div class="field"><label>Tipo de empleado</label><input pInputText [value]="editTipoEmpleado ?? '—'" disabled fluid /></div>
+      </div>
+    }
+
+    <h4 class="seccion">Acceso</h4>
     <div class="field">
       <label>Rol</label>
       <p-select [options]="roles()" optionLabel="descripcion" optionValue="id_rol_acceso" [(ngModel)]="editRol" appendTo="body" fluid />

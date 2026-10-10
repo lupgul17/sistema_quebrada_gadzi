@@ -30,7 +30,7 @@
           <tr class="fila-clickeable" [class.fila-nueva]="p.estado === 'nuevo'" (click)="abrirDetalle(p)">
             <td>{{ p.fecha_creacion | date: 'dd/MM HH:mm' }}</td>
             <td>{{ p.nombre }}</td>
-            <td>{{ p.telefono }}</td>
+            <td>{{ p.telefono | telefono }}</td>
             <td>{{ p.tipo_evento || '—' }}</td>
             <td>{{ p.fecha_tentativa ? (p.fecha_tentativa | date: 'dd/MM/yyyy') : '—' }}</td>
             <td>{{ p.salon || '—' }}</td>
@@ -61,7 +61,7 @@
         <div>
           <span class="label">Teléfono</span>
           <span>
-            {{ p.telefono }}
+            {{ p.telefono | telefono }}
             <a class="link-wa" [href]="linkWhatsapp(p.telefono)" target="_blank" rel="noopener"><i class="pi pi-whatsapp"></i> WhatsApp</a>
           </span>
         </div>

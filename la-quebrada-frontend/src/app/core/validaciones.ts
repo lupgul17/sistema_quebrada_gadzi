@@ -100,6 +100,32 @@ export const Validadores = {
   },
 };
 
+/** CUI mientras se escribe o se pega: solo dígitos, 13 como máximo ("1234 56789 0101" → "1234567890101"). */
+export const formatearCui = (valor: string) => valor.replace(/\D/g, '').slice(0, 13);
+
+/**
+ * Teléfono mientras se escribe: 8 dígitos como máximo, con guion después del cuarto ("55024196" → "5502-4196").
+ * Si viene con el código de Guatemala ("+502 5502 4196", ej. de un prospecto o pegado) se le quita.
+ */
+export const formatearTelefono = (valor: string) => {
+  let d = valor.replace(/\D/g, '');
+  if (d.length === 11 && d.startsWith('502')) d = d.slice(3);
+  d = d.slice(0, 8);
+  return d.length > 4 ? `${d.slice(0, 4)}-${d.slice(4)}` : d;
+};
+
+/**
+ * Teléfono para mostrar: "55024196" → "5502-4196" y "+50255024196" → "+502 5502-4196".
+ * Lo que no tenga ese formato (ej. un número del extranjero) se muestra tal cual.
+ */
+export function mostrarTelefono(valor: string | null | undefined): string {
+  const t = (valor ?? '').trim();
+  const d = t.replace(/[\s()-]/g, '');
+  if (/^\d{8}$/.test(d)) return formatearTelefono(d);
+  if (/^\+502\d{8}$/.test(d)) return `+502 ${formatearTelefono(d.slice(4))}`;
+  return t;
+}
+
 /** Cuando cambia `origen`, vuelve a validar `destino` (ej. hora de fin al cambiar el inicio). */
 export function revalidarAlCambiar(origen: AbstractControl, destino: AbstractControl): void {
   origen.valueChanges.subscribe(() => destino.updateValueAndValidity({ emitEvent: false }));
@@ -126,7 +152,7 @@ export function errorPassword(p: string | null | undefined): string | null {
 export function mensajeDeError(errores: ValidationErrors | null | undefined): string | null {
   if (!errores) return null;
   if (errores['required']) return 'Este campo es obligatorio.';
-  if (errores['telefono']) return 'Escribí un teléfono de 8 dígitos (ej. 5502 4196).';
+  if (errores['telefono']) return 'Escribí un teléfono de 8 dígitos (ej. 5502-4196).';
   if (errores['cui']) return 'El CUI debe tener 13 dígitos.';
   if (errores['nombrePersona']) return 'Solo letras, espacios y guiones.';
   if (errores['nit']) return 'Escribí un NIT válido (ej. 1234567-8) o CF.';
