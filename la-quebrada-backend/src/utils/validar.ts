@@ -3,6 +3,12 @@
  * core/validaciones.ts). El frontend ataja casi todo; esto es la segunda barrera.
  */
 
+/** Hoy en formato YYYY-MM-DD según la hora local del servidor (TZ America/Guatemala en Railway). */
+export function fechaLocalHoy(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 /** Texto recortado; vacío → null (un "" no debe guardarse como dato, ej. un CUI vacío). */
 export function textoONull(v: unknown): string | null {
   if (v === null || v === undefined) return null;

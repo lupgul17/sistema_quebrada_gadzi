@@ -1,0 +1,66 @@
+<p-dialog header="Confirmar evento" [(visible)]="visible" [modal]="true" [style]="{ width: '520px' }" appendTo="body">
+  @if (info(); as i) {
+    <p class="intro">
+      Para confirmar el evento se registra el <strong>abono de reserva</strong> (no reembolsable). Queda pendiente de
+      revisión como cualquier pago.
+    </p>
+
+    <div class="resumen">
+      <div>
+        <span class="etiqueta">Total de la cotización</span>
+        <strong>{{ i.total_cotizacion !== null ? 'Q' + (i.total_cotizacion | number: '1.2-2') : 'Sin cotización activa' }}</strong>
+      </div>
+      <div>
+        <span class="etiqueta">Abono mínimo</span>
+        <strong>Q{{ i.abono_minimo | number: '1.2-2' }}</strong>
+      </div>
+      @if (i.abonado > 0) {
+        <div>
+          <span class="etiqueta">Ya registrado como reserva</span>
+          <strong>Q{{ i.abonado | number: '1.2-2' }}</strong>
+        </div>
+      }
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label for="cf-monto">Monto (Q) *</label>
+        <p-inputnumber inputId="cf-monto" [(ngModel)]="form.monto" mode="decimal" [minFractionDigits]="2" [min]="0" fluid />
+        @if (intento() && errores().monto; as e) { <small class="lq-error-campo">{{ e }}</small> }
+      </div>
+      <div class="field">
+        <label for="cf-fecha">Fecha del pago *</label>
+        <p-datepicker inputId="cf-fecha" [(ngModel)]="form.fecha_pago" dateFormat="dd/mm/yy" [maxDate]="hoy" appendTo="body" fluid />
+        @if (intento() && errores().fecha; as e) { <small class="lq-error-campo">{{ e }}</small> }
+      </div>
+      <div class="field">
+        <label for="cf-tipo">Forma de pago *</label>
+        <p-select inputId="cf-tipo" [options]="tiposPago()" optionLabel="descripcion" optionValue="id_tipo_pago" [(ngModel)]="form.id_tipo_pago" placeholder="Elegir..." appendTo="body" fluid />
+        @if (intento() && errores().tipo; as e) { <small class="lq-error-campo">{{ e }}</small> }
+      </div>
+      <div class="field">
+        <label>Comprobante (opcional)</label>
+        <input #inputArchivo type="file" accept="image/*,.pdf" (change)="onArchivo($event)" class="input-oculto" />
+        <p-button [label]="archivo ? archivo.name : 'Seleccionar archivo'" icon="pi pi-paperclip" severity="secondary" size="small" type="button" (onClick)="abrirSelectorArchivo()" />
+        @if (errorArchivo(); as e) { <small class="lq-error-campo">{{ e }}</small> }
+        @else { <small class="hint-campo">Imagen o PDF, hasta 5 MB.</small> }
+      </div>
+    </div>
+    <div class="field">
+      <label for="cf-notas">Notas</label>
+      <textarea pTextarea id="cf-notas" [(ngModel)]="form.notas" rows="2" maxlength="500" fluid placeholder="Referencia, número de transferencia..."></textarea>
+      @if (intento() && errores().notas; as e) { <small class="lq-error-campo">{{ e }}</small> }
+    </div>
+  } @else {
+    <p class="intro">Cargando...</p>
+  }
+
+  @if (error()) {
+    <p-message severity="error" [text]="error()!" styleClass="w-full" />
+  }
+
+  <div class="dialog-acciones">
+    <p-button label="Cancelar" severity="secondary" (onClick)="visible.set(false)" />
+    <p-button label="Registrar abono y confirmar" icon="pi pi-check" [loading]="guardando()" [disabled]="guardando() || !info()" (onClick)="confirmar()" />
+  </div>
+</p-dialog>

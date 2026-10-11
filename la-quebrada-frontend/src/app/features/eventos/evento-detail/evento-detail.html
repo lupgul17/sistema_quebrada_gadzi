@@ -31,7 +31,7 @@
       }
     </p-card>
 
-    <p-tabs value="cotizacion">
+    <p-tabs [value]="pestana()" (valueChange)="pestana.set($any($event))">
       <p-tablist>
         <p-tab value="cotizacion">Cotización</p-tab>
         @if (eventoConfirmado()) {
@@ -63,3 +63,5 @@
   </div>
 }
 <app-evento-form-dialog #eventoFormDialog (guardado)="cargarEvento()" />
+<!-- Confirmar = registrar el abono de reserva + confirmar (una sola operación) -->
+<app-confirmar-evento-dialog #confirmarDialog (confirmado)="alConfirmar()" />

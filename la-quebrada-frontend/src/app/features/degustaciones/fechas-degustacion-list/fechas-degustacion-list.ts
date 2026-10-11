@@ -94,7 +94,8 @@ export class FechasDegustacionList implements OnInit {
   nuevaHoraFin: Date | null = null;
   /** Se intentó crear: muestra los errores de los campos. */
   readonly intentoCrear = signal(false);
-  readonly hoy = new Date();
+  /** Límite del calendario: el inicio de hoy (con la hora exacta no se podía elegir el día de hoy). */
+  readonly hoy = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; })();
 
   constructor(
     private http: HttpClient,

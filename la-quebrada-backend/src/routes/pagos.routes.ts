@@ -7,14 +7,10 @@ import { UPLOADS_DIR } from '../config/upload.js';
 import {uploadComprobante} from '../config/upload.js';
 import { type RequestConAlcance, exigirAlcance, filtrarPorAlcance, guardiaAlcance } from '../middleware/alcance.js';
 import { responderError } from '../utils/errores.js';
+import { fechaLocalHoy } from '../utils/validar.js';
 
 const CONCEPTOS_PAGO = ['reserva', 'abono', 'saldo', 'recargo'];
 
-/** Hoy en formato YYYY-MM-DD según la hora local del servidor (TZ America/Guatemala en Railway). */
-function fechaLocalHoy(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
 
 const router = Router();
 

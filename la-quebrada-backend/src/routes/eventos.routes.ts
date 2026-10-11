@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
+import fs from 'node:fs';
+import type { AuthRequest } from '../middleware/auth.middleware.js';
 import { responderError } from '../utils/errores.js';
+import { fechaLocalHoy } from '../utils/validar.js';
+import { uploadComprobante } from '../config/upload.js';
 import { type RequestConAlcance, eventosEnAlcance, exigirAlcance, filtrarPorAlcance, salonesEnAlcance } from '../middleware/alcance.js';
 
 const router = Router();
@@ -168,6 +172,63 @@ router.put('/:id', async (req: RequestConAlcance, res) => {
     res.json({ ok: true });
   } catch (err) {
     responderError(res, err);
+  }
+});
+
+// GET /api/eventos/:id/confirmacion - lo que necesita el modal "Confirmar evento"
+router.get('/:id/confirmacion', async (req, res) => {
+  try {
+    const r = await pool.query(
+      `SELECT fn_abono_minimo_confirmacion($1::integer) AS abono_minimo, fn_abonos_reserva($1::integer) AS abonado,
+              (SELECT total FROM cotizacion WHERE id_evento = $1 AND activa) AS total_cotizacion`,
+      [req.params.id]
+    );
+    const f = r.rows[0];
+    res.json({
+      abono_minimo: Number(f.abono_minimo),
+      abonado: Number(f.abonado),
+      total_cotizacion: f.total_cotizacion === null ? null : Number(f.total_cotizacion),
+    });
+  } catch (err) {
+    responderError(res, err);
+  }
+});
+
+// POST /api/eventos/:id/confirmar  (multipart: fecha_pago, monto, id_tipo_pago, notas?, comprobante?)
+// Registra el abono de reserva y confirma el evento EN UNA SOLA TRANSACCIÓN: si el salón ya no está
+// libre (u otra regla falla), no queda ni el pago ni el comprobante.
+router.post('/:id/confirmar', uploadComprobante.single('comprobante'), async (req: AuthRequest, res) => {
+  const rechazar = (status: number, error: string) => {
+    if (req.file) fs.unlink(req.file.path, () => undefined);
+    res.status(status).json({ error });
+  };
+  const { fecha_pago, monto, id_tipo_pago, notas } = req.body;
+  const montoNum = Number(monto);
+  if (!fecha_pago || !monto || !id_tipo_pago) return rechazar(400, 'Falta la fecha, el monto o la forma de pago del abono.');
+  if (!Number.isFinite(montoNum) || montoNum <= 0 || montoNum > 1_000_000) return rechazar(400, 'El monto del abono no es válido.');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(fecha_pago)) || String(fecha_pago) > fechaLocalHoy()) {
+    return rechazar(400, 'La fecha del pago no es válida o es futura.');
+  }
+  if (notas && String(notas).length > 500) return rechazar(400, 'Las notas pueden tener máximo 500 caracteres.');
+
+  const cliente = await pool.connect();
+  try {
+    await cliente.query('BEGIN');
+    const empleado = await cliente.query('SELECT fn_id_empleado_por_persona($1::integer) AS id_empleado', [req.usuario!.id_persona]);
+    const pago = await cliente.query(
+      `CALL sp_registrar_pago($1::integer, $2::date, $3::decimal, $4::integer, 'reserva', 'staff', $5::integer, $6::varchar, $7::text, NULL)`,
+      [req.params.id, fecha_pago, montoNum, id_tipo_pago, empleado.rows[0]?.id_empleado ?? null, req.file?.filename ?? null, String(notas ?? '').trim() || null]
+    );
+    // El SP valida el abono mínimo y que los salones sigan libres
+    await cliente.query(`CALL sp_cambiar_estado_evento($1::integer, 'confirmado')`, [req.params.id]);
+    await cliente.query('COMMIT');
+    res.status(201).json({ ok: true, id_pago: pago.rows[0].p_id_pago });
+  } catch (err) {
+    await cliente.query('ROLLBACK').catch(() => undefined);
+    if (req.file) fs.unlink(req.file.path, () => undefined);
+    responderError(res, err);
+  } finally {
+    cliente.release();
   }
 });
 

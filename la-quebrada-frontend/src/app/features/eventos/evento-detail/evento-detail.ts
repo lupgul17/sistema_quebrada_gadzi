@@ -12,6 +12,7 @@ import { PagosPanel } from '../pagos-panel/pagos-panel';
 import { DegustacionPanel } from '../degustacion-panel/degustacion-panel';
 import { ExtrasPanel } from '../extras-panel/extras-panel';
 import { EventoFormDialog } from '../evento-form-dialog/evento-form-dialog';
+import { ConfirmarEventoDialog } from '../confirmar-evento-dialog/confirmar-evento-dialog';
 import { TelefonoPipe } from '../../../core/telefono.pipe';
 
 interface EventoDetalle {
@@ -51,7 +52,7 @@ const ESTADOS_CONFIRMADOS = ['confirmado', 'en_curso', 'cerrado'];
 @Component({
   selector: 'app-evento-detail',
   standalone: true,
-  imports: [Button, Card, Tabs, TabList, Tab, TabPanels, TabPanel,DatePipe, CotizacionPanel, PagosPanel, DegustacionPanel,ExtrasPanel,EventoFormDialog, TelefonoPipe],
+  imports: [Button, Card, Tabs, TabList, Tab, TabPanels, TabPanel,DatePipe, CotizacionPanel, PagosPanel, DegustacionPanel,ExtrasPanel,EventoFormDialog, TelefonoPipe, ConfirmarEventoDialog],
   templateUrl: './evento-detail.html',
   styleUrl: './evento-detail.scss',
 })
@@ -61,6 +62,9 @@ export class EventoDetail implements OnInit {
   readonly eventoConfirmado = computed(() => ESTADOS_CONFIRMADOS.includes(this.evento()?.estado ?? ''));
   private idEvento!: string;
   @ViewChild('eventoFormDialog') eventoFormDialog!: EventoFormDialog;
+  @ViewChild('confirmarDialog') confirmarDialog!: ConfirmarEventoDialog;
+  /** Pestaña abierta: después de confirmar se pasa a Pagos para ver el abono registrado. */
+  readonly pestana = signal('cotizacion');
 
   constructor(
     private http: HttpClient,
@@ -85,6 +89,11 @@ export class EventoDetail implements OnInit {
   }
 
   cambiarEstado(nuevoEstado: string): void {
+    // Confirmar exige el abono de reserva: se registra en el modal junto con la confirmación
+    if (nuevoEstado === 'confirmado') {
+      this.confirmarDialog.abrir(Number(this.idEvento));
+      return;
+    }
     this.cambiandoEstado.set(true);
     this.http.patch(`${API_URL}/eventos/${this.idEvento}/estado`, { estado: nuevoEstado }).subscribe({
       next: () => {
@@ -95,6 +104,11 @@ export class EventoDetail implements OnInit {
         this.cambiandoEstado.set(false);
       },
     });
+  }
+
+  alConfirmar(): void {
+    this.cargarEvento();
+    this.pestana.set('pagos');
   }
 
   abrirEditar(): void {

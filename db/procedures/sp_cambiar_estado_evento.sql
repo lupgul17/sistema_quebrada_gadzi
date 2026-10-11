@@ -6,6 +6,8 @@ DECLARE
     v_fecha         DATE;
     v_hora_inicio   TIME;
     v_hora_fin      TIME;
+    v_minimo        NUMERIC;
+    v_abonado       NUMERIC;
     r_salon         RECORD;
 BEGIN
     SELECT estado, fecha, hora_inicio, hora_fin
@@ -29,9 +31,17 @@ BEGIN
         RAISE EXCEPTION 'No se puede pasar de % a %', v_estado_actual, p_nuevo_estado;
     END IF;
 
-    -- Al confirmar, la disponibilidad se revalida: desde que se cotizó, otro evento pudo quedar
-    -- confirmado en el mismo salon y horario, o tomar la fecha tras vencer una reserva temporal.
     IF p_nuevo_estado = 'confirmado' THEN
+        -- Sin el abono de reserva no se confirma
+        v_minimo := fn_abono_minimo_confirmacion(p_id_evento);
+        v_abonado := fn_abonos_reserva(p_id_evento);
+        IF v_abonado < v_minimo THEN
+            RAISE EXCEPTION 'Para confirmar el evento se necesita un abono de reserva de al menos Q%. Registrado: Q%.',
+                to_char(v_minimo, 'FM999,999,990.00'), to_char(v_abonado, 'FM999,999,990.00');
+        END IF;
+
+        -- La disponibilidad se revalida: desde que se cotizó, otro evento pudo quedar
+        -- confirmado en el mismo salon y horario, o tomar la fecha tras vencer una reserva temporal.
         FOR r_salon IN
             SELECT s.id_salon, s.nombre
             FROM evento_salon es

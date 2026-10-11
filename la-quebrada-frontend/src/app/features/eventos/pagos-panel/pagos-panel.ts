@@ -73,7 +73,9 @@ export class PagosPanel implements OnInit {
   archivoComprobante: File | null = null;
   /** Se intentó registrar: muestra los errores de los campos. */
   readonly intentoPago = signal(false);
-  readonly hoy = new Date();
+  /** Límite del calendario: el final de hoy (con la hora exacta, una fecha creada segundos después
+   *  quedaba "en el futuro" y el calendario no la mostraba). */
+  readonly hoy = (() => { const d = new Date(); d.setHours(23, 59, 59, 999); return d; })();
   readonly errorArchivo = signal<string | null>(null);
 
   //modal de vista de pagos 
